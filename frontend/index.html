@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260413aa" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260413ab" />
 </head>
 <body>
   <div class="page-shell">
@@ -123,11 +123,6 @@
             <button class="source-pill" type="button" data-source="ai">AI Only</button>
           </div>
 
-          <div id="libraryModeHint" class="library-mode-hint hidden">
-            Pick a level and a topic. We will pull a reading from the curated library.
-          </div>
-          <div id="libraryCountBadge" class="library-count-badge hidden">38 curated readings inside</div>
-
           <form id="generate-form" class="stack-lg">
             <div id="libraryControls" class="stack-lg">
               <div class="form-row compact-filters">
@@ -217,6 +212,10 @@
 
             <p id="generateError" class="error-text hidden"></p>
             <button id="generateBtn" class="primary-btn" type="submit">Get Reading</button>
+            <div class="setup-footer">
+              <div id="libraryCountBadge" class="library-count-badge hidden">150 curated readings inside</div>
+              <p id="libraryModeHint" class="setup-footer-note hidden">Pick a level and a topic. We will pull a reading from the curated library.</p>
+            </div>
           </form>
         </section>
       </aside>
@@ -337,6 +336,6 @@
     </section>
   </aside>
 
-  <script src="/assets/app.js?v=20260413aa"></script>
+  <script src="/assets/app.js?v=20260413ab"></script>
 </body>
 </html>

@@ -370,6 +370,18 @@ body::before{
   font-weight:900;
   letter-spacing:.03em;
 }
+.setup-footer{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:2px;
+}
+.setup-footer-note{
+  margin:0;
+  color:#adc0d6;
+  font-size:.78rem;
+  line-height:1.45;
+}
 .source-pill{
   min-height:38px;
   padding:0 14px;
