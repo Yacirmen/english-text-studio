@@ -7,9 +7,48 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260413ad" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260413ae" />
 </head>
 <body>
+  <div id="welcomeGate" class="welcome-gate">
+    <div class="welcome-card">
+      <div class="welcome-copy">
+        <span class="hero-kicker">English Text Studio</span>
+        <h1>Read, save, and review in one smooth flow.</h1>
+        <p>
+          Sign in to keep your words and quiz history, or continue as a guest and explore the reading space first.
+        </p>
+        <div class="welcome-points">
+          <span>Curated readings</span>
+          <span>Saved vocabulary</span>
+          <span>Quick review quiz</span>
+        </div>
+      </div>
+
+      <div class="welcome-auth">
+        <div class="auth-toggle welcome-toggle">
+          <button id="gateShowLoginBtn" class="auth-tab active" type="button">Log In</button>
+          <button id="gateShowRegisterBtn" class="auth-tab" type="button">Sign Up</button>
+        </div>
+
+        <form id="gateAuthForm" class="stack-md">
+          <label class="field">
+            <span>Email</span>
+            <input id="gateAuthEmail" type="email" placeholder="you@example.com" />
+          </label>
+          <label class="field">
+            <span>Password</span>
+            <input id="gateAuthPassword" type="password" placeholder="at least 6 characters" />
+          </label>
+          <p id="gateAuthError" class="error-text hidden"></p>
+          <button id="gateAuthSubmitBtn" class="primary-btn" type="submit">Log In</button>
+        </form>
+
+        <button id="continueGuestBtn" class="outline-btn gate-guest-btn" type="button">Continue as Guest</button>
+      </div>
+    </div>
+  </div>
+
   <div class="page-shell">
     <header class="topbar">
       <div class="brand-lockup">
@@ -335,6 +374,6 @@
     </section>
   </aside>
 
-  <script src="/assets/app.js?v=20260413ad"></script>
+  <script src="/assets/app.js?v=20260413ae"></script>
 </body>
 </html>

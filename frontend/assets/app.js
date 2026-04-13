@@ -35,9 +35,19 @@ const state = {
   libraryView: null,
   libraryStats: null,
   quizStats: { answered: 0, correct: 0, streak: 0 },
+  hasEnteredApp: window.sessionStorage.getItem("ets_guest") === "1",
 };
 
 const $ = (selector) => document.querySelector(selector);
+const welcomeGateEl = $("#welcomeGate");
+const gateAuthForm = $("#gateAuthForm");
+const gateAuthEmailEl = $("#gateAuthEmail");
+const gateAuthPasswordEl = $("#gateAuthPassword");
+const gateAuthErrorEl = $("#gateAuthError");
+const gateAuthSubmitBtn = $("#gateAuthSubmitBtn");
+const gateShowLoginBtn = $("#gateShowLoginBtn");
+const gateShowRegisterBtn = $("#gateShowRegisterBtn");
+const continueGuestBtn = $("#continueGuestBtn");
 const pageShell = $(".page-shell");
 const generateForm = $("#generate-form");
 const manualForm = $("#manual-form");
@@ -462,7 +472,26 @@ function renderAuthMode() {
   const isLogin = state.authMode === "login";
   showLoginBtn.classList.toggle("active", isLogin);
   showRegisterBtn.classList.toggle("active", !isLogin);
+  gateShowLoginBtn?.classList.toggle("active", isLogin);
+  gateShowRegisterBtn?.classList.toggle("active", !isLogin);
   authSubmitBtn.textContent = isLogin ? "Log In" : "Sign Up";
+  if (gateAuthSubmitBtn) gateAuthSubmitBtn.textContent = isLogin ? "Log In" : "Sign Up";
+}
+
+function renderWelcomeGate() {
+  const shouldShow = !state.user && !state.hasEnteredApp;
+  welcomeGateEl?.classList.toggle("hidden", !shouldShow);
+  document.body.classList.toggle("gate-open", shouldShow);
+}
+
+function completeAppEntry(asGuest = false) {
+  state.hasEnteredApp = true;
+  if (asGuest) {
+    window.sessionStorage.setItem("ets_guest", "1");
+  } else {
+    window.sessionStorage.removeItem("ets_guest");
+  }
+  renderWelcomeGate();
 }
 
 async function refreshSession() {
@@ -696,6 +725,7 @@ authForm.addEventListener("submit", async (event) => {
     state.stats = parsed.data.stats || { saved_words: 0, mastered_words: 0 };
     authUsernameEl.value = "";
     authPasswordEl.value = "";
+    completeAppEntry(false);
     await refreshSession();
     await loadQuiz();
   } catch (error) {
@@ -703,6 +733,38 @@ authForm.addEventListener("submit", async (event) => {
     authErrorEl.classList.remove("hidden");
   } finally {
     setLoading(authSubmitBtn, "", false);
+  }
+});
+
+gateAuthForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  gateAuthErrorEl.classList.add("hidden");
+  const endpoint = state.authMode === "login" ? "/api/auth/login" : "/api/auth/register";
+  setLoading(gateAuthSubmitBtn, state.authMode === "login" ? "Logging in..." : "Creating account...", true);
+  try {
+    const payload = {
+      username: gateAuthEmailEl.value.trim(),
+      password: gateAuthPasswordEl.value.trim(),
+    };
+    const parsed = await apiFetch(endpoint, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    if (!parsed.ok) throw new Error(parsed.data.detail || "Authentication failed.");
+    authUsernameEl.value = payload.username;
+    authPasswordEl.value = "";
+    gateAuthEmailEl.value = "";
+    gateAuthPasswordEl.value = "";
+    state.user = parsed.data.user;
+    state.stats = parsed.data.stats || { saved_words: 0, mastered_words: 0 };
+    completeAppEntry(false);
+    await refreshSession();
+    await loadQuiz();
+  } catch (error) {
+    gateAuthErrorEl.textContent = error.message;
+    gateAuthErrorEl.classList.remove("hidden");
+  } finally {
+    setLoading(gateAuthSubmitBtn, "", false);
   }
 });
 
@@ -716,13 +778,28 @@ showRegisterBtn.addEventListener("click", () => {
   renderAuthMode();
 });
 
+gateShowLoginBtn?.addEventListener("click", () => {
+  state.authMode = "login";
+  renderAuthMode();
+});
+
+gateShowRegisterBtn?.addEventListener("click", () => {
+  state.authMode = "register";
+  renderAuthMode();
+});
+
+continueGuestBtn?.addEventListener("click", () => completeAppEntry(true));
+
 logoutBtn.addEventListener("click", async () => {
   await apiFetch("/api/auth/logout", { method: "POST" });
   state.user = null;
   state.stats = { saved_words: 0, mastered_words: 0 };
   state.recentWords = [];
   state.quiz = null;
+  state.hasEnteredApp = false;
+  window.sessionStorage.removeItem("ets_guest");
   renderUserPanel();
+  renderWelcomeGate();
 });
 
 clearSavedWordsBtn?.addEventListener("click", async () => {
@@ -817,5 +894,10 @@ renderUserPanel();
 setLibraryView(null);
 updateSourceModeUi();
 renderKeywordChips();
-refreshSession().then(loadQuiz);
+renderWelcomeGate();
+refreshSession().then(async () => {
+  if (state.user) completeAppEntry(false);
+  renderWelcomeGate();
+  await loadQuiz();
+});
 loadLibraryStats();

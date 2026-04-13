@@ -42,6 +42,79 @@ body::before{
   z-index:0;
 }
 .page-shell{position:relative;z-index:1;max-width:1460px;margin:0 auto;padding:18px 18px 28px}
+.gate-open{overflow:hidden}
+.welcome-gate{
+  position:fixed;
+  inset:0;
+  z-index:30;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:linear-gradient(180deg, rgba(243,247,255,.72), rgba(235,243,255,.92));
+  backdrop-filter:blur(18px);
+}
+.welcome-card{
+  width:min(1120px, 100%);
+  display:grid;
+  grid-template-columns:minmax(0,1.1fr) minmax(320px,.75fr);
+  gap:24px;
+  padding:28px;
+  border-radius:36px;
+  background:
+    radial-gradient(circle at top left, rgba(255,216,77,.38), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(28,176,246,.16), transparent 26%),
+    linear-gradient(145deg,#ffffff 0%,#f8fbff 100%);
+  box-shadow:0 24px 64px rgba(24,49,83,.18);
+  border:1px solid rgba(255,255,255,.95);
+}
+.welcome-copy h1{
+  margin:14px 0 12px;
+  max-width:11ch;
+  font-size:clamp(2.5rem,5vw,4.4rem);
+  line-height:.94;
+  letter-spacing:-.07em;
+}
+.welcome-copy p{
+  max-width:56ch;
+  margin:0;
+  color:var(--muted);
+  line-height:1.75;
+}
+.welcome-points{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:22px;
+}
+.welcome-points span{
+  display:inline-flex;
+  align-items:center;
+  min-height:38px;
+  padding:0 14px;
+  border-radius:999px;
+  background:rgba(255,255,255,.88);
+  color:#3e5470;
+  font-size:.84rem;
+  font-weight:900;
+  box-shadow:0 10px 20px rgba(24,49,83,.08);
+}
+.welcome-auth{
+  padding:24px;
+  border-radius:28px;
+  background:linear-gradient(180deg, rgba(23,48,79,.96), rgba(29,58,95,.96));
+  color:#fff;
+  box-shadow:0 18px 42px rgba(24,49,83,.18);
+}
+.welcome-toggle{margin-bottom:18px}
+.gate-guest-btn{
+  width:100%;
+  margin-top:14px;
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.14);
+}
+.welcome-gate.hidden{display:none}
 .topbar{
   display:flex;
   align-items:center;
@@ -1029,7 +1102,7 @@ input[type="range"]::-moz-range-thumb{
 }
 
 @media (max-width: 1200px){
-  .hero-band,.studio-layout,.experience-grid,.form-row,.stage-head,.setup-summary{grid-template-columns:1fr}
+  .hero-band,.studio-layout,.experience-grid,.form-row,.stage-head,.setup-summary,.welcome-card{grid-template-columns:1fr}
   .tool-rail,.detail-column{position:static}
   .topbar{border-radius:28px;flex-direction:column;align-items:flex-start}
   .top-status{justify-content:flex-start}
