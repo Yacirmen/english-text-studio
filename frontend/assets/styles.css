@@ -328,6 +328,29 @@ body{
   gap:12px;
   margin:14px 0 16px;
 }
+.source-switch{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:0 0 14px;
+}
+.source-pill{
+  min-height:38px;
+  padding:0 12px;
+  border:none;
+  border-radius:999px;
+  background:rgba(255,255,255,.1);
+  color:#dbe7f5;
+  font:inherit;
+  font-size:.76rem;
+  font-weight:900;
+  letter-spacing:.03em;
+  cursor:pointer;
+}
+.source-pill.active{
+  background:#fff;
+  color:var(--ink);
+}
 .mini-stat{
   padding:12px 14px;
   border-radius:16px;
@@ -671,6 +694,12 @@ input[type="range"]::-moz-range-thumb{
   box-shadow:var(--shadow);
 }
 .reading-header{padding:18px 22px}
+.reading-title{
+  margin:14px 0 0;
+  font-size:1.1rem;
+  color:#183153;
+  letter-spacing:-.02em;
+}
 .tag-row,.action-row{display:flex;flex-wrap:wrap;gap:10px}
 .tag{
   padding:8px 13px;

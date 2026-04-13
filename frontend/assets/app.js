@@ -21,6 +21,7 @@ const state = {
   glossary: {},
   selectedWord: "",
   lastPayload: null,
+  contentSource: "smart",
   loadingWord: false,
   pendingFlip: false,
   authMode: "login",
@@ -47,6 +48,7 @@ const generateErrorEl = $("#generateError");
 const previewStateEl = $("#previewState");
 const readingExperienceEl = $("#readingExperience");
 const metaTagsEl = $("#metaTags");
+const readingTitleEl = $("#readingTitle");
 const readingBodyEl = $("#readingBody");
 const flipCardEl = $("#flipCard");
 const selectedWordEl = $("#selectedWord");
@@ -90,6 +92,7 @@ const manualHelpPanelEl = $("#manualHelpPanel");
 const libraryTitleEl = $("#libraryTitle");
 const libraryKickerEl = $("#libraryKicker");
 const closeLibraryBtn = $("#closeLibraryBtn");
+const sourceSwitchEl = $("#sourceSwitch");
 
 async function parseApiResponse(response) {
   const raw = await response.text();
@@ -209,6 +212,7 @@ function renderMeta(level, topic, text) {
     <span class="tag">Level ${escapeHtml(level)}</span>
     <span class="tag">${escapeHtml(topic)}</span>
     <span class="tag">${text.split(/\s+/).filter(Boolean).length} words</span>
+    <span class="tag">${escapeHtml(state.lastPayload?.source || "smart")}</span>
   `;
 }
 
@@ -445,6 +449,13 @@ function renderExperience() {
   previewStateEl.classList.add("hidden");
   readingExperienceEl.classList.remove("hidden");
   renderMeta(state.lastPayload.level, state.lastPayload.topic, state.text);
+  if (state.lastPayload.title) {
+    readingTitleEl.textContent = state.lastPayload.title;
+    readingTitleEl.classList.remove("hidden");
+  } else {
+    readingTitleEl.textContent = "";
+    readingTitleEl.classList.add("hidden");
+  }
   renderReadingText();
   state.selectedWord = "";
   state.loadingWord = false;
@@ -465,7 +476,7 @@ async function generateExperience(payload, triggerButton) {
     if (!parsed.ok) throw new Error(parsed.data.detail || "Bir hata oluştu.");
     state.text = parsed.data.text;
     state.glossary = {};
-    state.lastPayload = payload;
+    state.lastPayload = { ...payload, title: parsed.data.title || "", content_source: parsed.data.content_source || payload.source };
     manualResultEl.classList.add("hidden");
     renderExperience();
   } catch (error) {
@@ -487,6 +498,7 @@ generateForm.addEventListener("submit", async (event) => {
     topic: topicEl.value,
     length_target: Number(lengthEl.value),
     keywords,
+    source: state.contentSource,
   };
   await generateExperience(payload, $("#generateBtn"));
 });
@@ -612,6 +624,13 @@ lengthEl.addEventListener("input", () => {
   updateRangeVisual();
 });
 keywordsEl.addEventListener("input", renderKeywordChips);
+sourceSwitchEl.querySelectorAll(".source-pill").forEach((button) => {
+  button.addEventListener("click", () => {
+    state.contentSource = button.dataset.source;
+    sourceSwitchEl.querySelectorAll(".source-pill").forEach((item) => item.classList.remove("active"));
+    button.classList.add("active");
+  });
+});
 
 updateLevelUi();
 updateTopicDefaults();

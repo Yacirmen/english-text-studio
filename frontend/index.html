@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260413r" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260413s" />
 </head>
 <body>
   <div class="page-shell">
@@ -119,6 +119,12 @@
             </div>
           </div>
 
+          <div class="source-switch" id="sourceSwitch">
+            <button class="source-pill active" type="button" data-source="smart">Smart Mix</button>
+            <button class="source-pill" type="button" data-source="library">Library Only</button>
+            <button class="source-pill" type="button" data-source="ai">AI Only</button>
+          </div>
+
           <form id="generate-form" class="stack-lg">
             <div class="form-row">
               <label class="field">
@@ -203,6 +209,7 @@
           <div class="reading-column">
             <div class="reading-header">
               <div id="metaTags" class="tag-row"></div>
+              <h3 id="readingTitle" class="reading-title hidden"></h3>
               <p class="muted-copy">Choose any word to activate the meaning panel.</p>
             </div>
             <div class="reading-body" id="readingBody"></div>
@@ -284,6 +291,6 @@
     </section>
   </aside>
 
-  <script src="/assets/app.js?v=20260413r"></script>
+  <script src="/assets/app.js?v=20260413s"></script>
 </body>
 </html>
