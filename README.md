@@ -49,6 +49,8 @@ GEMINI_MODEL=gemini-2.5-flash
 GEMINI_API_KEY=your_gemini_api_key
 DATABASE_URL=
 APP_BASE_URL=http://127.0.0.1:8041
+RESEND_API_KEY=
+RESEND_FROM_EMAIL=
 SMTP_HOST=
 SMTP_PORT=587
 SMTP_USERNAME=
@@ -59,7 +61,8 @@ SMTP_USE_TLS=true
 
 - Leave `DATABASE_URL` empty for local SQLite
 - Set `DATABASE_URL` in staging/production for PostgreSQL
-- Set SMTP variables to enable email verification links
+- Set `RESEND_API_KEY` + `RESEND_FROM_EMAIL` for the easiest email verification setup
+- Or set SMTP variables if you want to keep SMTP delivery
 
 ## Live Test Environment
 

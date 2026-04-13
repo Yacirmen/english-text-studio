@@ -22,6 +22,10 @@ services:
           property: connectionString
       - key: APP_BASE_URL
         value: https://english-text-studio-staging.onrender.com
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        sync: false
       - key: HF_TOKEN
         sync: false
       - key: SMTP_HOST

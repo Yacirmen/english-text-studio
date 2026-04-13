@@ -179,6 +179,8 @@ HF_BASE_URL = os.getenv("HF_BASE_URL", "https://router.huggingface.co/v1").strip
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 USE_POSTGRES = DATABASE_URL.startswith("postgres")
 APP_BASE_URL = os.getenv("APP_BASE_URL", "http://127.0.0.1:8041").strip().rstrip("/")
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
+RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "").strip()
 SMTP_HOST = os.getenv("SMTP_HOST", "").strip()
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587").strip() or "587")
 SMTP_USERNAME = os.getenv("SMTP_USERNAME", "").strip()
@@ -513,12 +515,33 @@ def parse_iso_datetime(value: str) -> datetime:
 
 
 def verification_email_configured() -> bool:
-    return bool(SMTP_HOST and SMTP_FROM_EMAIL)
+    return bool((RESEND_API_KEY and RESEND_FROM_EMAIL) or (SMTP_HOST and SMTP_FROM_EMAIL))
 
 
 def send_email_message(to_email: str, subject: str, html_body: str, text_body: str) -> None:
     if not verification_email_configured():
         raise HTTPException(status_code=503, detail="Email verification is not configured yet.")
+    if RESEND_API_KEY and RESEND_FROM_EMAIL:
+        try:
+            with build_http_client() as client:
+                response = client.post(
+                    "https://api.resend.com/emails",
+                    headers={
+                        "Authorization": f"Bearer {RESEND_API_KEY}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "from": RESEND_FROM_EMAIL,
+                        "to": [to_email],
+                        "subject": subject,
+                        "html": html_body,
+                        "text": text_body,
+                    },
+                )
+                response.raise_for_status()
+            return
+        except httpx.HTTPError as exc:
+            raise HTTPException(status_code=503, detail="Verification email could not be sent through Resend.") from exc
     message = EmailMessage()
     message["Subject"] = subject
     message["From"] = SMTP_FROM_EMAIL
