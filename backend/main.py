@@ -602,19 +602,53 @@ def build_quiz_question(user_id: int) -> dict[str, Any] | None:
         words,
         key=lambda row: (row["last_result"] == "correct", row["click_count"], row["id"]),
     )[0]
-    distractors = [row["turkish"] for row in words if row["id"] != target["id"]][:3]
-    options = list(dict.fromkeys(distractors + [target["turkish"]]))
-    while len(options) < 4:
+    translation_distractors = [row["turkish"] for row in words if row["id"] != target["id"]][:3]
+    translation_options = list(dict.fromkeys(translation_distractors + [target["turkish"]]))
+    while len(translation_options) < 4:
         for fallback in ["fikir", "denge", "amaç", "ekip"]:
-            if fallback not in options:
-                options.append(fallback)
-            if len(options) == 4:
+            if fallback not in translation_options:
+                translation_options.append(fallback)
+            if len(translation_options) == 4:
                 break
+
+    example_text = str(target["example"] or "").strip()
+    can_make_blank = bool(example_text) and re.search(rf"\b{re.escape(str(target['word']))}\b", example_text, flags=re.IGNORECASE)
+    if can_make_blank and random.random() < 0.5:
+        blank_sentence = re.sub(
+            rf"\b{re.escape(str(target['word']))}\b",
+            "_____",
+            example_text,
+            count=1,
+            flags=re.IGNORECASE,
+        )
+        word_distractors = [row["word"] for row in words if row["id"] != target["id"]][:3]
+        word_options = list(dict.fromkeys(word_distractors + [target["word"]]))
+        while len(word_options) < 4:
+            for fallback in ["result", "habit", "travel", "focus"]:
+                if fallback not in word_options:
+                    word_options.append(fallback)
+                if len(word_options) == 4:
+                    break
+        random.shuffle(word_options)
+        return {
+            "word_id": target["id"],
+            "question_type": "blank",
+            "question": "Which word best completes the sentence?",
+            "sentence": blank_sentence,
+            "word": target["word"],
+            "options": word_options[:4],
+            "answer": target["word"],
+            "context": target["context"],
+            "example": target["example"],
+        }
+
+    random.shuffle(translation_options)
     return {
         "word_id": target["id"],
-        "question": f'"{target["word"]}" kelimesinin en uygun Türkçe karşılığı hangisi?',
+        "question_type": "meaning",
+        "question": f'What is the best Turkish meaning of "{target["word"]}"?',
         "word": target["word"],
-        "options": options[:4],
+        "options": translation_options[:4],
         "answer": target["turkish"],
         "context": target["context"],
         "example": target["example"],

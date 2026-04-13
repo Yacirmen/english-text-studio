@@ -86,11 +86,13 @@ const clearSavedWordsBtn = $("#clearSavedWordsBtn");
 const quizEmptyEl = $("#quizEmpty");
 const quizCardEl = $("#quizCard");
 const quizPromptEl = $("#quizPrompt");
+const quizSentenceEl = $("#quizSentence");
 const quizOptionsEl = $("#quizOptions");
 const quizFeedbackEl = $("#quizFeedback");
 const nextQuizBtn = $("#nextQuizBtn");
 const quizAnsweredBadgeEl = $("#quizAnsweredBadge");
 const quizStreakBadgeEl = $("#quizStreakBadge");
+const quizTypeBadgeEl = $("#quizTypeBadge");
 const openSavedWordsBtn = $("#openSavedWordsBtn");
 const openQuizBtn = $("#openQuizBtn");
 const openManualHelpBtn = $("#openManualHelpBtn");
@@ -336,7 +338,22 @@ function renderQuiz() {
   }
   quizEmptyEl.classList.add("hidden");
   quizCardEl.classList.remove("hidden");
+  quizCardEl.classList.remove("quiz-refresh");
+  void quizCardEl.offsetWidth;
+  quizCardEl.classList.add("quiz-refresh");
   quizPromptEl.textContent = state.quiz.question;
+  if (quizTypeBadgeEl) {
+    quizTypeBadgeEl.textContent = state.quiz.question_type === "blank" ? "Blank Builder" : "Meaning Match";
+  }
+  if (quizSentenceEl) {
+    if (state.quiz.sentence) {
+      quizSentenceEl.textContent = state.quiz.sentence;
+      quizSentenceEl.classList.remove("hidden");
+    } else {
+      quizSentenceEl.textContent = "";
+      quizSentenceEl.classList.add("hidden");
+    }
+  }
   quizFeedbackEl.classList.add("hidden");
   quizFeedbackEl.textContent = "";
   quizOptionsEl.innerHTML = state.quiz.options
