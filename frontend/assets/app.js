@@ -361,10 +361,14 @@ function renderQuiz() {
     .join("");
   quizOptionsEl.querySelectorAll(".quiz-option").forEach((button) => {
     button.addEventListener("click", async () => {
-      const parsed = await apiFetch("/api/quiz/check", {
-        method: "POST",
-        body: JSON.stringify({ word_id: state.quiz.word_id, answer: button.dataset.answer }),
-      });
+        const parsed = await apiFetch("/api/quiz/check", {
+          method: "POST",
+          body: JSON.stringify({
+            word_id: state.quiz.word_id,
+            answer: button.dataset.answer,
+            question_type: state.quiz.question_type || "meaning",
+          }),
+        });
       if (!parsed.ok) {
         quizFeedbackEl.textContent = parsed.data.detail || "Quiz answer could not be saved.";
         quizFeedbackEl.classList.remove("hidden");
@@ -377,9 +381,13 @@ function renderQuiz() {
       } else {
         state.quizStats.streak = 0;
       }
-      quizFeedbackEl.textContent = parsed.data.correct
-        ? `Correct. "${parsed.data.word}" = "${parsed.data.answer}".`
-        : `Not this time. Correct answer: ${parsed.data.answer}`;
+        quizFeedbackEl.textContent = parsed.data.correct
+          ? (state.quiz.question_type === "blank"
+            ? `Correct. "${parsed.data.answer}" fits the sentence.`
+            : `Correct. "${parsed.data.word}" = "${parsed.data.answer}".`)
+          : (state.quiz.question_type === "blank"
+            ? `Not this time. Correct word: ${parsed.data.answer}`
+            : `Not this time. Correct answer: ${parsed.data.answer}`);
       quizFeedbackEl.classList.remove("hidden");
       state.stats = parsed.data.stats;
       updateAccountStatsOnly();

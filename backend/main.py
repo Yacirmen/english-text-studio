@@ -195,6 +195,7 @@ class AuthRequest(BaseModel):
 class QuizAnswerRequest(BaseModel):
     word_id: int
     answer: str
+    question_type: str = "meaning"
 
 
 def build_http_client() -> httpx.Client:
@@ -1302,15 +1303,17 @@ def quiz_check(payload: QuizAnswerRequest, session_token: str | None = Cookie(de
     )
     if not row:
         raise HTTPException(status_code=404, detail="Quiz kelimesi bulunamadı.")
-    is_correct = payload.answer.strip().lower() == row["turkish"].strip().lower()
+    expected_answer = row["word"] if payload.question_type == "blank" else row["turkish"]
+    is_correct = payload.answer.strip().lower() == expected_answer.strip().lower()
     db_execute(
         "UPDATE saved_words SET last_result = ?, updated_at = ? WHERE id = ?",
         ("correct" if is_correct else "wrong", now_iso(), row["id"]),
     )
     return {
         "correct": is_correct,
-        "answer": row["turkish"],
+        "answer": expected_answer,
         "word": row["word"],
+        "question_type": payload.question_type,
         "context": row["context"],
         "example": row["example"],
         "stats": build_user_stats(int(user["id"])),
