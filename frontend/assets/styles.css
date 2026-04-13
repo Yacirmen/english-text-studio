@@ -779,30 +779,31 @@ input[type="range"]::-moz-range-thumb{
   grid-template-columns:1fr auto;
   gap:18px;
   align-items:end;
-  margin-bottom:14px;
+  margin-bottom:10px;
+  padding:2px 4px 0;
 }
 .stage-kicker{
   display:block;
   color:var(--muted);
-  font-size:.8rem;
+  font-size:.72rem;
   text-transform:uppercase;
   letter-spacing:.08em;
   font-weight:900;
 }
 .stage-head h2{
-  margin:8px 0 0;
-  font-size:clamp(1.9rem,3vw,3rem);
-  line-height:1;
-  letter-spacing:-.05em;
-  max-width:15ch;
+  margin:6px 0 0;
+  font-size:clamp(1.15rem,1.9vw,1.6rem);
+  line-height:1.05;
+  letter-spacing:-.03em;
+  max-width:20ch;
 }
 .stage-head p{
   margin:0;
-  max-width:34ch;
+  max-width:30ch;
   color:var(--muted);
-  line-height:1.6;
+  line-height:1.45;
   text-align:right;
-  font-size:.95rem;
+  font-size:.84rem;
 }
 
 .preview-state{
