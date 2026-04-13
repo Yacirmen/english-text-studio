@@ -1,0 +1,24 @@
+databases:
+  - name: english-text-studio-db
+    plan: free
+    databaseName: english_text_studio
+    user: english_text_studio
+
+services:
+  - type: web
+    name: english-text-studio-staging
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: MODEL_PROVIDER
+        value: hf
+      - key: HF_MODEL
+        value: Qwen/Qwen2.5-72B-Instruct
+      - key: DATABASE_URL
+        fromDatabase:
+          name: english-text-studio-db
+          property: connectionString
+      - key: HF_TOKEN
+        sync: false

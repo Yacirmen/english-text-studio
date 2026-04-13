@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>English Text Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/styles.css?v=20260413r" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand-lockup">
+        <span class="brand-mark"></span>
+        <div>
+          <strong>Reading Studio</strong>
+          <span>Personal reading, saved words, and quiz</span>
+        </div>
+      </div>
+      <div class="top-status">
+        <span class="nav-pill">Focused practice</span>
+      </div>
+    </header>
+
+    <section class="hero-band">
+      <div class="hero-copy">
+        <span class="hero-kicker">Focused English Practice</span>
+        <h1>Read better. Save smarter. Review faster.</h1>
+        <p>
+          Clean reading practice with saved vocabulary and quick review built in.
+        </p>
+      </div>
+      <div class="hero-stack">
+        <div class="hero-card lime">
+          <span>Personal</span>
+          <strong>Your words stay with you.</strong>
+        </div>
+        <div class="hero-card cream">
+          <span>Saved Words</span>
+          <strong>Tap once, review anytime.</strong>
+        </div>
+        <div class="hero-card sky">
+          <span>Quiz Mode</span>
+          <strong>Quick checks, no clutter.</strong>
+        </div>
+      </div>
+    </section>
+
+    <main class="studio-layout">
+      <aside class="tool-rail">
+        <section class="rail-panel auth-panel">
+          <div class="section-head compact">
+            <h3>Account</h3>
+            <p>Sign in to save words and unlock personal review.</p>
+          </div>
+
+          <div id="authGuest" class="stack-md">
+            <div class="auth-toggle">
+              <button id="showLoginBtn" class="auth-tab active" type="button">Log In</button>
+              <button id="showRegisterBtn" class="auth-tab" type="button">Sign Up</button>
+            </div>
+
+            <form id="authForm" class="stack-md">
+              <label class="field">
+                <span>Username</span>
+                <input id="authUsername" type="text" placeholder="your_name" />
+              </label>
+              <label class="field">
+                <span>Password</span>
+                <input id="authPassword" type="password" placeholder="at least 6 characters" />
+              </label>
+              <p id="authError" class="error-text hidden"></p>
+              <button id="authSubmitBtn" class="primary-btn" type="submit">Log In</button>
+            </form>
+          </div>
+
+          <div id="authUser" class="stack-md hidden">
+            <div class="account-card">
+              <span class="mini-label on-dark">Aktif kullanıcı</span>
+              <span class="mini-label on-dark">Active account</span>
+              <h4 id="accountName">username</h4>
+              <div class="account-stats">
+                <div>
+                  <span>Saved words</span>
+                  <strong id="savedWordsCount">0</strong>
+                </div>
+                <div>
+                  <span>Mastered</span>
+                  <strong id="masteredWordsCount">0</strong>
+                </div>
+              </div>
+            </div>
+            <button id="logoutBtn" class="outline-btn light-outline" type="button">Log Out</button>
+          </div>
+        </section>
+
+        <div class="rail-intro">
+          <span class="rail-kicker">Setup</span>
+          <h2>Set it once. Stay in the flow.</h2>
+          <p>Choose a level, pick a topic, add keywords, and start reading.</p>
+        </div>
+
+        <section class="rail-panel">
+          <div class="section-head">
+            <h3>Reading Setup</h3>
+            <p>A faster setup for better reading practice.</p>
+          </div>
+
+          <div class="setup-summary">
+            <div class="mini-stat">
+              <span class="mini-stat-label">Seviye tonu</span>
+              <strong id="setupLevelBadge">B2 · Richer but still easy to read</strong>
+            </div>
+            <div class="mini-stat">
+              <span class="mini-stat-label">Target length</span>
+              <strong id="setupLengthBadge">Around 190 words</strong>
+            </div>
+          </div>
+
+          <form id="generate-form" class="stack-lg">
+            <div class="form-row">
+              <label class="field">
+                <span>Level</span>
+                <select id="level">
+                  <option value="A1">A1</option>
+                  <option value="A2">A2</option>
+                  <option value="B1">B1</option>
+                  <option value="B2" selected>B2</option>
+                  <option value="C1">C1</option>
+                  <option value="Academic">Academic</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Topic</span>
+                <select id="topic">
+                  <option value="Serbest">Open</option>
+                  <option value="Günlük Hayat">Daily Life</option>
+                  <option value="Okul">School</option>
+                  <option value="Seyahat">Travel</option>
+                  <option value="İş Hayatı">Work Life</option>
+                  <option value="Akademik">Academic</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="field">
+              <span>Target word count</span>
+              <div class="slider-wrap">
+                <input id="lengthTarget" type="range" min="150" max="220" step="10" value="190" />
+                <strong id="lengthValue">190</strong>
+              </div>
+              <small id="levelHint">Richer but still easy to read</small>
+            </label>
+
+            <label class="field">
+              <div class="field-head">
+                <span>Keywords</span>
+                <span id="keywordCount" class="count-pill">0 words</span>
+              </div>
+              <input id="keywords" type="text" placeholder="meeting, project, office, email" />
+              <small class="field-note">Add 2-12 keywords. Repeated words are removed automatically.</small>
+            </label>
+
+            <div id="keywordChips" class="chip-row"></div>
+            <div class="helper-note">
+              Topic presets fill in starter keywords, but you can keep your own list.
+            </div>
+            <p id="generateError" class="error-text hidden"></p>
+            <button id="generateBtn" class="primary-btn" type="submit">Generate Text</button>
+          </form>
+        </section>
+
+      </aside>
+
+      <section class="reading-stage">
+        <div class="stage-head">
+          <div>
+            <span class="stage-kicker">Generated Reading</span>
+            <h2>Big reading area. Small distractions.</h2>
+          </div>
+          <p>Tap a word to open meaning, context, and example on the right.</p>
+        </div>
+
+        <div class="utility-toolbar reading-toolbar">
+          <div class="toolbar-group">
+            <button id="openSavedWordsBtn" class="toolbar-btn toolbar-btn-green" type="button">Saved Words</button>
+            <button id="openQuizBtn" class="toolbar-btn toolbar-btn-blue" type="button">Mini Quiz</button>
+            <button id="openManualHelpBtn" class="toolbar-btn toolbar-btn-cream" type="button">Quick Word Help</button>
+          </div>
+          <div class="toolbar-meta">
+            <span class="toolbar-badge">Personal practice</span>
+            <span class="toolbar-badge">Tap to explore</span>
+          </div>
+        </div>
+
+        <div id="previewState" class="preview-state">
+          Ready. Generate a text first, then tap any word to explore it.
+        </div>
+
+        <div id="readingExperience" class="experience-grid hidden">
+          <div class="reading-column">
+            <div class="reading-header">
+              <div id="metaTags" class="tag-row"></div>
+              <p class="muted-copy">Choose any word to activate the meaning panel.</p>
+            </div>
+            <div class="reading-body" id="readingBody"></div>
+            <div class="action-row">
+              <button id="regenBtn" class="secondary-btn" type="button">Generate Again</button>
+              <button id="clearBtn" class="outline-btn" type="button">Clear Reading</button>
+            </div>
+          </div>
+
+          <aside class="detail-column">
+            <div class="flip-scene">
+              <div id="flipCard" class="flip-card" role="button" tabindex="0" aria-label="Kelime kartını çevir">
+                <div class="flip-face flip-front">
+                  <span class="mini-label">Selected Word</span>
+                  <h3 id="selectedWord">Word</h3>
+                  <p>Tap anywhere on the card to flip to the Turkish meaning.</p>
+                </div>
+                <div class="flip-face flip-back">
+                  <span class="mini-label">Turkish Meaning</span>
+                  <h3 id="selectedMeaning">Anlam</h3>
+                  <p>Tap anywhere on the card to flip back.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="insight-card">
+              <div class="insight-block">
+                <span class="mini-label">Context in Turkish</span>
+                <p id="selectedContext">Bir kelime seçildiğinde açıklama burada görünecek.</p>
+              </div>
+              <div class="insight-block">
+                <span class="mini-label">Simple Example</span>
+                <p id="selectedExample">Örnek cümle burada görünecek.</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="libraryOverlay" class="library-overlay hidden"></div>
+  <aside id="libraryPanel" class="library-panel hidden">
+    <div class="library-head">
+      <div>
+        <span id="libraryKicker" class="mini-label">Library</span>
+        <h3 id="libraryTitle">Saved content</h3>
+      </div>
+      <button id="closeLibraryBtn" class="icon-btn" type="button" aria-label="Paneli kapat">×</button>
+    </div>
+
+    <section id="savedWordsPanel" class="library-section hidden">
+      <p class="library-copy">Saved words build up here. Tap one to jump back into the reading flow.</p>
+      <div id="savedWordsEmpty" class="helper-note">Sign in to start building your saved word list.</div>
+      <div id="savedWordsList" class="saved-word-list hidden"></div>
+    </section>
+
+    <section id="quizPanel" class="library-section hidden">
+      <p class="library-copy">Review saved words with quick multiple-choice checks.</p>
+      <div id="quizEmpty" class="helper-note">You need at least 4 saved words to start the quiz.</div>
+      <div id="quizCard" class="quiz-card hidden">
+        <p id="quizPrompt" class="quiz-prompt"></p>
+        <div id="quizOptions" class="quiz-options"></div>
+        <p id="quizFeedback" class="quiz-feedback hidden"></p>
+        <button id="nextQuizBtn" class="secondary-btn" type="button">Next Question</button>
+      </div>
+    </section>
+
+    <section id="manualHelpPanel" class="library-section hidden">
+      <p class="library-copy">Ask for a quick explanation without leaving the reading flow.</p>
+      <form id="manual-form" class="stack-md">
+        <label class="field">
+          <span>Type a word</span>
+          <input id="manualWord" type="text" placeholder="example" />
+        </label>
+        <button id="manualBtn" class="secondary-btn" type="submit">Explain Word</button>
+      </form>
+      <div id="manualResult" class="manual-result hidden"></div>
+    </section>
+  </aside>
+
+  <script src="/assets/app.js?v=20260413r"></script>
+</body>
+</html>
