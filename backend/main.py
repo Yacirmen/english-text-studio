@@ -1,4 +1,4 @@
-import hashlib
+﻿import hashlib
 import json
 import os
 import random
@@ -33,68 +33,73 @@ DB_PATH = ROOT_DIR / "backend" / "app.db"
 SESSION_COOKIE = "ets_session"
 WORD_DETAIL_CACHE: dict[str, dict[str, str]] = {}
 GENERATE_CACHE: dict[str, str] = {}
+QUIZ_DISTRACTOR_BANK = {
+    "verb": ["kaydetmek", "yorumlamak", "ta??mak", "dengelemek", "kar??la?t?rmak", "geli?tirmek"],
+    "adjective": ["d?zenli", "kar???k", "dar", "geni?", "yo?un", "sakin", "net", "karma??k", "yava?", "h?zl?", "g??l?", "zay?f"],
+    "noun": ["ama?", "denge", "al??kanl?k", "kan?t", "yolculuk", "odak", "fikir", "yorum", "kavram", "??z?m"],
+}
 LEVEL_CONFIG = {
-    "A1": {"min_words": 60, "max_words": 100, "label": "Çok temel ve günlük"},
-    "A2": {"min_words": 90, "max_words": 130, "label": "Basit ve günlük"},
-    "B1": {"min_words": 120, "max_words": 170, "label": "Doğal ve akıcı"},
+    "A1": {"min_words": 60, "max_words": 100, "label": "Ã‡ok temel ve gÃ¼nlÃ¼k"},
+    "A2": {"min_words": 90, "max_words": 130, "label": "Basit ve gÃ¼nlÃ¼k"},
+    "B1": {"min_words": 120, "max_words": 170, "label": "DoÄŸal ve akÄ±cÄ±"},
     "B2": {"min_words": 150, "max_words": 220, "label": "Daha zengin ama rahat okunur"},
-    "C1": {"min_words": 180, "max_words": 260, "label": "İleri, doğal ve detaylı"},
+    "C1": {"min_words": 180, "max_words": 260, "label": "Ä°leri, doÄŸal ve detaylÄ±"},
     "Academic": {"min_words": 190, "max_words": 280, "label": "Akademik ve daha analitik"},
 }
 LOCAL_WORD_MAP = {
     "academic": "akademik",
-    "airport": "havaalanı",
+    "airport": "havaalanÄ±",
     "analysis": "analiz",
     "balance": "denge",
-    "busy": "yoğun",
-    "bus": "otobüs",
+    "busy": "yoÄŸun",
+    "bus": "otobÃ¼s",
     "calm": "sakin",
     "challenge": "zorluk",
-    "city": "şehir",
+    "city": "ÅŸehir",
     "coffee": "kahve",
-    "collaboration": "iş birliği",
+    "collaboration": "iÅŸ birliÄŸi",
     "concept": "kavram",
     "data": "veri",
-    "different": "farklı",
+    "different": "farklÄ±",
     "difficult": "zor",
     "early": "erken",
-    "education": "eğitim",
+    "education": "eÄŸitim",
     "email": "e-posta",
-    "exam": "sınav",
-    "evidence": "kanıt",
+    "exam": "sÄ±nav",
+    "evidence": "kanÄ±t",
     "flexible": "esnek",
-    "friend": "arkadaş",
+    "friend": "arkadaÅŸ",
     "goal": "hedef",
     "happy": "mutlu",
     "hotel": "otel",
-    "important": "önemli",
-    "late": "geç",
-    "library": "kütüphane",
+    "important": "Ã¶nemli",
+    "late": "geÃ§",
+    "library": "kÃ¼tÃ¼phane",
     "life": "hayat",
-    "meaningful": "anlamlı",
-    "meeting": "toplantı",
-    "method": "yöntem",
+    "meaningful": "anlamlÄ±",
+    "meeting": "toplantÄ±",
+    "method": "yÃ¶ntem",
     "morning": "sabah",
     "office": "ofis",
     "plan": "plan",
     "project": "proje",
-    "purpose": "amaç",
+    "purpose": "amaÃ§",
     "quiet": "sessiz",
-    "research": "araştırma",
-    "result": "sonuç",
+    "research": "araÅŸtÄ±rma",
+    "result": "sonuÃ§",
     "rewarding": "tatmin edici",
     "school": "okul",
     "simple": "basit",
-    "student": "öğrenci",
-    "study": "çalışma",
-    "task": "görev",
-    "teacher": "öğretmen",
+    "student": "Ã¶ÄŸrenci",
+    "study": "Ã§alÄ±ÅŸma",
+    "task": "gÃ¶rev",
+    "teacher": "Ã¶ÄŸretmen",
     "team": "ekip",
     "theory": "kuram",
     "ticket": "bilet",
     "travel": "seyahat etmek",
-    "work": "iş",
-    "workday": "iş günü",
+    "work": "iÅŸ",
+    "workday": "iÅŸ gÃ¼nÃ¼",
 }
 TOPIC_SENTENCE_BANK = {
     "Serbest": [
@@ -103,7 +108,7 @@ TOPIC_SENTENCE_BANK = {
         "People often move through the day by solving simple problems and adjusting their plans.",
         "By the evening, even an ordinary day can feel meaningful when it includes progress and connection.",
     ],
-    "Günlük Hayat": [
+    "GÃ¼nlÃ¼k Hayat": [
         "Most days begin with simple habits like breakfast, getting ready, and checking the time.",
         "Daily life feels smoother when familiar routines create a sense of comfort and rhythm.",
         "Small moments, such as talking to someone or taking a short walk, can change the mood of the day.",
@@ -121,7 +126,7 @@ TOPIC_SENTENCE_BANK = {
         "Even a short trip can create strong memories through simple details and unexpected encounters.",
         "The best part of travel is often the feeling of discovery that stays with you afterwards.",
     ],
-    "İş Hayatı": [
+    "Ä°ÅŸ HayatÄ±": [
         "Work life is often shaped by planning, communication, and the need to stay flexible.",
         "A normal day can include meetings, messages, and moments that require quick decisions.",
         "Professional life becomes easier when people know how to organize their time and energy.",
@@ -136,10 +141,10 @@ TOPIC_SENTENCE_BANK = {
 }
 TOPIC_SCENARIOS = {
     "Serbest": ["a personal routine", "a small decision", "an ordinary day with meaningful details"],
-    "Günlük Hayat": ["a simple day at home", "a walk through the neighborhood", "a relaxed plan with a friend"],
+    "GÃ¼nlÃ¼k Hayat": ["a simple day at home", "a walk through the neighborhood", "a relaxed plan with a friend"],
     "Okul": ["preparing for class", "finishing an assignment", "talking with classmates after a lesson"],
     "Seyahat": ["arriving in a new city", "preparing for a short trip", "moving through an airport or station"],
-    "İş Hayatı": ["handling a busy workday", "preparing for an important meeting", "balancing deadlines and communication"],
+    "Ä°ÅŸ HayatÄ±": ["handling a busy workday", "preparing for an important meeting", "balancing deadlines and communication"],
     "Akademik": ["preparing a research summary", "analyzing an article for class", "connecting evidence to an academic argument"],
 }
 
@@ -441,7 +446,7 @@ def hash_password(password: str) -> str:
 def clean_username(username: str) -> str:
     cleaned = re.sub(r"[^a-zA-Z0-9_]", "", username).strip().lower()
     if len(cleaned) < 3:
-        raise HTTPException(status_code=400, detail="Kullanıcı adı en az 3 karakter olmalı.")
+        raise HTTPException(status_code=400, detail="KullanÄ±cÄ± adÄ± en az 3 karakter olmalÄ±.")
     return cleaned
 
 
@@ -453,7 +458,7 @@ def user_payload(row: dict[str, Any] | None) -> dict[str, Any] | None:
 
 def require_user(session_token: str | None) -> dict[str, Any]:
     if not session_token:
-        raise HTTPException(status_code=401, detail="Önce giriş yapmalısın.")
+        raise HTTPException(status_code=401, detail="Ã–nce giriÅŸ yapmalÄ±sÄ±n.")
     row = db_fetchone(
         """
         SELECT users.id, users.username, users.created_at
@@ -464,7 +469,7 @@ def require_user(session_token: str | None) -> dict[str, Any]:
         (session_token,),
     )
     if not row:
-        raise HTTPException(status_code=401, detail="Oturum bulunamadı. Tekrar giriş yap.")
+        raise HTTPException(status_code=401, detail="Oturum bulunamadÄ±. Tekrar giriÅŸ yap.")
     return user_payload(row) or {}
 
 
@@ -567,11 +572,47 @@ def detail_is_saveable(word: str, detail: dict[str, str]) -> bool:
     if not turkish:
         return False
     lowered = turkish.lower()
-    if "alınamadı" in lowered or "bulunamadı" in lowered:
+    if "alÄ±namadÄ±" in lowered or "bulunamadÄ±" in lowered:
         return False
     if lowered == word.strip().lower():
         return False
     return True
+
+
+def classify_turkish_meaning(value: str) -> str:
+    lowered = value.strip().lower()
+    if lowered.endswith(("mek", "mak")):
+        return "verb"
+    if lowered.endswith(("yor", "?yor", "iyor", "uyor", "?yor", "ilir", "?l?r", "ulur", "?l?r", "lan?r", "lenir")):
+        return "verb"
+    if lowered.endswith(("li", "l?", "lu", "l?", "siz", "s?z", "suz", "s?z", "sel", "sal")):
+        return "adjective"
+    if lowered.endswith(("ik", "?k", "uk", "?k")):
+        return "adjective"
+    return "noun"
+
+
+def quiz_candidate_meanings(words: list[dict[str, Any]], target_id: int, target_turkish: str) -> list[str]:
+    values: list[str] = []
+    target_kind = classify_turkish_meaning(target_turkish)
+    for row in words:
+        if int(row["id"]) == int(target_id):
+            continue
+        candidate = str(row.get("turkish") or "").strip().lower()
+        if not candidate:
+            continue
+        if any(mark in candidate for mark in ["al?namad?", "bulunamad?", "not available"]):
+            continue
+        if len(candidate) < 2:
+            continue
+        if classify_turkish_meaning(candidate) != target_kind:
+            continue
+        if candidate not in values:
+            values.append(candidate)
+    for fallback in QUIZ_DISTRACTOR_BANK[target_kind]:
+        if fallback != target_turkish.strip().lower() and fallback not in values:
+            values.append(fallback)
+    return values
 
 
 def get_recent_words(user_id: int, limit: int = 6) -> list[dict[str, Any]]:
@@ -607,10 +648,10 @@ def build_quiz_question(user_id: int, exclude_word_id: int | None = None) -> dic
         words,
         key=lambda row: (row["last_result"] == "correct", row["click_count"], row["id"]),
     )[0]
-    translation_distractors = [row["turkish"] for row in words if row["id"] != target["id"]][:3]
-    translation_options = list(dict.fromkeys(translation_distractors + [target["turkish"]]))
+    translation_distractors = quiz_candidate_meanings(words, int(target["id"]), str(target["turkish"]))[:3]
+    translation_options = list(dict.fromkeys(translation_distractors + [str(target["turkish"]).strip().lower()]))
     while len(translation_options) < 4:
-        for fallback in ["fikir", "denge", "amaç", "ekip"]:
+        for fallback in quiz_candidate_meanings(words, int(target["id"]), str(target["turkish"])):
             if fallback not in translation_options:
                 translation_options.append(fallback)
             if len(translation_options) == 4:
@@ -933,7 +974,7 @@ def choose_local_scenario(topic: str, keywords: list[str]) -> dict[str, Any]:
 
 def build_local_word_detail(text: str, word: str) -> dict[str, str]:
     meaning = infer_turkish_meaning(word)
-    context = f'"{word}" bu metinde "{meaning}" anlamına yakın şekilde kullanılıyor.'
+    context = f'"{word}" bu metinde "{meaning}" anlamÄ±na yakÄ±n ÅŸekilde kullanÄ±lÄ±yor.'
     example = f"I use the word {word} in a simple sentence."
     if re.search(rf"\b{re.escape(word)}\b", text, re.IGNORECASE):
         example = f"The word {word} appears in this reading text."
@@ -1016,11 +1057,11 @@ def validate_text_quality(text: str, level: str, keywords: list[str]) -> tuple[b
 def ensure_provider_ready() -> None:
     if MODEL_PROVIDER == "gemini":
         if not GEMINI_API_KEY:
-            raise HTTPException(status_code=500, detail="GEMINI_API_KEY bulunamadı.")
+            raise HTTPException(status_code=500, detail="GEMINI_API_KEY bulunamadÄ±.")
         return
     if MODEL_PROVIDER == "hf":
         if not HF_TOKEN:
-            raise HTTPException(status_code=500, detail="HF_TOKEN bulunamadı.")
+            raise HTTPException(status_code=500, detail="HF_TOKEN bulunamadÄ±.")
         return
     raise HTTPException(status_code=500, detail=f"Desteklenmeyen provider: {MODEL_PROVIDER}")
 
@@ -1047,7 +1088,7 @@ def request_gemini(prompt: str, system_instruction: str, *, temperature: float, 
         data = response.json()
     text = extract_text(data)
     if not text:
-        raise RuntimeError("Gemini boş yanıt döndü.")
+        raise RuntimeError("Gemini boÅŸ yanÄ±t dÃ¶ndÃ¼.")
     return text
 
 
@@ -1062,7 +1103,7 @@ def request_hf(prompt: str, system_instruction: str, *, temperature: float, max_
     text = response.choices[0].message.content or ""
     cleaned = text.strip()
     if not cleaned:
-        raise RuntimeError("HF Router boş yanıt döndü.")
+        raise RuntimeError("HF Router boÅŸ yanÄ±t dÃ¶ndÃ¼.")
     return cleaned
 
 
@@ -1177,20 +1218,20 @@ def normalize_api_error(exc: Exception) -> HTTPException:
     lowered = raw.lower()
     if "api key" in lowered or "permission" in lowered or "unauthorized" in lowered:
         if MODEL_PROVIDER == "hf":
-            return HTTPException(status_code=401, detail="HF token geçersiz veya yetkisiz.")
-        return HTTPException(status_code=401, detail="Gemini API key geçersiz veya yetkisiz.")
+            return HTTPException(status_code=401, detail="HF token geÃ§ersiz veya yetkisiz.")
+        return HTTPException(status_code=401, detail="Gemini API key geÃ§ersiz veya yetkisiz.")
     if "429" in lowered or "quota" in lowered or "rate limit" in lowered:
         if MODEL_PROVIDER == "hf":
-            return HTTPException(status_code=429, detail="HF ücretsiz limitine ulaşıldı.")
-        return HTTPException(status_code=429, detail="Gemini free tier limiti aşıldı.")
+            return HTTPException(status_code=429, detail="HF Ã¼cretsiz limitine ulaÅŸÄ±ldÄ±.")
+        return HTTPException(status_code=429, detail="Gemini free tier limiti aÅŸÄ±ldÄ±.")
     if "403" in lowered:
-        return HTTPException(status_code=403, detail="Seçili sağlayıcı bu isteğe izin vermedi.")
+        return HTTPException(status_code=403, detail="SeÃ§ili saÄŸlayÄ±cÄ± bu isteÄŸe izin vermedi.")
     if "404" in lowered:
-        return HTTPException(status_code=404, detail="Seçili model bulunamadı.")
+        return HTTPException(status_code=404, detail="SeÃ§ili model bulunamadÄ±.")
     if "503" in lowered or "connection" in lowered or "timed out" in lowered:
         if MODEL_PROVIDER == "hf":
-            return HTTPException(status_code=503, detail="HF Router servisine şu anda ulaşılamıyor.")
-        return HTTPException(status_code=503, detail="Gemini servisine şu anda ulaşılamıyor.")
+            return HTTPException(status_code=503, detail="HF Router servisine ÅŸu anda ulaÅŸÄ±lamÄ±yor.")
+        return HTTPException(status_code=503, detail="Gemini servisine ÅŸu anda ulaÅŸÄ±lamÄ±yor.")
     return HTTPException(status_code=500, detail=raw)
 
 
@@ -1238,7 +1279,7 @@ def register(payload: AuthRequest, response: Response) -> dict[str, Any]:
     except Exception as exc:
         if "unique" not in str(exc).lower() and "duplicate" not in str(exc).lower():
             raise
-        raise HTTPException(status_code=409, detail="Bu kullanıcı adı zaten alınmış.")
+        raise HTTPException(status_code=409, detail="Bu kullanÄ±cÄ± adÄ± zaten alÄ±nmÄ±ÅŸ.")
     create_session(response, user_id)
     return {"user": {"id": user_id, "username": username, "created_at": timestamp}, "stats": build_user_stats(user_id)}
 
@@ -1252,7 +1293,7 @@ def login(payload: AuthRequest, response: Response) -> dict[str, Any]:
         (username, password_hash),
     )
     if not row:
-        raise HTTPException(status_code=401, detail="Kullanıcı adı veya şifre hatalı.")
+        raise HTTPException(status_code=401, detail="KullanÄ±cÄ± adÄ± veya ÅŸifre hatalÄ±.")
     create_session(response, int(row["id"]))
     return {"user": user_payload(row), "stats": build_user_stats(int(row["id"]))}
 
@@ -1302,7 +1343,7 @@ def quiz_check(payload: QuizAnswerRequest, session_token: str | None = Cookie(de
         (payload.word_id, int(user["id"])),
     )
     if not row:
-        raise HTTPException(status_code=404, detail="Quiz kelimesi bulunamadı.")
+        raise HTTPException(status_code=404, detail="Quiz kelimesi bulunamadÄ±.")
     expected_answer = row["word"] if payload.question_type == "blank" else row["turkish"]
     is_correct = payload.answer.strip().lower() == expected_answer.strip().lower()
     db_execute(
@@ -1324,11 +1365,11 @@ def quiz_check(payload: QuizAnswerRequest, session_token: str | None = Cookie(de
 def generate(payload: GenerateRequest) -> dict[str, str]:
     keywords = sanitize_keywords(payload.keywords)
     if payload.level not in LEVEL_CONFIG:
-        raise HTTPException(status_code=400, detail="Geçersiz seviye.")
+        raise HTTPException(status_code=400, detail="GeÃ§ersiz seviye.")
     if payload.source not in {"library", "ai"}:
-        raise HTTPException(status_code=400, detail="Geçersiz içerik kaynağı.")
+        raise HTTPException(status_code=400, detail="GeÃ§ersiz iÃ§erik kaynaÄŸÄ±.")
     if payload.source == "ai" and (len(keywords) < 2 or len(keywords) > 12):
-        raise HTTPException(status_code=400, detail="2 ile 12 arasında anahtar kelime gerekli.")
+        raise HTTPException(status_code=400, detail="2 ile 12 arasÄ±nda anahtar kelime gerekli.")
     if payload.source == "library":
         library_match = pick_library_reading(
             payload.level,
@@ -1343,7 +1384,7 @@ def generate(payload: GenerateRequest) -> dict[str, str]:
                 "title": library_match["title"],
                 "content_source": "library",
             }
-        raise HTTPException(status_code=404, detail="Bu filtreler için library içinde uygun bir metin bulunamadı.")
+        raise HTTPException(status_code=404, detail="Bu filtreler iÃ§in library iÃ§inde uygun bir metin bulunamadÄ±.")
     prompt = build_text_prompt(payload.level, payload.topic, keywords, payload.length_target)
     try:
         return {
@@ -1408,7 +1449,7 @@ def library_stats() -> dict[str, Any]:
 def explain(payload: ExplainRequest) -> dict[str, str]:
     safe_word = sanitize_word(payload.word)
     if not safe_word:
-        raise HTTPException(status_code=400, detail="Geçerli bir kelime gerekli.")
+        raise HTTPException(status_code=400, detail="GeÃ§erli bir kelime gerekli.")
     try:
         return {"explanation": request_manual_explanation(payload.text, safe_word)}
     except Exception as exc:
@@ -1419,7 +1460,7 @@ def explain(payload: ExplainRequest) -> dict[str, str]:
 def word_detail(payload: ExplainRequest, session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE)) -> dict[str, str]:
     safe_word = sanitize_word(payload.word)
     if not safe_word:
-        raise HTTPException(status_code=400, detail="Geçerli bir kelime gerekli.")
+        raise HTTPException(status_code=400, detail="GeÃ§erli bir kelime gerekli.")
     try:
         detail = request_word_detail(payload.text, safe_word)
         user = optional_user(session_token)
@@ -1428,3 +1469,4 @@ def word_detail(payload: ExplainRequest, session_token: str | None = Cookie(defa
         return detail
     except Exception as exc:
         raise normalize_api_error(exc)
+
