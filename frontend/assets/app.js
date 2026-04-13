@@ -163,6 +163,10 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(String(value || "").trim());
+}
+
 function highlightSelectedWord(text, selectedWord) {
   const escapedText = escapeHtml(text || "");
   if (!selectedWord) return escapedText;
@@ -710,13 +714,19 @@ manualForm.addEventListener("submit", async (event) => {
 authForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   authErrorEl.classList.add("hidden");
+  const email = authUsernameEl.value.trim();
+  if (!isValidEmail(email)) {
+    authErrorEl.textContent = "Please enter a valid email address.";
+    authErrorEl.classList.remove("hidden");
+    return;
+  }
   const endpoint = state.authMode === "login" ? "/api/auth/login" : "/api/auth/register";
   setLoading(authSubmitBtn, state.authMode === "login" ? "Logging in..." : "Creating account...", true);
   try {
     const parsed = await apiFetch(endpoint, {
       method: "POST",
       body: JSON.stringify({
-        username: authUsernameEl.value.trim(),
+        username: email,
         password: authPasswordEl.value.trim(),
       }),
     });
@@ -739,11 +749,17 @@ authForm.addEventListener("submit", async (event) => {
 gateAuthForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   gateAuthErrorEl.classList.add("hidden");
+  const email = gateAuthEmailEl.value.trim();
+  if (!isValidEmail(email)) {
+    gateAuthErrorEl.textContent = "Please enter a valid email address.";
+    gateAuthErrorEl.classList.remove("hidden");
+    return;
+  }
   const endpoint = state.authMode === "login" ? "/api/auth/login" : "/api/auth/register";
   setLoading(gateAuthSubmitBtn, state.authMode === "login" ? "Logging in..." : "Creating account...", true);
   try {
     const payload = {
-      username: gateAuthEmailEl.value.trim(),
+      username: email,
       password: gateAuthPasswordEl.value.trim(),
     };
     const parsed = await apiFetch(endpoint, {

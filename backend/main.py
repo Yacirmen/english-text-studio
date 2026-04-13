@@ -193,7 +193,7 @@ class ExplainRequest(BaseModel):
 
 
 class AuthRequest(BaseModel):
-    username: str = Field(min_length=3, max_length=32)
+    username: str = Field(min_length=5, max_length=120)
     password: str = Field(min_length=6, max_length=72)
 
 
@@ -444,9 +444,9 @@ def hash_password(password: str) -> str:
 
 
 def clean_username(username: str) -> str:
-    cleaned = re.sub(r"[^a-zA-Z0-9_]", "", username).strip().lower()
-    if len(cleaned) < 3:
-        raise HTTPException(status_code=400, detail="KullanÄ±cÄ± adÄ± en az 3 karakter olmalÄ±.")
+    cleaned = username.strip().lower()
+    if not re.fullmatch(r"^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$", cleaned):
+        raise HTTPException(status_code=400, detail="Please enter a valid email address.")
     return cleaned
 
 
@@ -1279,7 +1279,7 @@ def register(payload: AuthRequest, response: Response) -> dict[str, Any]:
     except Exception as exc:
         if "unique" not in str(exc).lower() and "duplicate" not in str(exc).lower():
             raise
-        raise HTTPException(status_code=409, detail="Bu kullanÄ±cÄ± adÄ± zaten alÄ±nmÄ±ÅŸ.")
+        raise HTTPException(status_code=409, detail="This email is already in use.")
     create_session(response, user_id)
     return {"user": {"id": user_id, "username": username, "created_at": timestamp}, "stats": build_user_stats(user_id)}
 
@@ -1293,7 +1293,7 @@ def login(payload: AuthRequest, response: Response) -> dict[str, Any]:
         (username, password_hash),
     )
     if not row:
-        raise HTTPException(status_code=401, detail="KullanÄ±cÄ± adÄ± veya ÅŸifre hatalÄ±.")
+        raise HTTPException(status_code=401, detail="Email or password is incorrect.")
     create_session(response, int(row["id"]))
     return {"user": user_payload(row), "stats": build_user_stats(int(row["id"]))}
 
