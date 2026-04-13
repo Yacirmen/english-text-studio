@@ -290,32 +290,45 @@ def db_insert(query: str, params: tuple[Any, ...] = ()) -> int:
 
 
 def seed_readings() -> None:
-    existing_titles = {
-        str(row["title"])
-        for row in db_fetchall("SELECT title FROM readings")
-    }
+    existing_rows = db_fetchall("SELECT id, title, source FROM readings")
+    existing_by_title = {str(row["title"]): row for row in existing_rows}
+    seed_titles = {item["title"] for item in READING_SEEDS}
+
+    for row in existing_rows:
+        if str(row.get("source")) == "manual" and str(row["title"]) not in seed_titles:
+            db_execute("DELETE FROM readings WHERE id = ?", (row["id"],))
+
     for item in READING_SEEDS:
-        if item["title"] in existing_titles:
+        payload = (
+            item["title"],
+            item["text"],
+            item["level"],
+            item["topic"],
+            json.dumps(item["keywords"], ensure_ascii=False),
+            len(item["text"].split()),
+            "manual",
+            1,
+        )
+        existing = existing_by_title.get(item["title"])
+        if existing:
+            db_execute(
+                """
+                UPDATE readings
+                SET title = ?, text = ?, level = ?, topic = ?, keywords = ?,
+                    word_count = ?, source = ?, is_published = ?
+                WHERE id = ?
+                """,
+                payload + (existing["id"],),
+            )
             continue
+
         insert_query = (
             "INSERT INTO readings (title, text, level, topic, keywords, word_count, source, is_published) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
         )
         if USE_POSTGRES:
             insert_query += " RETURNING id"
-        db_insert(
-            insert_query,
-            (
-                item["title"],
-                item["text"],
-                item["level"],
-                item["topic"],
-                json.dumps(item["keywords"], ensure_ascii=False),
-                len(item["text"].split()),
-                "manual",
-                1,
-            ),
-        )
+        db_insert(insert_query, payload)
 
 
 def init_db() -> None:
@@ -543,7 +556,19 @@ def save_word_for_user(user_id: int, word: str, text: str, detail: dict[str, str
                 timestamp,
                 timestamp,
             ),
-        )
+          )
+
+
+def detail_is_saveable(word: str, detail: dict[str, str]) -> bool:
+    turkish = (detail.get("turkish") or "").strip()
+    if not turkish:
+        return False
+    lowered = turkish.lower()
+    if "alınamadı" in lowered or "bulunamadı" in lowered:
+        return False
+    if lowered == word.strip().lower():
+        return False
+    return True
 
 
 def get_recent_words(user_id: int, limit: int = 6) -> list[dict[str, Any]]:
@@ -1206,6 +1231,13 @@ def quiz_next(session_token: str | None = Cookie(default=None, alias=SESSION_COO
     return {"question": {key: value for key, value in question.items() if key != "answer"}}
 
 
+@app.post("/api/saved-words/clear")
+def clear_saved_words(session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE)) -> dict[str, Any]:
+    user = require_user(session_token)
+    db_execute("DELETE FROM saved_words WHERE user_id = ?", (int(user["id"]),))
+    return {"ok": True, "stats": build_user_stats(int(user["id"]))}
+
+
 @app.post("/api/quiz/check")
 def quiz_check(payload: QuizAnswerRequest, session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE)) -> dict[str, Any]:
     user = require_user(session_token)
@@ -1327,7 +1359,7 @@ def word_detail(payload: ExplainRequest, session_token: str | None = Cookie(defa
     try:
         detail = request_word_detail(payload.text, safe_word)
         user = optional_user(session_token)
-        if user:
+        if user and detail_is_saveable(safe_word, detail):
             save_word_for_user(int(user["id"]), safe_word, payload.text, detail)
         return detail
     except Exception as exc:

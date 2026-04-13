@@ -34,6 +34,7 @@ const state = {
   quiz: null,
   libraryView: null,
   libraryStats: null,
+  quizStats: { answered: 0, correct: 0, streak: 0 },
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -81,12 +82,15 @@ const savedWordsCountEl = $("#savedWordsCount");
 const masteredWordsCountEl = $("#masteredWordsCount");
 const savedWordsEmptyEl = $("#savedWordsEmpty");
 const savedWordsListEl = $("#savedWordsList");
+const clearSavedWordsBtn = $("#clearSavedWordsBtn");
 const quizEmptyEl = $("#quizEmpty");
 const quizCardEl = $("#quizCard");
 const quizPromptEl = $("#quizPrompt");
 const quizOptionsEl = $("#quizOptions");
 const quizFeedbackEl = $("#quizFeedback");
 const nextQuizBtn = $("#nextQuizBtn");
+const quizAnsweredBadgeEl = $("#quizAnsweredBadge");
+const quizStreakBadgeEl = $("#quizStreakBadge");
 const openSavedWordsBtn = $("#openSavedWordsBtn");
 const openQuizBtn = $("#openQuizBtn");
 const openManualHelpBtn = $("#openManualHelpBtn");
@@ -287,10 +291,12 @@ function renderSavedWords() {
     savedWordsEmptyEl.classList.remove("hidden");
     savedWordsListEl.classList.add("hidden");
     savedWordsListEl.innerHTML = "";
+    clearSavedWordsBtn?.classList.add("hidden");
     return;
   }
   savedWordsEmptyEl.classList.add("hidden");
   savedWordsListEl.classList.remove("hidden");
+  clearSavedWordsBtn?.classList.remove("hidden");
   savedWordsListEl.innerHTML = state.recentWords
     .map(
       (item) => `
@@ -314,6 +320,8 @@ function renderSavedWords() {
 }
 
 function renderQuiz() {
+  if (quizAnsweredBadgeEl) quizAnsweredBadgeEl.textContent = `${state.quizStats.answered} played`;
+  if (quizStreakBadgeEl) quizStreakBadgeEl.textContent = `Streak ${state.quizStats.streak}`;
   if (!state.user) {
     quizEmptyEl.textContent = "Sign in first to unlock the quiz.";
     quizEmptyEl.classList.remove("hidden");
@@ -345,6 +353,13 @@ function renderQuiz() {
         quizFeedbackEl.classList.remove("hidden");
         return;
       }
+      state.quizStats.answered += 1;
+      if (parsed.data.correct) {
+        state.quizStats.correct += 1;
+        state.quizStats.streak += 1;
+      } else {
+        state.quizStats.streak = 0;
+      }
       quizFeedbackEl.textContent = parsed.data.correct
         ? `Correct. "${parsed.data.word}" = "${parsed.data.answer}".`
         : `Not this time. Correct answer: ${parsed.data.answer}`;
@@ -364,6 +379,8 @@ function renderQuiz() {
         context: parsed.data.context,
         example: parsed.data.example,
       };
+      if (quizAnsweredBadgeEl) quizAnsweredBadgeEl.textContent = `${state.quizStats.answered} played`;
+      if (quizStreakBadgeEl) quizStreakBadgeEl.textContent = `Streak ${state.quizStats.streak}`;
     });
   });
 }
@@ -593,12 +610,29 @@ manualForm.addEventListener("submit", async (event) => {
   if (!word) return;
   setLoading($("#manualBtn"), "Explaining...", true);
   try {
-    const parsed = await apiFetch("/api/explain", {
+    const parsed = await apiFetch("/api/word-detail", {
       method: "POST",
       body: JSON.stringify({ text: state.text, word }),
     });
     if (!parsed.ok) throw new Error(parsed.data.detail || "Something went wrong.");
-    manualResultEl.textContent = parsed.data.explanation;
+    if (state.user) {
+      await refreshSession();
+      await loadQuiz();
+    }
+    manualResultEl.innerHTML = `
+      <div class="manual-result-block">
+        <span class="mini-label">Turkish Meaning</span>
+        <strong>${escapeHtml(parsed.data.turkish || "No match")}</strong>
+      </div>
+      <div class="manual-result-block">
+        <span class="mini-label">Context in Turkish</span>
+        <p>${highlightSelectedWord(parsed.data.context || "No context available.", word.toLowerCase())}</p>
+      </div>
+      <div class="manual-result-block">
+        <span class="mini-label">Simple Example</span>
+        <p>${highlightSelectedWord(parsed.data.example || "No example sentence available.", word.toLowerCase())}</p>
+      </div>
+    `;
     manualResultEl.classList.remove("hidden");
   } catch (error) {
     manualResultEl.textContent = error.message;
@@ -652,6 +686,16 @@ logoutBtn.addEventListener("click", async () => {
   state.stats = { saved_words: 0, mastered_words: 0 };
   state.recentWords = [];
   state.quiz = null;
+  renderUserPanel();
+});
+
+clearSavedWordsBtn?.addEventListener("click", async () => {
+  const parsed = await apiFetch("/api/saved-words/clear", { method: "POST" });
+  if (!parsed.ok) return;
+  state.stats = parsed.data.stats || { saved_words: 0, mastered_words: 0 };
+  state.recentWords = [];
+  state.quiz = null;
+  state.quizStats = { answered: 0, correct: 0, streak: 0 };
   renderUserPanel();
 });
 

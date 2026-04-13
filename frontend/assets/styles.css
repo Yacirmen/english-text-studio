@@ -587,6 +587,35 @@ input[type="range"]::-moz-range-thumb{
   line-height:1.7;
   white-space:pre-line;
 }
+.manual-result-block + .manual-result-block{
+  margin-top:14px;
+}
+.manual-result-block strong{
+  display:block;
+  margin-top:6px;
+  font-size:1.12rem;
+}
+.manual-result-block p{
+  margin:8px 0 0;
+}
+.ghost-btn{
+  width:100%;
+  min-height:42px;
+  margin:0 0 14px;
+  border:none;
+  border-radius:16px;
+  background:rgba(255,255,255,.08);
+  color:#dbe7f5;
+  font:inherit;
+  font-weight:800;
+  cursor:pointer;
+  transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.ghost-btn:hover{
+  transform:translateY(-1px);
+  background:rgba(255,255,255,.14);
+  box-shadow:0 0 18px rgba(255,255,255,.08);
+}
 .saved-word-list{
   display:grid;
   gap:8px;
@@ -615,6 +644,24 @@ input[type="range"]::-moz-range-thumb{
   display:flex;
   flex-direction:column;
   gap:12px;
+}
+.quiz-topline{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.quiz-mini-badge{
+  display:inline-flex;
+  align-items:center;
+  min-height:30px;
+  padding:0 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.1);
+  color:#dce8f6;
+  font-size:.72rem;
+  font-weight:900;
+  letter-spacing:.04em;
+  text-transform:uppercase;
 }
 .quiz-prompt{
   margin:0;

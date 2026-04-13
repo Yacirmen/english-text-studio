@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260413w" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260413x" />
 </head>
 <body>
   <div class="page-shell">
@@ -301,6 +301,7 @@
 
     <section id="savedWordsPanel" class="library-section hidden">
       <p class="library-copy">Saved words build up here. Tap one to jump back into the reading flow.</p>
+      <button id="clearSavedWordsBtn" class="ghost-btn hidden" type="button">Clear word history</button>
       <div id="savedWordsEmpty" class="helper-note">Sign in to start building your saved word list.</div>
       <div id="savedWordsList" class="saved-word-list hidden"></div>
     </section>
@@ -309,6 +310,10 @@
       <p class="library-copy">Review saved words with quick multiple-choice checks.</p>
       <div id="quizEmpty" class="helper-note">You need at least 4 saved words to start the quiz.</div>
       <div id="quizCard" class="quiz-card hidden">
+        <div class="quiz-topline">
+          <span id="quizAnsweredBadge" class="quiz-mini-badge">0 played</span>
+          <span id="quizStreakBadge" class="quiz-mini-badge">Streak 0</span>
+        </div>
         <p id="quizPrompt" class="quiz-prompt"></p>
         <div id="quizOptions" class="quiz-options"></div>
         <p id="quizFeedback" class="quiz-feedback hidden"></p>
@@ -329,6 +334,6 @@
     </section>
   </aside>
 
-  <script src="/assets/app.js?v=20260413w"></script>
+  <script src="/assets/app.js?v=20260413x"></script>
 </body>
 </html>
