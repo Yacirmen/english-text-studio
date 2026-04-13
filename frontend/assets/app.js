@@ -33,6 +33,7 @@ const state = {
   recentWords: [],
   quiz: null,
   libraryView: null,
+  libraryStats: null,
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -99,10 +100,11 @@ const libraryKickerEl = $("#libraryKicker");
 const closeLibraryBtn = $("#closeLibraryBtn");
 const sourceSwitchEl = $("#sourceSwitch");
 const libraryModeHintEl = $("#libraryModeHint");
-const libraryTopicPickerEl = $("#libraryTopicPicker");
-const libraryLevelPickerEl = $("#libraryLevelPicker");
 const libraryControlsEl = $("#libraryControls");
+const libraryLevelEl = $("#libraryLevel");
+const libraryTopicEl = $("#libraryTopic");
 const aiControlsEl = $("#aiControls");
+const libraryCountBadgeEl = $("#libraryCountBadge");
 
 async function parseApiResponse(response) {
   const raw = await response.text();
@@ -194,16 +196,12 @@ function updateRangeVisual() {
 
 function syncLevelPickers(value) {
   levelEl.value = value;
-  libraryLevelPickerEl.querySelectorAll(".topic-pill").forEach((button) => {
-    button.classList.toggle("active", button.dataset.level === value);
-  });
+  if (libraryLevelEl) libraryLevelEl.value = value;
 }
 
 function syncTopicPickers(value) {
   topicEl.value = value;
-  libraryTopicPickerEl.querySelectorAll(".topic-pill").forEach((button) => {
-    button.classList.toggle("active", button.dataset.topic === value);
-  });
+  if (libraryTopicEl) libraryTopicEl.value = value;
 }
 
 function updateLevelUi() {
@@ -239,6 +237,7 @@ function updateSourceModeUi() {
   document.body.classList.toggle("ai-mode", !isLibrary);
   setupSummaryEl.classList.toggle("hidden", isLibrary);
   libraryModeHintEl.classList.toggle("hidden", !isLibrary);
+  libraryCountBadgeEl?.classList.toggle("hidden", !isLibrary);
   libraryControlsEl.classList.toggle("hidden", !isLibrary);
   aiControlsEl.classList.toggle("hidden", isLibrary);
   $("#generateBtn").textContent = isLibrary ? "Get Reading" : "Generate Text";
@@ -247,6 +246,11 @@ function updateSourceModeUi() {
     ? "Ready. Pick a level and topic, then load a curated reading."
     : "Ready. Set your level, topic, and keywords, then generate a custom reading.";
   renderMeta(state.lastPayload?.level || levelEl.value, state.lastPayload?.topic || topicEl.value, state.text || "");
+}
+
+function renderLibraryStats() {
+  if (!libraryCountBadgeEl || !state.libraryStats) return;
+  libraryCountBadgeEl.textContent = `${Number(state.libraryStats.total || 0)} curated readings inside`;
 }
 
 function renderMeta(level, topic, text) {
@@ -420,6 +424,14 @@ async function refreshSession() {
   renderUserPanel();
 }
 
+async function loadLibraryStats() {
+  const parsed = await apiFetch("/api/library/stats", { method: "GET", headers: {} });
+  if (parsed.ok) {
+    state.libraryStats = parsed.data;
+    renderLibraryStats();
+  }
+}
+
 async function loadQuiz() {
   if (!state.user) {
     state.quiz = null;
@@ -540,9 +552,11 @@ async function generateExperience(payload, triggerButton) {
 
 function buildPayload() {
   const keywords = parseKeywords(keywordsEl.value);
+  const level = state.contentSource === "library" && libraryLevelEl ? libraryLevelEl.value : levelEl.value;
+  const topic = state.contentSource === "library" && libraryTopicEl ? libraryTopicEl.value : topicEl.value;
   return {
-    level: levelEl.value,
-    topic: topicEl.value,
+    level,
+    topic,
     length_target: Number(lengthEl.value),
     keywords,
     source: state.contentSource,
@@ -700,19 +714,14 @@ sourceSwitchEl.querySelectorAll(".source-pill").forEach((button) => {
   });
 });
 
-libraryTopicPickerEl.querySelectorAll(".topic-pill").forEach((button) => {
-  button.addEventListener("click", () => {
-    topicEl.value = button.dataset.topic;
-    syncTopicPickers(button.dataset.topic);
-    if (state.contentSource === "ai") updateTopicDefaults();
-  });
+libraryLevelEl?.addEventListener("change", () => {
+  levelEl.value = libraryLevelEl.value;
+  updateLevelUi();
 });
 
-libraryLevelPickerEl.querySelectorAll(".topic-pill").forEach((button) => {
-  button.addEventListener("click", () => {
-    levelEl.value = button.dataset.level;
-    updateLevelUi();
-  });
+libraryTopicEl?.addEventListener("change", () => {
+  topicEl.value = libraryTopicEl.value;
+  syncTopicPickers(libraryTopicEl.value);
 });
 
 bindPointerGlow();
@@ -725,3 +734,4 @@ setLibraryView(null);
 updateSourceModeUi();
 renderKeywordChips();
 refreshSession().then(loadQuiz);
+loadLibraryStats();

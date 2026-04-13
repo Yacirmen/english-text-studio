@@ -290,10 +290,13 @@ def db_insert(query: str, params: tuple[Any, ...] = ()) -> int:
 
 
 def seed_readings() -> None:
-    existing = db_fetchone("SELECT COUNT(*) AS total FROM readings")
-    if existing and int(existing["total"] or 0) > 0:
-        return
+    existing_titles = {
+        str(row["title"])
+        for row in db_fetchall("SELECT title FROM readings")
+    }
     for item in READING_SEEDS:
+        if item["title"] in existing_titles:
+            continue
         insert_query = (
             "INSERT INTO readings (title, text, level, topic, keywords, word_count, source, is_published) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
@@ -631,6 +634,10 @@ def pick_library_reading(level: str, topic: str, keywords: list[str], length_tar
     )
     if not rows:
         return None
+    if normalized_topic != "Serbest":
+        exact_topic_rows = [row for row in rows if row["topic"] == normalized_topic]
+        if exact_topic_rows:
+            rows = exact_topic_rows
     scored: list[tuple[int, int, dict[str, Any]]] = []
     for row in rows:
         row_keywords = parse_keywords_field(row["keywords"])
@@ -1271,6 +1278,34 @@ def list_library_readings(level: str | None = None, topic: str | None = None) ->
     for row in rows:
         row["keywords"] = parse_keywords_field(row["keywords"])
     return {"readings": rows}
+
+
+@app.get("/api/library/stats")
+def library_stats() -> dict[str, Any]:
+    total_row = db_fetchone("SELECT COUNT(*) AS total FROM readings WHERE is_published = 1")
+    level_rows = db_fetchall(
+        """
+        SELECT level, COUNT(*) AS total
+        FROM readings
+        WHERE is_published = 1
+        GROUP BY level
+        ORDER BY level
+        """
+    )
+    topic_rows = db_fetchall(
+        """
+        SELECT topic, COUNT(*) AS total
+        FROM readings
+        WHERE is_published = 1
+        GROUP BY topic
+        ORDER BY topic
+        """
+    )
+    return {
+        "total": int((total_row or {}).get("total", 0)),
+        "by_level": level_rows,
+        "by_topic": topic_rows,
+    }
 
 
 @app.post("/api/explain")

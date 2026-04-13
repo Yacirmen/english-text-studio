@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260413u" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260413w" />
 </head>
 <body>
   <div class="page-shell">
@@ -126,34 +126,36 @@
           <div id="libraryModeHint" class="library-mode-hint hidden">
             Pick a level and a topic. We will pull a reading from the curated library.
           </div>
+          <div id="libraryCountBadge" class="library-count-badge hidden">38 curated readings inside</div>
 
           <form id="generate-form" class="stack-lg">
             <div id="libraryControls" class="stack-lg">
-              <div class="filter-block">
-                <span class="filter-label">Level</span>
-                <div id="libraryLevelPicker" class="library-topic-picker">
-                  <button class="topic-pill" type="button" data-level="A1">A1</button>
-                  <button class="topic-pill" type="button" data-level="A2">A2</button>
-                  <button class="topic-pill" type="button" data-level="B1">B1</button>
-                  <button class="topic-pill active" type="button" data-level="B2">B2</button>
-                  <button class="topic-pill" type="button" data-level="C1">C1</button>
-                  <button class="topic-pill" type="button" data-level="Academic">Academic</button>
-                </div>
-              </div>
-
-              <div class="filter-block">
-                <span class="filter-label">Topic</span>
-                <div id="libraryTopicPicker" class="library-topic-picker">
-                  <button class="topic-pill active" type="button" data-topic="Serbest">Open</button>
-                  <button class="topic-pill" type="button" data-topic="Günlük Hayat">Daily Life</button>
-                  <button class="topic-pill" type="button" data-topic="Okul">School</button>
-                  <button class="topic-pill" type="button" data-topic="Seyahat">Travel</button>
-                  <button class="topic-pill" type="button" data-topic="İş Hayatı">Work Life</button>
-                  <button class="topic-pill" type="button" data-topic="Akademik">Academic</button>
-                  <button class="topic-pill" type="button" data-topic="Science">Science</button>
-                  <button class="topic-pill" type="button" data-topic="Health">Health</button>
-                  <button class="topic-pill" type="button" data-topic="Sport">Sport</button>
-                </div>
+              <div class="form-row compact-filters">
+                <label class="field">
+                  <span>Level</span>
+                  <select id="libraryLevel">
+                    <option value="A1">A1</option>
+                    <option value="A2">A2</option>
+                    <option value="B1">B1</option>
+                    <option value="B2" selected>B2</option>
+                    <option value="C1">C1</option>
+                    <option value="Academic">Academic</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>Topic</span>
+                  <select id="libraryTopic">
+                    <option value="Serbest">Open</option>
+                    <option value="Günlük Hayat">Daily Life</option>
+                    <option value="Okul">School</option>
+                    <option value="Seyahat">Travel</option>
+                    <option value="İş Hayatı">Work Life</option>
+                    <option value="Akademik">Academic</option>
+                    <option value="Science">Science</option>
+                    <option value="Health">Health</option>
+                    <option value="Sport">Sport</option>
+                  </select>
+                </label>
               </div>
             </div>
 
@@ -327,6 +329,6 @@
     </section>
   </aside>
 
-  <script src="/assets/app.js?v=20260413u"></script>
+  <script src="/assets/app.js?v=20260413w"></script>
 </body>
 </html>
