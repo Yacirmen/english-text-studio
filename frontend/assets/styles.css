@@ -334,6 +334,15 @@ body{
   flex-wrap:wrap;
   margin:0 0 14px;
 }
+.library-mode-hint{
+  padding:12px 14px;
+  margin:0 0 14px;
+  border-radius:14px;
+  background:rgba(255,255,255,.08);
+  color:#cfe0f4;
+  line-height:1.55;
+  font-size:.85rem;
+}
 .source-pill{
   min-height:38px;
   padding:0 12px;
@@ -348,6 +357,27 @@ body{
   cursor:pointer;
 }
 .source-pill.active{
+  background:#fff;
+  color:var(--ink);
+}
+.library-topic-picker{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.topic-pill{
+  min-height:38px;
+  padding:0 12px;
+  border:none;
+  border-radius:999px;
+  background:rgba(255,255,255,.1);
+  color:#dbe7f5;
+  font:inherit;
+  font-size:.76rem;
+  font-weight:900;
+  cursor:pointer;
+}
+.topic-pill.active{
   background:#fff;
   color:var(--ink);
 }

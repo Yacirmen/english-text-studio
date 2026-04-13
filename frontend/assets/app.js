@@ -61,6 +61,7 @@ const regenBtn = $("#regenBtn");
 const clearBtn = $("#clearBtn");
 const setupLevelBadgeEl = $("#setupLevelBadge");
 const setupLengthBadgeEl = $("#setupLengthBadge");
+const setupSummaryEl = $("#setupSummary");
 const authGuestEl = $("#authGuest");
 const authUserEl = $("#authUser");
 const authUsernameEl = $("#authUsername");
@@ -93,6 +94,12 @@ const libraryTitleEl = $("#libraryTitle");
 const libraryKickerEl = $("#libraryKicker");
 const closeLibraryBtn = $("#closeLibraryBtn");
 const sourceSwitchEl = $("#sourceSwitch");
+const libraryModeHintEl = $("#libraryModeHint");
+const libraryTopicPickerEl = $("#libraryTopicPicker");
+const lengthFieldEl = $("#lengthField");
+const keywordsFieldEl = $("#keywordsField");
+const keywordsHelperEl = $("#keywordsHelper");
+const topicLabelEl = $("#topicLabel");
 
 async function parseApiResponse(response) {
   const raw = await response.text();
@@ -205,6 +212,20 @@ function renderKeywordChips() {
   const keywords = parseKeywords(keywordsEl.value);
   keywordChipsEl.innerHTML = keywords.map((word) => `<span class="chip">${escapeHtml(word)}</span>`).join("");
   keywordCountEl.textContent = `${keywords.length} kelime`;
+}
+
+function updateSourceModeUi() {
+  const isLibrary = state.contentSource === "library";
+  setupSummaryEl.classList.toggle("hidden", isLibrary);
+  lengthFieldEl.classList.toggle("hidden", isLibrary);
+  keywordsFieldEl.classList.toggle("hidden", isLibrary);
+  keywordChipsEl.classList.toggle("hidden", isLibrary);
+  keywordsHelperEl.classList.toggle("hidden", isLibrary);
+  libraryModeHintEl.classList.toggle("hidden", !isLibrary);
+  libraryTopicPickerEl.classList.toggle("hidden", !isLibrary);
+  topicEl.parentElement.classList.toggle("hidden", isLibrary);
+  topicLabelEl.textContent = isLibrary ? "Library topic" : "Topic";
+  $("#generateBtn").textContent = isLibrary ? "Get Reading" : "Generate Text";
 }
 
 function renderMeta(level, topic, text) {
@@ -629,6 +650,14 @@ sourceSwitchEl.querySelectorAll(".source-pill").forEach((button) => {
     state.contentSource = button.dataset.source;
     sourceSwitchEl.querySelectorAll(".source-pill").forEach((item) => item.classList.remove("active"));
     button.classList.add("active");
+    updateSourceModeUi();
+  });
+});
+libraryTopicPickerEl.querySelectorAll(".topic-pill").forEach((button) => {
+  button.addEventListener("click", () => {
+    topicEl.value = button.dataset.topic;
+    libraryTopicPickerEl.querySelectorAll(".topic-pill").forEach((item) => item.classList.remove("active"));
+    button.classList.add("active");
   });
 });
 
@@ -638,5 +667,6 @@ updateRangeVisual();
 renderAuthMode();
 renderUserPanel();
 setLibraryView(null);
+updateSourceModeUi();
 previewStateEl.textContent = "Hazır. Metin önce hızlıca üretilir, kelime detayları ise yalnızca tıklandığında yüklenir.";
 refreshSession().then(loadQuiz);

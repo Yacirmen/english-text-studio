@@ -139,6 +139,41 @@ READING_SEEDS: list[dict[str, Any]] = [
             "Without that framework, even accurate data can lead to weak conclusions. Good academic work, therefore, depends not only on gathering information but also on explaining how interpretation was shaped."
         ),
     },
+    {
+        "title": "A Small Science Fair Project",
+        "level": "B1",
+        "topic": "Science",
+        "keywords": ["experiment", "result", "method", "student"],
+        "text": (
+            "During the school science fair, a student named Eren presented a simple experiment about plant growth and light. "
+            "He explained his method carefully so visitors could understand how the project worked from start to finish. "
+            "Although the result was not surprising, the way he compared each stage made the presentation stronger. "
+            "His teacher said that good science is not only about discovering something new, but also about showing clear thinking and honest observation."
+        ),
+    },
+    {
+        "title": "Building Better Health Habits",
+        "level": "B1",
+        "topic": "Health",
+        "keywords": ["health", "routine", "balance", "goal"],
+        "text": (
+            "Many people try to improve their health by making dramatic changes, but small habits often last longer. "
+            "Melis began with a simple routine: better sleep, short walks, and more regular meals. "
+            "Instead of chasing a perfect result, she focused on balance and chose one realistic goal each week. "
+            "That slower method helped her feel more energetic without turning the process into a stressful challenge."
+        ),
+    },
+    {
+        "title": "Learning Through Sport",
+        "level": "A2",
+        "topic": "Sport",
+        "keywords": ["team", "goal", "practice", "energy"],
+        "text": (
+            "Kerem joins his school basketball team twice a week. At first, he only wanted exercise, but regular practice taught him more than that. "
+            "He learned how a team works, how to stay calm after mistakes, and how to keep his energy for the right moment. "
+            "When the coach gives the team a goal, everyone has to support each other. This makes sport feel useful both on and off the court."
+        ),
+    },
 ]
 
 
@@ -150,5 +185,8 @@ def normalize_topic(topic: str) -> str:
         "Travel": "Seyahat",
         "Work Life": "İş Hayatı",
         "Academic": "Akademik",
+        "Science": "Science",
+        "Health": "Health",
+        "Sport": "Sport",
     }
     return topic_map.get(topic, topic)
