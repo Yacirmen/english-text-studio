@@ -107,7 +107,6 @@ const libraryModeHintEl = $("#libraryModeHint");
 const libraryControlsEl = $("#libraryControls");
 const libraryLevelEl = $("#libraryLevel");
 const libraryTopicEl = $("#libraryTopic");
-const randomTopicBtn = $("#randomTopicBtn");
 const aiControlsEl = $("#aiControls");
 const libraryCountBadgeEl = $("#libraryCountBadge");
 
@@ -772,17 +771,6 @@ libraryLevelEl?.addEventListener("change", () => {
 libraryTopicEl?.addEventListener("change", () => {
   topicEl.value = libraryTopicEl.value;
   syncTopicPickers(libraryTopicEl.value);
-});
-
-randomTopicBtn?.addEventListener("click", () => {
-  if (!libraryTopicEl) return;
-  const options = Array.from(libraryTopicEl.options).map((option) => option.value);
-  const current = libraryTopicEl.value;
-  const pool = options.filter((value) => value !== current);
-  const next = pool[Math.floor(Math.random() * pool.length)] || current;
-  libraryTopicEl.value = next;
-  topicEl.value = next;
-  syncTopicPickers(next);
 });
 
 bindPointerGlow();
