@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 import httpx
-from fastapi import Cookie, FastAPI, HTTPException, Response
+from fastapi import Cookie, FastAPI, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -586,7 +586,7 @@ def get_recent_words(user_id: int, limit: int = 6) -> list[dict[str, Any]]:
     )
 
 
-def build_quiz_question(user_id: int) -> dict[str, Any] | None:
+def build_quiz_question(user_id: int, exclude_word_id: int | None = None) -> dict[str, Any] | None:
     words = db_fetchall(
         """
         SELECT id, word, turkish, context, example, click_count, last_result
@@ -598,6 +598,10 @@ def build_quiz_question(user_id: int) -> dict[str, Any] | None:
     )
     if len(words) < 4:
         return None
+    if exclude_word_id is not None:
+        alternate_words = [row for row in words if int(row["id"]) != int(exclude_word_id)]
+        if len(alternate_words) >= 4:
+            words = alternate_words
     target = sorted(
         words,
         key=lambda row: (row["last_result"] == "correct", row["click_count"], row["id"]),
@@ -1271,9 +1275,12 @@ def me(session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE)) -
 
 
 @app.get("/api/quiz/next")
-def quiz_next(session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE)) -> dict[str, Any]:
+def quiz_next(
+    exclude_word_id: int | None = Query(default=None),
+    session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE),
+) -> dict[str, Any]:
     user = require_user(session_token)
-    question = build_quiz_question(int(user["id"]))
+    question = build_quiz_question(int(user["id"]), exclude_word_id)
     if not question:
         return {"question": None, "min_words_needed": 4}
     return {"question": {key: value for key, value in question.items() if key != "answer"}}

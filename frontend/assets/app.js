@@ -391,16 +391,25 @@ function renderQuiz() {
           optionButton.dataset.answer === button.dataset.answer && button.dataset.answer !== parsed.data.answer
         );
       });
-      state.quiz = {
-        ...state.quiz,
-        context: parsed.data.context,
-        example: parsed.data.example,
-      };
-      if (quizAnsweredBadgeEl) quizAnsweredBadgeEl.textContent = `${state.quizStats.answered} played`;
-      if (quizStreakBadgeEl) quizStreakBadgeEl.textContent = `Streak ${state.quizStats.streak}`;
+        state.quiz = {
+          ...state.quiz,
+          context: parsed.data.context,
+          example: parsed.data.example,
+        };
+        if (quizAnsweredBadgeEl) quizAnsweredBadgeEl.textContent = `${state.quizStats.answered} played`;
+        if (quizStreakBadgeEl) quizStreakBadgeEl.textContent = `Streak ${state.quizStats.streak}`;
+        if (!parsed.data.correct) {
+          nextQuizBtn.disabled = true;
+          nextQuizBtn.textContent = "Next incoming...";
+          window.setTimeout(async () => {
+            await loadQuiz(state.quiz?.word_id || null);
+            nextQuizBtn.disabled = false;
+            nextQuizBtn.textContent = "Next Question";
+          }, 950);
+        }
+      });
     });
-  });
-}
+  }
 
 function setLibraryView(view) {
   state.libraryView = view;
@@ -466,13 +475,14 @@ async function loadLibraryStats() {
   }
 }
 
-async function loadQuiz() {
+async function loadQuiz(excludeWordId = null) {
   if (!state.user) {
     state.quiz = null;
     renderQuiz();
     return;
   }
-  const parsed = await apiFetch("/api/quiz/next", { method: "GET", headers: {} });
+  const suffix = excludeWordId ? `?exclude_word_id=${encodeURIComponent(excludeWordId)}` : "";
+  const parsed = await apiFetch(`/api/quiz/next${suffix}`, { method: "GET", headers: {} });
   state.quiz = parsed.ok ? parsed.data.question : null;
   renderQuiz();
 }
@@ -738,7 +748,7 @@ clearBtn.addEventListener("click", () => {
   clearError();
 });
 
-nextQuizBtn.addEventListener("click", loadQuiz);
+nextQuizBtn.addEventListener("click", () => loadQuiz(state.quiz?.word_id || null));
 openSavedWordsBtn.addEventListener("click", () => setLibraryView("saved"));
 openQuizBtn.addEventListener("click", async () => {
   if (!state.quiz && state.user) await loadQuiz();
