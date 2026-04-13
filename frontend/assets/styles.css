@@ -1117,3 +1117,30 @@ input[type="range"]::-moz-range-thumb{
     width:auto;
   }
 }
+
+@media (max-width: 768px){
+  .page-shell{padding:10px 10px 22px}
+  .welcome-gate{padding:12px}
+  .welcome-card{padding:18px;border-radius:26px;gap:18px}
+  .welcome-auth{padding:18px;border-radius:22px}
+  .topbar{padding:12px 14px}
+  .hero-band{padding:16px 16px 18px;border-radius:24px}
+  .hero-copy h1{font-size:2.2rem;max-width:12ch}
+  .hero-stack{gap:10px}
+  .tool-rail{gap:14px}
+  .rail-panel,.reading-column,.insight-card,.library-panel{border-radius:22px}
+  .reading-stage{gap:12px}
+  .utility-toolbar{padding:12px;border-radius:18px}
+  .toolbar-group,.toolbar-meta{width:100%}
+  .toolbar-btn{flex:1 1 calc(50% - 8px);min-width:140px}
+  .toolbar-badge{flex:1 1 auto;justify-content:center}
+  .preview-state{min-height:120px;padding:20px;border-radius:22px}
+  .reading-body{min-height:280px;padding:20px;font-size:1.03rem;line-height:1.9}
+  .action-row{grid-template-columns:1fr;gap:12px}
+  .secondary-btn,.outline-btn,.primary-btn{width:100%}
+  .detail-column{top:auto}
+  .flip-card{min-height:240px}
+  .flip-face{padding:20px;border-radius:24px}
+  .library-panel{padding:18px;border-radius:24px}
+  .form-row.compact-filters{grid-template-columns:1fr}
+}

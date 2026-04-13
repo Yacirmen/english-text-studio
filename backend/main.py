@@ -204,7 +204,7 @@ class ExplainRequest(BaseModel):
 
 
 class AuthRequest(BaseModel):
-    username: str = Field(min_length=5, max_length=120)
+    username: str = Field(min_length=3, max_length=32)
     password: str = Field(min_length=6, max_length=72)
 
 
@@ -500,9 +500,9 @@ def hash_password(password: str) -> str:
 
 
 def clean_username(username: str) -> str:
-    cleaned = username.strip().lower()
-    if not re.fullmatch(r"^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$", cleaned):
-        raise HTTPException(status_code=400, detail="Please enter a valid email address.")
+    cleaned = re.sub(r"[^a-zA-Z0-9_]", "", username).strip().lower()
+    if len(cleaned) < 3:
+        raise HTTPException(status_code=400, detail="Username must be at least 3 characters.")
     return cleaned
 
 
@@ -623,9 +623,7 @@ def require_user(session_token: str | None) -> dict[str, Any]:
         (session_token,),
     )
     if not row:
-        raise HTTPException(status_code=401, detail="Oturum bulunamadÄ±. Tekrar giriÅŸ yap.")
-    if not bool(row.get("is_active", 1)):
-        raise HTTPException(status_code=401, detail="Please verify your email before continuing.")
+        raise HTTPException(status_code=401, detail="Session not found. Please log in again.")
     return user_payload(row) or {}
 
 
@@ -1427,44 +1425,17 @@ def register(payload: AuthRequest, response: Response) -> dict[str, Any]:
     username = clean_username(payload.username)
     password_hash = hash_password(payload.password)
     timestamp = now_iso()
-    created_new = False
     try:
         insert_query = "INSERT INTO users (username, password_hash, is_active, verified_at, created_at) VALUES (?, ?, ?, ?, ?)"
         if USE_POSTGRES:
             insert_query += " RETURNING id"
-        user_id = db_insert(insert_query, (username, password_hash, 0, None, timestamp))
-        created_new = True
+        user_id = db_insert(insert_query, (username, password_hash, 1, timestamp, timestamp))
     except Exception as exc:
         if "unique" not in str(exc).lower() and "duplicate" not in str(exc).lower():
             raise
-        existing = db_fetchone(
-            "SELECT id, username, is_active FROM users WHERE username = ?",
-            (username,),
-        )
-        if not existing:
-            raise HTTPException(status_code=409, detail="This email is already in use.")
-        if bool(existing.get("is_active", 1)):
-            raise HTTPException(status_code=409, detail="This email is already in use.")
-        user_id = int(existing["id"])
-        db_execute(
-            "UPDATE users SET password_hash = ?, created_at = ? WHERE id = ?",
-            (password_hash, timestamp, user_id),
-        )
-    token = create_verification_token(user_id, username)
-    try:
-        send_verification_email(username, token)
-    except HTTPException:
-        if created_new:
-            db_execute("DELETE FROM email_verifications WHERE user_id = ?", (user_id,))
-            db_execute("DELETE FROM users WHERE id = ?", (user_id,))
-        raise
-    clear_session(response, None)
-    return {
-        "ok": True,
-        "verification_required": True,
-        "email": username,
-        "message": "We sent a verification link to your email.",
-    }
+        raise HTTPException(status_code=409, detail="This username is already in use.")
+    create_session(response, user_id)
+    return {"user": {"id": user_id, "username": username, "created_at": timestamp, "email_verified": True}, "stats": build_user_stats(user_id)}
 
 
 @app.post("/api/auth/login")
@@ -1476,9 +1447,7 @@ def login(payload: AuthRequest, response: Response) -> dict[str, Any]:
         (username, password_hash),
     )
     if not row:
-        raise HTTPException(status_code=401, detail="Email or password is incorrect.")
-    if not bool(row.get("is_active", 1)):
-        raise HTTPException(status_code=403, detail="Please verify your email before logging in.")
+        raise HTTPException(status_code=401, detail="Username or password is incorrect.")
     create_session(response, int(row["id"]))
     return {"user": user_payload(row), "stats": build_user_stats(int(row["id"]))}
 
