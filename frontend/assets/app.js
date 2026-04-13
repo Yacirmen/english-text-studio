@@ -1,18 +1,21 @@
 const LEVEL_CONFIG = {
-  A1: { min: 60, max: 100, hint: "Çok temel ve günlük" },
-  A2: { min: 90, max: 130, hint: "Basit ve günlük" },
-  B1: { min: 120, max: 170, hint: "Doğal ve akıcı" },
-  B2: { min: 150, max: 220, hint: "Daha zengin ama rahat okunur" },
-  C1: { min: 180, max: 260, hint: "İleri, doğal ve detaylı" },
-  Academic: { min: 190, max: 280, hint: "Akademik ve analitik" },
+  A1: { min: 60, max: 100, hint: "Very simple and everyday" },
+  A2: { min: 90, max: 130, hint: "Simple, clear, and familiar" },
+  B1: { min: 120, max: 170, hint: "Natural and comfortably paced" },
+  B2: { min: 150, max: 220, hint: "Richer but still easy to read" },
+  C1: { min: 180, max: 260, hint: "Advanced, natural, and detailed" },
+  Academic: { min: 190, max: 280, hint: "Analytical and academic" },
 };
 
 const TOPIC_KEYWORDS = {
-  "Günlük Hayat": ["morning", "coffee", "bus", "friend"],
-  Okul: ["student", "exam", "library", "teacher"],
-  Seyahat: ["airport", "hotel", "ticket", "city"],
+  "Günlük Hayat": ["morning", "coffee", "routine", "friend"],
+  Okul: ["student", "teacher", "library", "study"],
+  Seyahat: ["travel", "city", "hotel", "ticket"],
   "İş Hayatı": ["meeting", "project", "office", "email"],
   Akademik: ["research", "analysis", "evidence", "study"],
+  Science: ["science", "evidence", "method", "observation"],
+  Health: ["health", "routine", "balance", "habit"],
+  Sport: ["team", "practice", "focus", "goal"],
   Serbest: ["morning", "project", "travel", "friend"],
 };
 
@@ -21,7 +24,7 @@ const state = {
   glossary: {},
   selectedWord: "",
   lastPayload: null,
-  contentSource: "smart",
+  contentSource: "library",
   loadingWord: false,
   pendingFlip: false,
   authMode: "login",
@@ -33,6 +36,7 @@ const state = {
 };
 
 const $ = (selector) => document.querySelector(selector);
+const pageShell = $(".page-shell");
 const generateForm = $("#generate-form");
 const manualForm = $("#manual-form");
 const authForm = $("#authForm");
@@ -96,17 +100,16 @@ const closeLibraryBtn = $("#closeLibraryBtn");
 const sourceSwitchEl = $("#sourceSwitch");
 const libraryModeHintEl = $("#libraryModeHint");
 const libraryTopicPickerEl = $("#libraryTopicPicker");
-const lengthFieldEl = $("#lengthField");
-const keywordsFieldEl = $("#keywordsField");
-const keywordsHelperEl = $("#keywordsHelper");
-const topicLabelEl = $("#topicLabel");
+const libraryLevelPickerEl = $("#libraryLevelPicker");
+const libraryControlsEl = $("#libraryControls");
+const aiControlsEl = $("#aiControls");
 
 async function parseApiResponse(response) {
   const raw = await response.text();
   try {
     return { ok: response.ok, status: response.status, data: JSON.parse(raw) };
   } catch {
-    return { ok: response.ok, status: response.status, data: { detail: raw || "Bilinmeyen hata" } };
+    return { ok: response.ok, status: response.status, data: { detail: raw || "Unknown error" } };
   }
 }
 
@@ -146,7 +149,7 @@ function highlightSelectedWord(text, selectedWord) {
   const escapedText = escapeHtml(text || "");
   if (!selectedWord) return escapedText;
   const pattern = new RegExp(`\\b(${selectedWord.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})\\b`, "gi");
-  return escapedText.replace(pattern, "<strong class=\"inline-highlight\">$1</strong>");
+  return escapedText.replace(pattern, '<strong class="inline-highlight">$1</strong>');
 }
 
 function tokenizeText(text) {
@@ -178,7 +181,7 @@ function clearError() {
 function updateSetupSummary() {
   const cfg = LEVEL_CONFIG[levelEl.value];
   setupLevelBadgeEl.textContent = `${levelEl.value} · ${cfg.hint}`;
-  setupLengthBadgeEl.textContent = `${lengthEl.value} kelime civarı`;
+  setupLengthBadgeEl.textContent = `Around ${lengthEl.value} words`;
 }
 
 function updateRangeVisual() {
@@ -187,6 +190,20 @@ function updateRangeVisual() {
   const value = Number(lengthEl.value || min);
   const ratio = max === min ? 100 : ((value - min) / (max - min)) * 100;
   lengthEl.style.setProperty("--track-fill", `${ratio}%`);
+}
+
+function syncLevelPickers(value) {
+  levelEl.value = value;
+  libraryLevelPickerEl.querySelectorAll(".topic-pill").forEach((button) => {
+    button.classList.toggle("active", button.dataset.level === value);
+  });
+}
+
+function syncTopicPickers(value) {
+  topicEl.value = value;
+  libraryTopicPickerEl.querySelectorAll(".topic-pill").forEach((button) => {
+    button.classList.toggle("active", button.dataset.topic === value);
+  });
 }
 
 function updateLevelUi() {
@@ -200,53 +217,63 @@ function updateLevelUi() {
   levelHintEl.textContent = cfg.hint;
   updateSetupSummary();
   updateRangeVisual();
+  syncLevelPickers(levelEl.value);
 }
 
 function updateTopicDefaults() {
   const preset = TOPIC_KEYWORDS[topicEl.value];
-  if (preset) keywordsEl.value = preset.join(", ");
+  if (preset && state.contentSource === "ai") keywordsEl.value = preset.join(", ");
   renderKeywordChips();
+  syncTopicPickers(topicEl.value);
 }
 
 function renderKeywordChips() {
   const keywords = parseKeywords(keywordsEl.value);
   keywordChipsEl.innerHTML = keywords.map((word) => `<span class="chip">${escapeHtml(word)}</span>`).join("");
-  keywordCountEl.textContent = `${keywords.length} kelime`;
+  keywordCountEl.textContent = `${keywords.length} words`;
 }
 
 function updateSourceModeUi() {
   const isLibrary = state.contentSource === "library";
+  document.body.classList.toggle("library-mode", isLibrary);
+  document.body.classList.toggle("ai-mode", !isLibrary);
   setupSummaryEl.classList.toggle("hidden", isLibrary);
-  lengthFieldEl.classList.toggle("hidden", isLibrary);
-  keywordsFieldEl.classList.toggle("hidden", isLibrary);
-  keywordChipsEl.classList.toggle("hidden", isLibrary);
-  keywordsHelperEl.classList.toggle("hidden", isLibrary);
   libraryModeHintEl.classList.toggle("hidden", !isLibrary);
-  libraryTopicPickerEl.classList.toggle("hidden", !isLibrary);
-  topicEl.parentElement.classList.toggle("hidden", isLibrary);
-  topicLabelEl.textContent = isLibrary ? "Library topic" : "Topic";
+  libraryControlsEl.classList.toggle("hidden", !isLibrary);
+  aiControlsEl.classList.toggle("hidden", isLibrary);
   $("#generateBtn").textContent = isLibrary ? "Get Reading" : "Generate Text";
+  regenBtn.textContent = isLibrary ? "Another Reading" : "Generate Again";
+  previewStateEl.textContent = isLibrary
+    ? "Ready. Pick a level and topic, then load a curated reading."
+    : "Ready. Set your level, topic, and keywords, then generate a custom reading.";
+  renderMeta(state.lastPayload?.level || levelEl.value, state.lastPayload?.topic || topicEl.value, state.text || "");
 }
 
 function renderMeta(level, topic, text) {
+  if (!text) {
+    metaTagsEl.innerHTML = "";
+    return;
+  }
+  const count = text.split(/\s+/).filter(Boolean).length;
+  const sourceLabel = state.lastPayload?.content_source === "library" ? "Library" : "AI";
   metaTagsEl.innerHTML = `
     <span class="tag">Level ${escapeHtml(level)}</span>
     <span class="tag">${escapeHtml(topic)}</span>
-    <span class="tag">${text.split(/\s+/).filter(Boolean).length} words</span>
-    <span class="tag">${escapeHtml(state.lastPayload?.source || "smart")}</span>
+    <span class="tag">${count} words</span>
+    <span class="tag">${sourceLabel}</span>
   `;
 }
 
 function renderSelection() {
   const item = state.glossary[state.selectedWord] || {};
   selectedWordEl.textContent = state.selectedWord || "Word";
-  selectedMeaningEl.textContent = item.turkish || "Bir kelime seç.";
+  selectedMeaningEl.textContent = item.turkish || "Choose a word";
   selectedContextEl.innerHTML = state.loadingWord
-    ? "Seçilen kelime için açıklama hazırlanıyor..."
-    : highlightSelectedWord(item.context || "Bağlam açıklaması burada görünecek.", state.selectedWord);
+    ? "Preparing Turkish context..."
+    : highlightSelectedWord(item.context || "Context appears here after you choose a word.", state.selectedWord);
   selectedExampleEl.innerHTML = state.loadingWord
-    ? "Örnek cümle hazırlanıyor..."
-    : highlightSelectedWord(item.example || "Örnek cümle burada görünecek.", state.selectedWord);
+    ? "Preparing example sentence..."
+    : highlightSelectedWord(item.example || "A short example appears here after you choose a word.", state.selectedWord);
   flipCardEl.classList.remove("flipped");
   flipCardEl.classList.toggle("clickable", !state.loadingWord && Boolean(state.selectedWord));
 }
@@ -284,13 +311,13 @@ function renderSavedWords() {
 
 function renderQuiz() {
   if (!state.user) {
-    quizEmptyEl.textContent = "Quiz için önce giriş yapmalısın.";
+    quizEmptyEl.textContent = "Sign in first to unlock the quiz.";
     quizEmptyEl.classList.remove("hidden");
     quizCardEl.classList.add("hidden");
     return;
   }
   if (!state.quiz) {
-    quizEmptyEl.textContent = "Quiz için en az 4 kaydedilmiş kelime gerekiyor.";
+    quizEmptyEl.textContent = "You need at least 4 saved words to start the quiz.";
     quizEmptyEl.classList.remove("hidden");
     quizCardEl.classList.add("hidden");
     return;
@@ -310,13 +337,13 @@ function renderQuiz() {
         body: JSON.stringify({ word_id: state.quiz.word_id, answer: button.dataset.answer }),
       });
       if (!parsed.ok) {
-        quizFeedbackEl.textContent = parsed.data.detail || "Quiz cevabı kaydedilemedi.";
+        quizFeedbackEl.textContent = parsed.data.detail || "Quiz answer could not be saved.";
         quizFeedbackEl.classList.remove("hidden");
         return;
       }
       quizFeedbackEl.textContent = parsed.data.correct
-        ? `Doğru. "${parsed.data.word}" = "${parsed.data.answer}".`
-        : `Olmadı. Doğru cevap: ${parsed.data.answer}`;
+        ? `Correct. "${parsed.data.word}" = "${parsed.data.answer}".`
+        : `Not this time. Correct answer: ${parsed.data.answer}`;
       quizFeedbackEl.classList.remove("hidden");
       state.stats = parsed.data.stats;
       updateAccountStatsOnly();
@@ -418,7 +445,7 @@ async function loadWordDetail(word) {
       method: "POST",
       body: JSON.stringify({ text: state.text, word }),
     });
-    if (!parsed.ok) throw new Error(parsed.data.detail || "Kelime detayı alınamadı.");
+    if (!parsed.ok) throw new Error(parsed.data.detail || "Word detail could not be loaded.");
     state.glossary[word] = parsed.data;
     if (state.user) {
       await refreshSession();
@@ -427,7 +454,7 @@ async function loadWordDetail(word) {
   } catch (error) {
     state.glossary[word] = {
       turkish: "Türkçe anlam alınamadı.",
-      context: error.message || "Kelime detayı şu anda yüklenemedi.",
+      context: error.message || "Word detail is not available right now.",
       example: "No example sentence available.",
     };
   } finally {
@@ -453,9 +480,9 @@ function renderReadingText() {
     button.addEventListener("click", async () => {
       const nextWord = button.dataset.word;
       if (state.selectedWord !== nextWord) {
-        selectedMeaningEl.textContent = "Hazırlanıyor...";
-        selectedContextEl.textContent = "Seçilen kelime için açıklama hazırlanıyor...";
-        selectedExampleEl.textContent = "Örnek cümle hazırlanıyor...";
+        selectedMeaningEl.textContent = "Loading...";
+        selectedContextEl.textContent = "Preparing Turkish context...";
+        selectedExampleEl.textContent = "Preparing example sentence...";
       }
       state.selectedWord = nextWord;
       state.pendingFlip = true;
@@ -482,22 +509,26 @@ function renderExperience() {
   state.loadingWord = false;
   state.pendingFlip = false;
   renderSelection();
-  selectedContextEl.textContent = "Metin hazır. Detayını görmek için bir kelimeye tıkla.";
-  selectedExampleEl.textContent = "Kelime seçildiğinde örnek cümle burada görünecek.";
+  selectedContextEl.textContent = "The reading is ready. Tap a word to open its Turkish context.";
+  selectedExampleEl.textContent = "A short example will appear here after you choose a word.";
 }
 
 async function generateExperience(payload, triggerButton) {
   clearError();
-  setLoading(triggerButton, "Hazırlanıyor...", true);
+  setLoading(triggerButton, payload.source === "library" ? "Loading..." : "Generating...", true);
   try {
     const parsed = await apiFetch("/api/generate", {
       method: "POST",
       body: JSON.stringify(payload),
     });
-    if (!parsed.ok) throw new Error(parsed.data.detail || "Bir hata oluştu.");
+    if (!parsed.ok) throw new Error(parsed.data.detail || "Something went wrong.");
     state.text = parsed.data.text;
     state.glossary = {};
-    state.lastPayload = { ...payload, title: parsed.data.title || "", content_source: parsed.data.content_source || payload.source };
+    state.lastPayload = {
+      ...payload,
+      title: parsed.data.title || "",
+      content_source: parsed.data.content_source || payload.source,
+    };
     manualResultEl.classList.add("hidden");
     renderExperience();
   } catch (error) {
@@ -507,39 +538,52 @@ async function generateExperience(payload, triggerButton) {
   }
 }
 
-generateForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
+function buildPayload() {
   const keywords = parseKeywords(keywordsEl.value);
-  if (keywords.length < 2 || keywords.length > 12) {
-    showError("2 ile 12 arasında anahtar kelime girmelisin.");
-    return;
-  }
-  const payload = {
+  return {
     level: levelEl.value,
     topic: topicEl.value,
     length_target: Number(lengthEl.value),
     keywords,
     source: state.contentSource,
   };
+}
+
+function bindPointerGlow() {
+  document.addEventListener("pointermove", (event) => {
+    const x = `${event.clientX}px`;
+    const y = `${event.clientY}px`;
+    document.documentElement.style.setProperty("--pointer-x", x);
+    document.documentElement.style.setProperty("--pointer-y", y);
+  });
+}
+
+generateForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const payload = buildPayload();
+  if (payload.source === "ai" && (payload.keywords.length < 2 || payload.keywords.length > 12)) {
+    showError("Use 2 to 12 keywords in AI mode.");
+    return;
+  }
   await generateExperience(payload, $("#generateBtn"));
 });
 
 manualForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!state.text) {
-    manualResultEl.textContent = "Önce bir metin üretmelisin.";
+    manualResultEl.textContent = "Open a reading first.";
     manualResultEl.classList.remove("hidden");
     return;
   }
   const word = manualWordEl.value.trim();
   if (!word) return;
-  setLoading($("#manualBtn"), "Açıklanıyor...", true);
+  setLoading($("#manualBtn"), "Explaining...", true);
   try {
     const parsed = await apiFetch("/api/explain", {
       method: "POST",
       body: JSON.stringify({ text: state.text, word }),
     });
-    if (!parsed.ok) throw new Error(parsed.data.detail || "Bir hata oluştu.");
+    if (!parsed.ok) throw new Error(parsed.data.detail || "Something went wrong.");
     manualResultEl.textContent = parsed.data.explanation;
     manualResultEl.classList.remove("hidden");
   } catch (error) {
@@ -554,7 +598,7 @@ authForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   authErrorEl.classList.add("hidden");
   const endpoint = state.authMode === "login" ? "/api/auth/login" : "/api/auth/register";
-  setLoading(authSubmitBtn, state.authMode === "login" ? "Giriş yapılıyor..." : "Hesap açılıyor...", true);
+  setLoading(authSubmitBtn, state.authMode === "login" ? "Logging in..." : "Creating account...", true);
   try {
     const parsed = await apiFetch(endpoint, {
       method: "POST",
@@ -563,7 +607,7 @@ authForm.addEventListener("submit", async (event) => {
         password: authPasswordEl.value.trim(),
       }),
     });
-    if (!parsed.ok) throw new Error(parsed.data.detail || "Kimlik işlemi başarısız.");
+    if (!parsed.ok) throw new Error(parsed.data.detail || "Authentication failed.");
     state.user = parsed.data.user;
     state.stats = parsed.data.stats || { saved_words: 0, mastered_words: 0 };
     authUsernameEl.value = "";
@@ -645,22 +689,33 @@ lengthEl.addEventListener("input", () => {
   updateRangeVisual();
 });
 keywordsEl.addEventListener("input", renderKeywordChips);
+
 sourceSwitchEl.querySelectorAll(".source-pill").forEach((button) => {
   button.addEventListener("click", () => {
     state.contentSource = button.dataset.source;
     sourceSwitchEl.querySelectorAll(".source-pill").forEach((item) => item.classList.remove("active"));
     button.classList.add("active");
     updateSourceModeUi();
-  });
-});
-libraryTopicPickerEl.querySelectorAll(".topic-pill").forEach((button) => {
-  button.addEventListener("click", () => {
-    topicEl.value = button.dataset.topic;
-    libraryTopicPickerEl.querySelectorAll(".topic-pill").forEach((item) => item.classList.remove("active"));
-    button.classList.add("active");
+    clearError();
   });
 });
 
+libraryTopicPickerEl.querySelectorAll(".topic-pill").forEach((button) => {
+  button.addEventListener("click", () => {
+    topicEl.value = button.dataset.topic;
+    syncTopicPickers(button.dataset.topic);
+    if (state.contentSource === "ai") updateTopicDefaults();
+  });
+});
+
+libraryLevelPickerEl.querySelectorAll(".topic-pill").forEach((button) => {
+  button.addEventListener("click", () => {
+    levelEl.value = button.dataset.level;
+    updateLevelUi();
+  });
+});
+
+bindPointerGlow();
 updateLevelUi();
 updateTopicDefaults();
 updateRangeVisual();
@@ -668,5 +723,5 @@ renderAuthMode();
 renderUserPanel();
 setLibraryView(null);
 updateSourceModeUi();
-previewStateEl.textContent = "Hazır. Metin önce hızlıca üretilir, kelime detayları ise yalnızca tıklandığında yüklenir.";
+renderKeywordChips();
 refreshSession().then(loadQuiz);

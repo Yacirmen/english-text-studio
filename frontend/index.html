@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260413t" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260413u" />
 </head>
 <body>
   <div class="page-shell">
@@ -16,7 +16,7 @@
         <span class="brand-mark"></span>
         <div>
           <strong>Reading Studio</strong>
-          <span>Personal reading, saved words, and quiz</span>
+          <span>Your personal reading, review, and vocab space</span>
         </div>
       </div>
       <div class="top-status">
@@ -29,13 +29,13 @@
         <span class="hero-kicker">Focused English Practice</span>
         <h1>Read better. Save smarter. Review faster.</h1>
         <p>
-          Clean reading practice with saved vocabulary and quick review built in.
+          A cleaner reading workflow with curated texts, saved vocabulary, and quick review built in.
         </p>
       </div>
       <div class="hero-stack">
         <div class="hero-card lime">
-          <span>Personal</span>
-          <strong>Your words stay with you.</strong>
+          <span>Library</span>
+          <strong>Curated readings by level and topic.</strong>
         </div>
         <div class="hero-card cream">
           <span>Saved Words</span>
@@ -43,7 +43,7 @@
         </div>
         <div class="hero-card sky">
           <span>Quiz Mode</span>
-          <strong>Quick checks, no clutter.</strong>
+          <strong>Quick checks without breaking flow.</strong>
         </div>
       </div>
     </section>
@@ -78,7 +78,6 @@
 
           <div id="authUser" class="stack-md hidden">
             <div class="account-card">
-              <span class="mini-label on-dark">Aktif kullanıcı</span>
               <span class="mini-label on-dark">Active account</span>
               <h4 id="accountName">username</h4>
               <div class="account-stats">
@@ -98,19 +97,19 @@
 
         <div class="rail-intro">
           <span class="rail-kicker">Setup</span>
-          <h2>Set it once. Stay in the flow.</h2>
-          <p>Choose a level, pick a topic, add keywords, and start reading.</p>
+          <h2>Pick a lane. Keep the rhythm.</h2>
+          <p>Library mode is curated and clean. AI mode stays flexible when you want custom prompts.</p>
         </div>
 
         <section class="rail-panel">
           <div class="section-head">
             <h3>Reading Setup</h3>
-            <p>A faster setup for better reading practice.</p>
+            <p>Choose a mode, then filter for the kind of reading you want.</p>
           </div>
 
           <div id="setupSummary" class="setup-summary">
             <div class="mini-stat">
-              <span class="mini-stat-label">Seviye tonu</span>
+              <span class="mini-stat-label">Reading tone</span>
               <strong id="setupLevelBadge">B2 · Richer but still easy to read</strong>
             </div>
             <div class="mini-stat">
@@ -120,89 +119,107 @@
           </div>
 
           <div class="source-switch" id="sourceSwitch">
-            <button class="source-pill active" type="button" data-source="smart">Smart Mix</button>
-            <button class="source-pill" type="button" data-source="library">Library Only</button>
+            <button class="source-pill active" type="button" data-source="library">Library Only</button>
             <button class="source-pill" type="button" data-source="ai">AI Only</button>
           </div>
 
           <div id="libraryModeHint" class="library-mode-hint hidden">
-            Pick a level and a topic. We will pull a reading from the curated library instead of generating one.
+            Pick a level and a topic. We will pull a reading from the curated library.
           </div>
 
           <form id="generate-form" class="stack-lg">
-            <div class="form-row">
-              <label class="field">
-                <span>Level</span>
-                <select id="level">
-                  <option value="A1">A1</option>
-                  <option value="A2">A2</option>
-                  <option value="B1">B1</option>
-                  <option value="B2" selected>B2</option>
-                  <option value="C1">C1</option>
-                  <option value="Academic">Academic</option>
-                </select>
-              </label>
-              <label class="field">
-                <span id="topicLabel">Topic</span>
-                <select id="topic">
-                  <option value="Serbest">Open</option>
-                  <option value="Günlük Hayat">Daily Life</option>
-                  <option value="Okul">School</option>
-                  <option value="Seyahat">Travel</option>
-                  <option value="İş Hayatı">Work Life</option>
-                  <option value="Akademik">Academic</option>
-                  <option value="Science">Science</option>
-                  <option value="Health">Health</option>
-                  <option value="Sport">Sport</option>
-                </select>
-              </label>
-            </div>
-
-            <div id="libraryTopicPicker" class="library-topic-picker hidden">
-              <button class="topic-pill active" type="button" data-topic="Serbest">Open</button>
-              <button class="topic-pill" type="button" data-topic="Günlük Hayat">Daily Life</button>
-              <button class="topic-pill" type="button" data-topic="Okul">School</button>
-              <button class="topic-pill" type="button" data-topic="Seyahat">Travel</button>
-              <button class="topic-pill" type="button" data-topic="İş Hayatı">Work Life</button>
-              <button class="topic-pill" type="button" data-topic="Akademik">Academic</button>
-              <button class="topic-pill" type="button" data-topic="Science">Science</button>
-              <button class="topic-pill" type="button" data-topic="Health">Health</button>
-              <button class="topic-pill" type="button" data-topic="Sport">Sport</button>
-            </div>
-
-            <label id="lengthField" class="field">
-              <span>Target word count</span>
-              <div class="slider-wrap">
-                <input id="lengthTarget" type="range" min="150" max="220" step="10" value="190" />
-                <strong id="lengthValue">190</strong>
+            <div id="libraryControls" class="stack-lg">
+              <div class="filter-block">
+                <span class="filter-label">Level</span>
+                <div id="libraryLevelPicker" class="library-topic-picker">
+                  <button class="topic-pill" type="button" data-level="A1">A1</button>
+                  <button class="topic-pill" type="button" data-level="A2">A2</button>
+                  <button class="topic-pill" type="button" data-level="B1">B1</button>
+                  <button class="topic-pill active" type="button" data-level="B2">B2</button>
+                  <button class="topic-pill" type="button" data-level="C1">C1</button>
+                  <button class="topic-pill" type="button" data-level="Academic">Academic</button>
+                </div>
               </div>
-              <small id="levelHint">Richer but still easy to read</small>
-            </label>
 
-            <label id="keywordsField" class="field">
-              <div class="field-head">
-                <span>Keywords</span>
-                <span id="keywordCount" class="count-pill">0 words</span>
+              <div class="filter-block">
+                <span class="filter-label">Topic</span>
+                <div id="libraryTopicPicker" class="library-topic-picker">
+                  <button class="topic-pill active" type="button" data-topic="Serbest">Open</button>
+                  <button class="topic-pill" type="button" data-topic="Günlük Hayat">Daily Life</button>
+                  <button class="topic-pill" type="button" data-topic="Okul">School</button>
+                  <button class="topic-pill" type="button" data-topic="Seyahat">Travel</button>
+                  <button class="topic-pill" type="button" data-topic="İş Hayatı">Work Life</button>
+                  <button class="topic-pill" type="button" data-topic="Akademik">Academic</button>
+                  <button class="topic-pill" type="button" data-topic="Science">Science</button>
+                  <button class="topic-pill" type="button" data-topic="Health">Health</button>
+                  <button class="topic-pill" type="button" data-topic="Sport">Sport</button>
+                </div>
               </div>
-              <input id="keywords" type="text" placeholder="meeting, project, office, email" />
-              <small class="field-note">Add 2-12 keywords. Repeated words are removed automatically.</small>
-            </label>
-
-            <div id="keywordChips" class="chip-row"></div>
-            <div id="keywordsHelper" class="helper-note">
-              Topic presets fill in starter keywords, but you can keep your own list.
             </div>
+
+            <div id="aiControls" class="stack-lg hidden">
+              <div class="form-row">
+                <label class="field">
+                  <span>Level</span>
+                  <select id="level">
+                    <option value="A1">A1</option>
+                    <option value="A2">A2</option>
+                    <option value="B1">B1</option>
+                    <option value="B2" selected>B2</option>
+                    <option value="C1">C1</option>
+                    <option value="Academic">Academic</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span id="topicLabel">Topic</span>
+                  <select id="topic">
+                    <option value="Serbest">Open</option>
+                    <option value="Günlük Hayat">Daily Life</option>
+                    <option value="Okul">School</option>
+                    <option value="Seyahat">Travel</option>
+                    <option value="İş Hayatı">Work Life</option>
+                    <option value="Akademik">Academic</option>
+                    <option value="Science">Science</option>
+                    <option value="Health">Health</option>
+                    <option value="Sport">Sport</option>
+                  </select>
+                </label>
+              </div>
+
+              <label id="lengthField" class="field">
+                <span>Target word count</span>
+                <div class="slider-wrap">
+                  <input id="lengthTarget" type="range" min="150" max="220" step="10" value="190" />
+                  <strong id="lengthValue">190</strong>
+                </div>
+                <small id="levelHint">Richer but still easy to read</small>
+              </label>
+
+              <label id="keywordsField" class="field">
+                <div class="field-head">
+                  <span>Keywords</span>
+                  <span id="keywordCount" class="count-pill">0 words</span>
+                </div>
+                <input id="keywords" type="text" placeholder="meeting, project, office, email" />
+                <small class="field-note">Add 2-12 keywords. Repeated words are removed automatically.</small>
+              </label>
+
+              <div id="keywordChips" class="chip-row"></div>
+              <div id="keywordsHelper" class="helper-note">
+                Topic presets fill in starter keywords, but you can keep your own list.
+              </div>
+            </div>
+
             <p id="generateError" class="error-text hidden"></p>
-            <button id="generateBtn" class="primary-btn" type="submit">Generate Text</button>
+            <button id="generateBtn" class="primary-btn" type="submit">Get Reading</button>
           </form>
         </section>
-
       </aside>
 
       <section class="reading-stage">
         <div class="stage-head">
           <div>
-            <span class="stage-kicker">Generated Reading</span>
+            <span class="stage-kicker">Reading Stage</span>
             <h2>Big reading area. Small distractions.</h2>
           </div>
           <p>Tap a word to open meaning, context, and example on the right.</p>
@@ -221,7 +238,7 @@
         </div>
 
         <div id="previewState" class="preview-state">
-          Ready. Generate a text first, then tap any word to explore it.
+          Ready. Pick a reading first, then tap any word to explore it.
         </div>
 
         <div id="readingExperience" class="experience-grid hidden">
@@ -233,14 +250,14 @@
             </div>
             <div class="reading-body" id="readingBody"></div>
             <div class="action-row">
-              <button id="regenBtn" class="secondary-btn" type="button">Generate Again</button>
+              <button id="regenBtn" class="secondary-btn" type="button">Another Reading</button>
               <button id="clearBtn" class="outline-btn" type="button">Clear Reading</button>
             </div>
           </div>
 
           <aside class="detail-column">
             <div class="flip-scene">
-              <div id="flipCard" class="flip-card" role="button" tabindex="0" aria-label="Kelime kartını çevir">
+              <div id="flipCard" class="flip-card" role="button" tabindex="0" aria-label="Flip word card">
                 <div class="flip-face flip-front">
                   <span class="mini-label">Selected Word</span>
                   <h3 id="selectedWord">Word</h3>
@@ -257,11 +274,11 @@
             <div class="insight-card">
               <div class="insight-block">
                 <span class="mini-label">Context in Turkish</span>
-                <p id="selectedContext">Bir kelime seçildiğinde açıklama burada görünecek.</p>
+                <p id="selectedContext">Context appears here after you choose a word.</p>
               </div>
               <div class="insight-block">
                 <span class="mini-label">Simple Example</span>
-                <p id="selectedExample">Örnek cümle burada görünecek.</p>
+                <p id="selectedExample">A short example appears here after you choose a word.</p>
               </div>
             </div>
           </aside>
@@ -277,7 +294,7 @@
         <span id="libraryKicker" class="mini-label">Library</span>
         <h3 id="libraryTitle">Saved content</h3>
       </div>
-      <button id="closeLibraryBtn" class="icon-btn" type="button" aria-label="Paneli kapat">×</button>
+      <button id="closeLibraryBtn" class="icon-btn" type="button" aria-label="Close panel">×</button>
     </div>
 
     <section id="savedWordsPanel" class="library-section hidden">
@@ -310,6 +327,6 @@
     </section>
   </aside>
 
-  <script src="/assets/app.js?v=20260413t"></script>
+  <script src="/assets/app.js?v=20260413u"></script>
 </body>
 </html>

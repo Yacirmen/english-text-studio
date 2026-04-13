@@ -176,8 +176,8 @@ class GenerateRequest(BaseModel):
     level: str
     topic: str
     length_target: int = Field(ge=60, le=320)
-    keywords: list[str]
-    source: str = "smart"
+    keywords: list[str] = Field(default_factory=list)
+    source: str = "library"
 
 
 class ExplainRequest(BaseModel):
@@ -1228,9 +1228,11 @@ def generate(payload: GenerateRequest) -> dict[str, str]:
     keywords = sanitize_keywords(payload.keywords)
     if payload.level not in LEVEL_CONFIG:
         raise HTTPException(status_code=400, detail="Geçersiz seviye.")
-    if len(keywords) < 2 or len(keywords) > 12:
+    if payload.source not in {"library", "ai"}:
+        raise HTTPException(status_code=400, detail="Geçersiz içerik kaynağı.")
+    if payload.source == "ai" and (len(keywords) < 2 or len(keywords) > 12):
         raise HTTPException(status_code=400, detail="2 ile 12 arasında anahtar kelime gerekli.")
-    if payload.source in {"library", "smart"}:
+    if payload.source == "library":
         library_match = pick_library_reading(payload.level, payload.topic, keywords, payload.length_target)
         if library_match:
             return {
@@ -1238,8 +1240,7 @@ def generate(payload: GenerateRequest) -> dict[str, str]:
                 "title": library_match["title"],
                 "content_source": "library",
             }
-        if payload.source == "library":
-            raise HTTPException(status_code=404, detail="Bu filtreler için library içinde uygun bir metin bulunamadı.")
+        raise HTTPException(status_code=404, detail="Bu filtreler için library içinde uygun bir metin bulunamadı.")
     prompt = build_text_prompt(payload.level, payload.topic, keywords, payload.length_target)
     try:
         return {
