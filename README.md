@@ -16,6 +16,7 @@ Interactive English reading practice app with:
 - Hugging Face Router or Gemini
 - SQLite locally
 - PostgreSQL in live/staging deploys
+- SMTP mail delivery for email verification
 
 ## Local Run
 
@@ -47,10 +48,18 @@ HF_TOKEN=your_huggingface_token
 GEMINI_MODEL=gemini-2.5-flash
 GEMINI_API_KEY=your_gemini_api_key
 DATABASE_URL=
+APP_BASE_URL=http://127.0.0.1:8041
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USERNAME=
+SMTP_PASSWORD=
+SMTP_FROM_EMAIL=
+SMTP_USE_TLS=true
 ```
 
 - Leave `DATABASE_URL` empty for local SQLite
 - Set `DATABASE_URL` in staging/production for PostgreSQL
+- Set SMTP variables to enable email verification links
 
 ## Live Test Environment
 

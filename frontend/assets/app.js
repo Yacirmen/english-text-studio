@@ -36,6 +36,7 @@ const state = {
   libraryStats: null,
   quizStats: { answered: 0, correct: 0, streak: 0 },
   hasEnteredApp: window.sessionStorage.getItem("ets_guest") === "1",
+  pendingVerificationEmail: "",
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -45,6 +46,7 @@ const gateAuthEmailEl = $("#gateAuthEmail");
 const gateAuthPasswordEl = $("#gateAuthPassword");
 const gateAuthErrorEl = $("#gateAuthError");
 const gateAuthSubmitBtn = $("#gateAuthSubmitBtn");
+const gateResendBtn = $("#gateResendBtn");
 const gateShowLoginBtn = $("#gateShowLoginBtn");
 const gateShowRegisterBtn = $("#gateShowRegisterBtn");
 const continueGuestBtn = $("#continueGuestBtn");
@@ -480,6 +482,16 @@ function renderAuthMode() {
   gateShowRegisterBtn?.classList.toggle("active", !isLogin);
   authSubmitBtn.textContent = isLogin ? "Log In" : "Sign Up";
   if (gateAuthSubmitBtn) gateAuthSubmitBtn.textContent = isLogin ? "Log In" : "Sign Up";
+  if (!state.pendingVerificationEmail) gateResendBtn?.classList.add("hidden");
+}
+
+function showVerificationState(email, message) {
+  state.pendingVerificationEmail = email;
+  gateAuthErrorEl.textContent = message || "Check your inbox and verify your email before logging in.";
+  gateAuthErrorEl.classList.remove("hidden");
+  gateResendBtn?.classList.remove("hidden");
+  state.authMode = "login";
+  renderAuthMode();
 }
 
 function renderWelcomeGate() {
@@ -490,6 +502,8 @@ function renderWelcomeGate() {
 
 function completeAppEntry(asGuest = false) {
   state.hasEnteredApp = true;
+  state.pendingVerificationEmail = "";
+  gateResendBtn?.classList.add("hidden");
   if (asGuest) {
     window.sessionStorage.setItem("ets_guest", "1");
   } else {
@@ -731,6 +745,12 @@ authForm.addEventListener("submit", async (event) => {
       }),
     });
     if (!parsed.ok) throw new Error(parsed.data.detail || "Authentication failed.");
+    if (parsed.data.verification_required) {
+      authUsernameEl.value = email;
+      authPasswordEl.value = "";
+      showVerificationState(email, parsed.data.message);
+      return;
+    }
     state.user = parsed.data.user;
     state.stats = parsed.data.stats || { saved_words: 0, mastered_words: 0 };
     authUsernameEl.value = "";
@@ -767,6 +787,14 @@ gateAuthForm?.addEventListener("submit", async (event) => {
       body: JSON.stringify(payload),
     });
     if (!parsed.ok) throw new Error(parsed.data.detail || "Authentication failed.");
+    if (parsed.data.verification_required) {
+      authUsernameEl.value = payload.username;
+      authPasswordEl.value = "";
+      gateAuthEmailEl.value = payload.username;
+      gateAuthPasswordEl.value = "";
+      showVerificationState(payload.username, parsed.data.message);
+      return;
+    }
     authUsernameEl.value = payload.username;
     authPasswordEl.value = "";
     gateAuthEmailEl.value = "";
@@ -781,6 +809,30 @@ gateAuthForm?.addEventListener("submit", async (event) => {
     gateAuthErrorEl.classList.remove("hidden");
   } finally {
     setLoading(gateAuthSubmitBtn, "", false);
+  }
+});
+
+gateResendBtn?.addEventListener("click", async () => {
+  const email = state.pendingVerificationEmail || gateAuthEmailEl.value.trim() || authUsernameEl.value.trim();
+  if (!isValidEmail(email)) {
+    gateAuthErrorEl.textContent = "Enter a valid email first.";
+    gateAuthErrorEl.classList.remove("hidden");
+    return;
+  }
+  setLoading(gateResendBtn, "Sending...", true);
+  try {
+    const parsed = await apiFetch("/api/auth/resend-verification", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+    if (!parsed.ok) throw new Error(parsed.data.detail || "Could not resend verification email.");
+    gateAuthErrorEl.textContent = parsed.data.message || "Verification email sent.";
+    gateAuthErrorEl.classList.remove("hidden");
+  } catch (error) {
+    gateAuthErrorEl.textContent = error.message;
+    gateAuthErrorEl.classList.remove("hidden");
+  } finally {
+    setLoading(gateResendBtn, "", false);
   }
 });
 

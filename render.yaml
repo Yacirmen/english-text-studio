@@ -20,5 +20,19 @@ services:
         fromDatabase:
           name: english-text-studio-db
           property: connectionString
+      - key: APP_BASE_URL
+        value: https://english-text-studio-staging.onrender.com
       - key: HF_TOKEN
         sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM_EMAIL
+        sync: false
+      - key: SMTP_USE_TLS
+        value: "true"
