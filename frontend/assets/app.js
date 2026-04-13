@@ -107,6 +107,7 @@ const libraryModeHintEl = $("#libraryModeHint");
 const libraryControlsEl = $("#libraryControls");
 const libraryLevelEl = $("#libraryLevel");
 const libraryTopicEl = $("#libraryTopic");
+const randomTopicBtn = $("#randomTopicBtn");
 const aiControlsEl = $("#aiControls");
 const libraryCountBadgeEl = $("#libraryCountBadge");
 
@@ -577,6 +578,7 @@ function buildPayload() {
     length_target: Number(lengthEl.value),
     keywords,
     source: state.contentSource,
+    exclude_title: state.contentSource === "library" ? (state.lastPayload?.title || null) : null,
   };
 }
 
@@ -701,7 +703,11 @@ clearSavedWordsBtn?.addEventListener("click", async () => {
 
 regenBtn.addEventListener("click", async () => {
   if (!state.lastPayload) return;
-  await generateExperience(state.lastPayload, regenBtn);
+  const payload = {
+    ...state.lastPayload,
+    exclude_title: state.lastPayload.content_source === "library" ? state.lastPayload.title : null,
+  };
+  await generateExperience(payload, regenBtn);
 });
 
 clearBtn.addEventListener("click", () => {
@@ -766,6 +772,17 @@ libraryLevelEl?.addEventListener("change", () => {
 libraryTopicEl?.addEventListener("change", () => {
   topicEl.value = libraryTopicEl.value;
   syncTopicPickers(libraryTopicEl.value);
+});
+
+randomTopicBtn?.addEventListener("click", () => {
+  if (!libraryTopicEl) return;
+  const options = Array.from(libraryTopicEl.options).map((option) => option.value);
+  const current = libraryTopicEl.value;
+  const pool = options.filter((value) => value !== current);
+  const next = pool[Math.floor(Math.random() * pool.length)] || current;
+  libraryTopicEl.value = next;
+  topicEl.value = next;
+  syncTopicPickers(next);
 });
 
 bindPointerGlow();

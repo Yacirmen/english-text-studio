@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os
+import random
 import re
 import secrets
 import sqlite3
@@ -178,6 +179,7 @@ class GenerateRequest(BaseModel):
     length_target: int = Field(ge=60, le=320)
     keywords: list[str] = Field(default_factory=list)
     source: str = "library"
+    exclude_title: str | None = None
 
 
 class ExplainRequest(BaseModel):
@@ -646,7 +648,13 @@ def parse_keywords_field(value: str) -> list[str]:
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
-def pick_library_reading(level: str, topic: str, keywords: list[str], length_target: int) -> dict[str, Any] | None:
+def pick_library_reading(
+    level: str,
+    topic: str,
+    keywords: list[str],
+    length_target: int,
+    exclude_title: str | None = None,
+) -> dict[str, Any] | None:
     normalized_topic = normalize_topic(topic)
     rows = db_fetchall(
         """
@@ -659,6 +667,10 @@ def pick_library_reading(level: str, topic: str, keywords: list[str], length_tar
     )
     if not rows:
         return None
+    if exclude_title:
+        alternate_rows = [row for row in rows if str(row["title"]) != exclude_title]
+        if alternate_rows:
+            rows = alternate_rows
     if normalized_topic != "Serbest":
         exact_topic_rows = [row for row in rows if row["topic"] == normalized_topic]
         if exact_topic_rows:
@@ -671,7 +683,9 @@ def pick_library_reading(level: str, topic: str, keywords: list[str], length_tar
         length_score = abs(int(row["word_count"]) - int(length_target))
         scored.append((-(keyword_hits + topic_score), length_score, row))
     scored.sort(key=lambda item: (item[0], item[1], item[2]["id"]))
-    best = scored[0][2]
+    top_score = scored[0][0]
+    candidate_rows = [row for score, _length, row in scored if score == top_score]
+    best = random.choice(candidate_rows)
     return {
         "id": best["id"],
         "title": best["title"],
@@ -1272,7 +1286,13 @@ def generate(payload: GenerateRequest) -> dict[str, str]:
     if payload.source == "ai" and (len(keywords) < 2 or len(keywords) > 12):
         raise HTTPException(status_code=400, detail="2 ile 12 arasında anahtar kelime gerekli.")
     if payload.source == "library":
-        library_match = pick_library_reading(payload.level, payload.topic, keywords, payload.length_target)
+        library_match = pick_library_reading(
+            payload.level,
+            payload.topic,
+            keywords,
+            payload.length_target,
+            payload.exclude_title,
+        )
         if library_match:
             return {
                 "text": library_match["text"],
