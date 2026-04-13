@@ -525,12 +525,17 @@ def send_email_message(to_email: str, subject: str, html_body: str, text_body: s
     message["To"] = to_email
     message.set_content(text_body)
     message.add_alternative(html_body, subtype="html")
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as server:
-        if SMTP_USE_TLS:
-            server.starttls()
-        if SMTP_USERNAME:
-            server.login(SMTP_USERNAME, SMTP_PASSWORD)
-        server.send_message(message)
+    try:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=20) as server:
+            if SMTP_USE_TLS:
+                server.starttls()
+            if SMTP_USERNAME:
+                server.login(SMTP_USERNAME, SMTP_PASSWORD)
+            server.send_message(message)
+    except smtplib.SMTPException as exc:
+        raise HTTPException(status_code=503, detail=f"Verification email could not be sent: {exc}") from exc
+    except OSError as exc:
+        raise HTTPException(status_code=503, detail="Verification email service is unreachable right now.") from exc
 
 
 def create_verification_token(user_id: int, email: str) -> str:
@@ -1399,17 +1404,37 @@ def register(payload: AuthRequest, response: Response) -> dict[str, Any]:
     username = clean_username(payload.username)
     password_hash = hash_password(payload.password)
     timestamp = now_iso()
+    created_new = False
     try:
         insert_query = "INSERT INTO users (username, password_hash, is_active, verified_at, created_at) VALUES (?, ?, ?, ?, ?)"
         if USE_POSTGRES:
             insert_query += " RETURNING id"
         user_id = db_insert(insert_query, (username, password_hash, 0, None, timestamp))
+        created_new = True
     except Exception as exc:
         if "unique" not in str(exc).lower() and "duplicate" not in str(exc).lower():
             raise
-        raise HTTPException(status_code=409, detail="This email is already in use.")
+        existing = db_fetchone(
+            "SELECT id, username, is_active FROM users WHERE username = ?",
+            (username,),
+        )
+        if not existing:
+            raise HTTPException(status_code=409, detail="This email is already in use.")
+        if bool(existing.get("is_active", 1)):
+            raise HTTPException(status_code=409, detail="This email is already in use.")
+        user_id = int(existing["id"])
+        db_execute(
+            "UPDATE users SET password_hash = ?, created_at = ? WHERE id = ?",
+            (password_hash, timestamp, user_id),
+        )
     token = create_verification_token(user_id, username)
-    send_verification_email(username, token)
+    try:
+        send_verification_email(username, token)
+    except HTTPException:
+        if created_new:
+            db_execute("DELETE FROM email_verifications WHERE user_id = ?", (user_id,))
+            db_execute("DELETE FROM users WHERE id = ?", (user_id,))
+        raise
     clear_session(response, None)
     return {
         "ok": True,
