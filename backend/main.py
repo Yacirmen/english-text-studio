@@ -33,6 +33,7 @@ STATIC_DIR = ROOT_DIR / "frontend"
 ENV_PATH = ROOT_DIR / ".env"
 DB_PATH = ROOT_DIR / "backend" / "app.db"
 EXTRA_WORD_MAP_PATH = ROOT_DIR / "backend" / "extra_word_map.json"
+LIBRARY_WORD_MAP_PATH = ROOT_DIR / "backend" / "library_word_map.json"
 SESSION_COOKIE = "ets_session"
 WORD_DETAIL_CACHE: dict[str, dict[str, str]] = {}
 GENERATE_CACHE: dict[str, str] = {}
@@ -640,6 +641,13 @@ if EXTRA_WORD_MAP_PATH.exists():
         EXTRA_WORD_MAP = {}
 else:
     EXTRA_WORD_MAP = {}
+if LIBRARY_WORD_MAP_PATH.exists():
+    try:
+        LIBRARY_WORD_MAP: dict[str, str] = json.loads(LIBRARY_WORD_MAP_PATH.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        LIBRARY_WORD_MAP = {}
+else:
+    LIBRARY_WORD_MAP = {}
 TOPIC_SENTENCE_BANK = {
     "Serbest": [
         "The day starts quietly, but it soon becomes full of small decisions and new plans.",
@@ -1801,7 +1809,17 @@ def extract_unique_words(text: str) -> list[str]:
 def build_library_glossary(text: str) -> dict[str, dict[str, str]]:
     glossary: dict[str, dict[str, str]] = {}
     for word in extract_unique_words(text):
-        glossary[word] = build_local_word_detail(text, word)
+        library_meaning = repair_mojibake(LIBRARY_WORD_MAP.get(word, infer_turkish_meaning(word)))
+        sentence = find_sentence_for_word(text, word)
+        context = repair_mojibake(f'"{word}" burada büyük olasılıkla "{library_meaning}" anlamında kullanılıyor.')
+        example = f"The word {word} appears in this reading text."
+        if sentence:
+            compact_sentence = re.sub(r"\s+", " ", sentence).strip()
+            context = repair_mojibake(
+                f'Bu metinde "{word}" kelimesi "{library_meaning}" fikrini veriyor. Geçtiği bölüm: {compact_sentence}'
+            )
+            example = compact_sentence
+        glossary[word] = {"turkish": library_meaning, "context": context, "example": example}
     return glossary
 
 
