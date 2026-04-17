@@ -103,6 +103,198 @@ LOCAL_WORD_MAP = {
     "work": "iÅŸ",
     "workday": "iÅŸ gÃ¼nÃ¼",
 }
+LOCAL_WORD_MAP.update(
+    {
+        "achieve": "baÅŸarmak",
+        "achievement": "baÅŸarÄ±",
+        "active": "aktif",
+        "activity": "etkinlik",
+        "adapt": "uyum saÄŸlamak",
+        "adjust": "ayarlamak",
+        "advice": "tavsiye",
+        "affect": "etkilemek",
+        "afternoon": "Ã¶ÄŸleden sonra",
+        "agree": "kabul etmek",
+        "allow": "izin vermek",
+        "already": "zaten",
+        "amazing": "harika",
+        "answer": "cevap",
+        "approach": "yaklaÅŸÄ±m",
+        "article": "makale",
+        "artist": "sanatÃ§Ä±",
+        "attention": "dikkat",
+        "available": "mevcut",
+        "begin": "baÅŸlamak",
+        "benefit": "fayda",
+        "better": "daha iyi",
+        "book": "kitap",
+        "break": "mola",
+        "careful": "dikkatli",
+        "career": "kariyer",
+        "change": "deÄŸiÅŸim",
+        "choice": "seÃ§im",
+        "college": "Ã¼niversite",
+        "comfortable": "rahat",
+        "communication": "iletiÅŸim",
+        "community": "topluluk",
+        "conference": "konferans",
+        "confident": "Ã¶zgÃ¼venli",
+        "continue": "devam etmek",
+        "conversation": "sohbet",
+        "create": "oluÅŸturmak",
+        "crowded": "kalabalÄ±k",
+        "deadline": "son tarih",
+        "decision": "karar",
+        "deliver": "teslim etmek",
+        "design": "tasarÄ±m",
+        "detail": "ayrÄ±ntÄ±",
+        "discussion": "tartÄ±ÅŸma",
+        "discover": "keÅŸfetmek",
+        "easy": "kolay",
+        "effective": "etkili",
+        "effort": "Ã§aba",
+        "energy": "enerji",
+        "environment": "Ã§evre",
+        "example": "Ã¶rnek",
+        "experience": "deneyim",
+        "explain": "aÃ§Ä±klamak",
+        "explore": "keÅŸfetmek",
+        "family": "aile",
+        "feature": "Ã¶zellik",
+        "feedback": "geri bildirim",
+        "feeling": "duygu",
+        "final": "son",
+        "focus": "odak",
+        "future": "gelecek",
+        "gain": "kazanmak",
+        "grade": "not",
+        "growth": "geliÅŸim",
+        "habit": "alÄ±ÅŸkanlÄ±k",
+        "health": "saÄŸlÄ±k",
+        "helpful": "yararlÄ±",
+        "highlight": "vurgulamak",
+        "history": "geÃ§miÅŸ",
+        "idea": "fikir",
+        "improve": "geliÅŸtirmek",
+        "include": "iÃ§ermek",
+        "independent": "baÄŸÄ±msÄ±z",
+        "information": "bilgi",
+        "insight": "iÃ§gÃ¶rÃ¼",
+        "interview": "gÃ¶rÃ¼ÅŸme",
+        "journey": "yolculuk",
+        "knowledge": "bilgi birikimi",
+        "listen": "dinlemek",
+        "manage": "yÃ¶netmek",
+        "manager": "yÃ¶netici",
+        "market": "pazar",
+        "material": "materyal",
+        "measure": "Ã¶lÃ§mek",
+        "modern": "modern",
+        "motivate": "motive etmek",
+        "natural": "doÄŸal",
+        "network": "aÄŸ",
+        "notice": "fark etmek",
+        "opportunity": "fÄ±rsat",
+        "organize": "dÃ¼zenlemek",
+        "outcome": "sonuÃ§",
+        "patient": "sabÄ±rlÄ±",
+        "pattern": "Ã¶rÃ¼ntÃ¼",
+        "people": "insanlar",
+        "performance": "performans",
+        "personal": "kiÅŸisel",
+        "place": "yer",
+        "positive": "olumlu",
+        "practice": "pratik",
+        "prepare": "hazÄ±rlamak",
+        "present": "sunmak",
+        "pressure": "baskÄ±",
+        "priority": "Ã¶ncelik",
+        "problem": "sorun",
+        "process": "sÃ¼reÃ§",
+        "promote": "teÅŸvik etmek",
+        "question": "soru",
+        "quick": "hÄ±zlÄ±",
+        "realistic": "gerÃ§ekÃ§i",
+        "reason": "neden",
+        "record": "kayÄ±t",
+        "reflect": "yansÄ±tmak",
+        "regular": "dÃ¼zenli",
+        "relationship": "iliÅŸki",
+        "resource": "kaynak",
+        "review": "gÃ¶zden geÃ§irmek",
+        "role": "rol",
+        "science": "bilim",
+        "schedule": "program",
+        "section": "bÃ¶lÃ¼m",
+        "seem": "gÃ¶rÃ¼nmek",
+        "sense": "his",
+        "service": "hizmet",
+        "share": "paylaÅŸmak",
+        "shift": "deÄŸiÅŸim",
+        "skill": "beceri",
+        "social": "sosyal",
+        "solution": "Ã§Ã¶zÃ¼m",
+        "source": "kaynak",
+        "space": "alan",
+        "specific": "belirli",
+        "sport": "spor",
+        "standard": "standart",
+        "strategy": "strateji",
+        "stress": "stres",
+        "subject": "konu",
+        "success": "baÅŸarÄ±",
+        "support": "destek",
+        "system": "sistem",
+        "together": "birlikte",
+        "topic": "konu",
+        "understand": "anlamak",
+        "update": "gÃ¼ncelleme",
+        "useful": "yararlÄ±",
+        "usual": "alÄ±ÅŸÄ±lmÄ±ÅŸ",
+        "value": "deÄŸer",
+        "visual": "gÃ¶rsel",
+        "voice": "ses",
+        "week": "hafta",
+        "weekend": "hafta sonu",
+        "welcome": "hoÅŸ karÅŸÄ±lamak",
+        "workflow": "iÅŸ akÄ±ÅŸÄ±",
+        "world": "dÃ¼nya",
+        "write": "yazmak",
+    }
+)
+LOCAL_PHRASE_MAP = {
+    "work life": "iÅŸ hayatÄ±",
+    "daily life": "gÃ¼nlÃ¼k hayat",
+    "saved words": "kayÄ±tlÄ± kelimeler",
+    "quick review": "hÄ±zlÄ± tekrar",
+    "word history": "kelime geÃ§miÅŸi",
+    "reading stage": "okuma alanÄ±",
+    "reading setup": "okuma ayarlarÄ±",
+}
+IRREGULAR_WORD_MAP = {
+    "felt": "hissetmek",
+    "made": "yapmak",
+    "meant": "anlamÄ±na gelmek",
+    "found": "bulmak",
+    "thought": "dÃ¼ÅŸÃ¼nmek",
+    "brought": "getirmek",
+    "caught": "yakalamak",
+    "built": "inÅŸa etmek",
+    "left": "ayrÄ±lmak",
+    "spent": "harcamak",
+    "kept": "sÃ¼rdÃ¼rmek",
+    "grew": "bÃ¼yÃ¼mek",
+    "known": "bilinmek",
+    "shown": "gÃ¶stermek",
+    "taken": "almak",
+    "written": "yazmak",
+    "chosen": "seÃ§mek",
+    "spoken": "konuÅŸmak",
+    "driven": "sÃ¼rmek",
+    "cluttered": "karÄ±ÅŸÄ±k",
+    "interpreted": "yorumlanmÄ±ÅŸ",
+    "narrow": "dar",
+}
 TOPIC_SENTENCE_BANK = {
     "Serbest": [
         "The day starts quietly, but it soon becomes full of small decisions and new plans.",
@@ -1104,12 +1296,40 @@ def parse_json_response(raw_text: str) -> dict[str, Any]:
 
 def infer_turkish_meaning(word: str) -> str:
     lowered = word.lower().strip()
+    if lowered in LOCAL_PHRASE_MAP:
+        return LOCAL_PHRASE_MAP[lowered]
     if lowered in LOCAL_WORD_MAP:
         return LOCAL_WORD_MAP[lowered]
+    if lowered in IRREGULAR_WORD_MAP:
+        return IRREGULAR_WORD_MAP[lowered]
+    if lowered.endswith("ies") and len(lowered) > 4:
+        singular = lowered[:-3] + "y"
+        if singular in LOCAL_WORD_MAP:
+            return LOCAL_WORD_MAP[singular]
+    if lowered.endswith("es") and len(lowered) > 3:
+        singular = lowered[:-2]
+        if singular in LOCAL_WORD_MAP:
+            return LOCAL_WORD_MAP[singular]
+    if lowered.endswith("s") and len(lowered) > 3:
+        singular = lowered[:-1]
+        if singular in LOCAL_WORD_MAP:
+            return LOCAL_WORD_MAP[singular]
     if lowered.endswith("ing") and len(lowered) > 4:
-        return f"{lowered[:-3]} yapmak"
+        stem = lowered[:-3]
+        if stem in LOCAL_WORD_MAP:
+            return LOCAL_WORD_MAP[stem]
+        return f"{stem} yapmak"
     if lowered.endswith("ed") and len(lowered) > 3:
-        return lowered[:-2]
+        stem = lowered[:-2]
+        if stem in LOCAL_WORD_MAP:
+            return LOCAL_WORD_MAP[stem]
+        if stem.endswith("i") and stem[:-1] + "y" in LOCAL_WORD_MAP:
+            return LOCAL_WORD_MAP[stem[:-1] + "y"]
+        return stem
+    if lowered.endswith("ly") and len(lowered) > 4:
+        root = lowered[:-2]
+        if root in LOCAL_WORD_MAP:
+            return f"{LOCAL_WORD_MAP[root]} bir ÅŸekilde"
     return lowered
 
 
@@ -1130,10 +1350,13 @@ def choose_local_scenario(topic: str, keywords: list[str]) -> dict[str, Any]:
 
 def build_local_word_detail(text: str, word: str) -> dict[str, str]:
     meaning = infer_turkish_meaning(word)
-    context = f'"{word}" bu metinde "{meaning}" anlamÄ±na yakÄ±n ÅŸekilde kullanÄ±lÄ±yor.'
-    example = f"I use the word {word} in a simple sentence."
-    if re.search(rf"\b{re.escape(word)}\b", text, re.IGNORECASE):
-        example = f"The word {word} appears in this reading text."
+    sentence = find_sentence_for_word(text, word)
+    context = f'"{word}" burada bÃ¼yÃ¼k olasÄ±lÄ±kla "{meaning}" anlamÄ±nda kullanÄ±lÄ±yor.'
+    example = f"The word {word} appears in this reading text."
+    if sentence:
+        compact_sentence = re.sub(r"\s+", " ", sentence).strip()
+        context = f'Bu metinde "{word}" kelimesi "{meaning}" fikrini veriyor. GeÃ§tiÄŸi bÃ¶lÃ¼m: {compact_sentence}'
+        example = compact_sentence
     return {"turkish": meaning, "context": context, "example": example}
 
 
