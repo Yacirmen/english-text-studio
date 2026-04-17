@@ -265,6 +265,51 @@ LOCAL_WORD_MAP.update(
 )
 LOCAL_WORD_MAP.update(
     {
+        "i": "ben",
+        "we": "biz",
+        "you": "sen",
+        "he": "o",
+        "she": "o",
+        "they": "onlar",
+        "it": "o",
+        "my": "benim",
+        "our": "bizim",
+        "your": "senin",
+        "his": "onun",
+        "her": "onun",
+        "their": "onların",
+        "me": "beni",
+        "us": "bizi",
+        "them": "onları",
+        "this": "bu",
+        "that": "şu",
+        "these": "bunlar",
+        "those": "şunlar",
+        "with": "ile",
+        "without": "olmadan",
+        "before": "önce",
+        "after": "sonra",
+        "during": "sırasında",
+        "between": "arasında",
+        "under": "altında",
+        "over": "üzerinde",
+        "into": "içine",
+        "across": "boyunca",
+        "through": "içinden",
+        "around": "etrafında",
+        "inside": "içinde",
+        "outside": "dışında",
+        "near": "yakınında",
+        "behind": "arkasında",
+        "front": "ön",
+        "beforehand": "önceden",
+        "sit": "oturmak",
+        "sits": "oturur",
+        "write": "yazmak",
+        "writes": "yazar",
+        "begin": "başlamak",
+        "begins": "başlar",
+        "notebook": "not defteri",
         "ability": "yetenek",
         "accept": "kabul etmek",
         "access": "erişim",
@@ -695,6 +740,7 @@ class GenerateRequest(BaseModel):
 class ExplainRequest(BaseModel):
     text: str
     word: str
+    content_source: str | None = None
 
 
 class AuthRequest(BaseModel):
@@ -1741,6 +1787,24 @@ def find_sentence_for_word(text: str, word: str) -> str:
     return ""
 
 
+def extract_unique_words(text: str) -> list[str]:
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for match in re.findall(r"[A-Za-z]+(?:['-][A-Za-z]+)*", text):
+        lowered = match.lower()
+        if lowered not in seen:
+            seen.add(lowered)
+            ordered.append(lowered)
+    return ordered
+
+
+def build_library_glossary(text: str) -> dict[str, dict[str, str]]:
+    glossary: dict[str, dict[str, str]] = {}
+    for word in extract_unique_words(text):
+        glossary[word] = build_local_word_detail(text, word)
+    return glossary
+
+
 def build_local_reading(level: str, topic: str, keywords: list[str], length_target: int) -> str:
     topic_key = topic if topic in TOPIC_SENTENCE_BANK else "Serbest"
     base_sentences = TOPIC_SENTENCE_BANK[topic_key][:]
@@ -2179,7 +2243,7 @@ def quiz_check(payload: QuizAnswerRequest, session_token: str | None = Cookie(de
 
 
 @app.post("/api/generate")
-def generate(payload: GenerateRequest) -> dict[str, str]:
+def generate(payload: GenerateRequest) -> dict[str, Any]:
     keywords = sanitize_keywords(payload.keywords)
     if payload.level not in LEVEL_CONFIG:
         raise HTTPException(status_code=400, detail="GeÃ§ersiz seviye.")
@@ -2200,6 +2264,7 @@ def generate(payload: GenerateRequest) -> dict[str, str]:
                 "text": library_match["text"],
                 "title": library_match["title"],
                 "content_source": "library",
+                "glossary": build_library_glossary(library_match["text"]),
             }
         raise HTTPException(status_code=404, detail="Bu filtreler iÃ§in library iÃ§inde uygun bir metin bulunamadÄ±.")
     prompt = build_text_prompt(payload.level, payload.topic, keywords, payload.length_target)
@@ -2208,6 +2273,7 @@ def generate(payload: GenerateRequest) -> dict[str, str]:
             "text": request_text(prompt, payload.level, payload.topic, keywords),
             "title": "",
             "content_source": "ai",
+            "glossary": {},
         }
     except Exception as exc:
         raise normalize_api_error(exc)
@@ -2279,7 +2345,10 @@ def word_detail(payload: ExplainRequest, session_token: str | None = Cookie(defa
     if not safe_word:
         raise HTTPException(status_code=400, detail="GeÃ§erli bir kelime gerekli.")
     try:
-        detail = request_word_detail(payload.text, safe_word)
+        if (payload.content_source or "").lower() == "library":
+            detail = build_local_word_detail(payload.text, safe_word)
+        else:
+            detail = request_word_detail(payload.text, safe_word)
         user = optional_user(session_token)
         if user and detail_is_saveable(safe_word, detail):
             save_word_for_user(int(user["id"]), safe_word, payload.text, detail)

@@ -535,7 +535,11 @@ async function loadWordDetail(word) {
   try {
     const parsed = await apiFetch("/api/word-detail", {
       method: "POST",
-      body: JSON.stringify({ text: state.text, word }),
+      body: JSON.stringify({
+        text: state.text,
+        word,
+        content_source: state.lastPayload?.content_source || state.contentSource,
+      }),
     });
     if (!parsed.ok) throw new Error(parsed.data.detail || "Word detail could not be loaded.");
     state.glossary[word] = parsed.data;
@@ -615,7 +619,7 @@ async function generateExperience(payload, triggerButton) {
     });
     if (!parsed.ok) throw new Error(parsed.data.detail || "Something went wrong.");
     state.text = parsed.data.text;
-    state.glossary = {};
+    state.glossary = parsed.data.glossary || {};
     state.lastPayload = {
       ...payload,
       title: parsed.data.title || "",
@@ -676,7 +680,11 @@ manualForm.addEventListener("submit", async (event) => {
   try {
     const parsed = await apiFetch("/api/word-detail", {
       method: "POST",
-      body: JSON.stringify({ text: state.text, word }),
+      body: JSON.stringify({
+        text: state.text,
+        word,
+        content_source: state.lastPayload?.content_source || state.contentSource,
+      }),
     });
     if (!parsed.ok) throw new Error(parsed.data.detail || "Something went wrong.");
     if (state.user) {
