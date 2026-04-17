@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260417ad" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260418ab" />
 </head>
 <body>
   <div id="welcomeGate" class="welcome-gate">
@@ -50,11 +50,14 @@
 
   <div class="page-shell">
     <header class="topbar">
-      <div class="brand-lockup">
-        <span class="brand-mark"></span>
-        <div>
-          <strong>Reading Studio</strong>
-          <span>Your personal reading, review, and vocab space</span>
+      <div class="topbar-left">
+        <div class="brand-lockup">
+          <span class="brand-mark"></span>
+          <button id="themeToggleBtn" class="theme-toggle" type="button" aria-label="Toggle dark mode" aria-pressed="false" title="Toggle theme">
+            <span class="theme-icon theme-sun" aria-hidden="true">&#9728;</span>
+            <span class="theme-icon theme-moon" aria-hidden="true">&#9790;</span>
+            <span class="theme-toggle-thumb" aria-hidden="true"></span>
+          </button>
         </div>
       </div>
       <div class="top-status">
@@ -405,6 +408,6 @@
     </section>
   </aside>
 
-  <script src="/assets/app.js?v=20260417ad"></script>
+  <script src="/assets/app.js?v=20260418ab"></script>
 </body>
 </html>

@@ -52,6 +52,7 @@ const gateShowLoginBtn = $("#gateShowLoginBtn");
 const gateShowRegisterBtn = $("#gateShowRegisterBtn");
 const continueGuestBtn = $("#continueGuestBtn");
 const pageShell = $(".page-shell");
+const themeToggleBtn = $("#themeToggleBtn");
 const profileTriggerBtn = $("#profileTriggerBtn");
 const profileTriggerInitialsEl = $("#profileTriggerInitials");
 const profileMenuEl = $("#profileMenu");
@@ -147,6 +148,18 @@ const mobileWordTitleEl = $("#mobileWordTitle");
 const mobileWordMeaningEl = $("#mobileWordMeaning");
 const mobileWordContextEl = $("#mobileWordContext");
 const mobileWordExampleEl = $("#mobileWordExample");
+
+function applyTheme(mode) {
+  const isDark = mode === "dark";
+  document.body.classList.toggle("dark-mode", isDark);
+  themeToggleBtn?.setAttribute("aria-pressed", String(isDark));
+  window.localStorage.setItem("ets_theme", isDark ? "dark" : "light");
+}
+
+function toggleTheme() {
+  const nextMode = document.body.classList.contains("dark-mode") ? "light" : "dark";
+  applyTheme(nextMode);
+}
 
 async function parseApiResponse(response) {
   const raw = await response.text();
@@ -1125,6 +1138,8 @@ registerSheetDrag(mobileWordHandleBtn, mobileWordPanelEl, closeMobileWordSheet, 
 registerSheetDrag(libraryHandleBtn, libraryPanelScrollEl, () => setLibraryView(null), () => !libraryPanelEl?.classList.contains("hidden"));
 registerSheetDrag(profileHandleBtn, profileMenuEl, () => setProfileMenuOpen(false), () => !profileMenuEl?.classList.contains("hidden"));
 
+themeToggleBtn?.addEventListener("click", toggleTheme);
+
 flipCardEl.addEventListener("click", () => {
   if (state.loadingWord || !state.selectedWord) return;
   flipCardEl.classList.toggle("flipped");
@@ -1175,6 +1190,7 @@ renderAuthMode();
 renderUserPanel();
 setLibraryView(null);
 updateSourceModeUi();
+applyTheme(window.localStorage.getItem("ets_theme") === "dark" ? "dark" : "light");
 syncViewModeFromViewport();
 renderKeywordChips();
 renderWelcomeGate();
