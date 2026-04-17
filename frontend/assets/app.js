@@ -37,6 +37,7 @@ const state = {
   libraryStats: null,
   quizStats: { answered: 0, correct: 0, streak: 0 },
   hasEnteredApp: window.sessionStorage.getItem("ets_guest") === "1",
+  viewMode: window.sessionStorage.getItem("ets_view_mode") || (window.innerWidth < 860 ? "mobile" : "web"),
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -131,6 +132,15 @@ const libraryLevelEl = $("#libraryLevel");
 const libraryTopicEl = $("#libraryTopic");
 const aiControlsEl = $("#aiControls");
 const libraryCountBadgeEl = $("#libraryCountBadge");
+const viewWebBtn = $("#viewWebBtn");
+const viewMobileBtn = $("#viewMobileBtn");
+const mobileWordSheetEl = $("#mobileWordSheet");
+const mobileWordBackdropEl = $("#mobileWordBackdrop");
+const closeMobileWordBtn = $("#closeMobileWordBtn");
+const mobileWordTitleEl = $("#mobileWordTitle");
+const mobileWordMeaningEl = $("#mobileWordMeaning");
+const mobileWordContextEl = $("#mobileWordContext");
+const mobileWordExampleEl = $("#mobileWordExample");
 
 async function parseApiResponse(response) {
   const raw = await response.text();
@@ -278,6 +288,36 @@ function updateSourceModeUi() {
   );
 }
 
+function isMobilePreview() {
+  return state.viewMode === "mobile";
+}
+
+function setMobileWordSheetOpen(isOpen) {
+  if (!mobileWordSheetEl) return;
+  mobileWordSheetEl.classList.toggle("hidden", !isOpen);
+  mobileWordSheetEl.classList.toggle("sheet-open", isOpen);
+  mobileWordSheetEl.setAttribute("aria-hidden", String(!isOpen));
+  document.body.classList.toggle("mobile-sheet-open", isOpen);
+}
+
+function updateViewModeUi() {
+  document.body.classList.toggle("mobile-mode", isMobilePreview());
+  document.body.classList.toggle("web-mode", !isMobilePreview());
+  viewWebBtn?.classList.toggle("active", !isMobilePreview());
+  viewMobileBtn?.classList.toggle("active", isMobilePreview());
+  if (!isMobilePreview()) {
+    setMobileWordSheetOpen(false);
+  } else if (state.selectedWord && !state.loadingWord && state.glossary[state.selectedWord]) {
+    setMobileWordSheetOpen(true);
+  }
+}
+
+function setViewMode(mode) {
+  state.viewMode = mode === "mobile" ? "mobile" : "web";
+  window.sessionStorage.setItem("ets_view_mode", state.viewMode);
+  updateViewModeUi();
+}
+
 function renderLibraryStats() {
   if (!libraryCountBadgeEl || !state.libraryStats) return;
   libraryCountBadgeEl.textContent = `${Number(state.libraryStats.total || 0)} curated readings inside`;
@@ -300,16 +340,31 @@ function renderMeta(level, topic, text) {
 
 function renderSelection() {
   const item = state.glossary[state.selectedWord] || {};
-  selectedWordEl.textContent = state.selectedWord || "Word";
-  selectedMeaningEl.textContent = item.turkish || "Choose a word";
-  selectedContextEl.innerHTML = state.loadingWord
+  const meaning = item.turkish || "Choose a word";
+  const contextHtml = state.loadingWord
     ? "Preparing Turkish context..."
     : highlightSelectedWord(item.context || "Context appears here after you choose a word.", state.selectedWord);
-  selectedExampleEl.innerHTML = state.loadingWord
+  const exampleHtml = state.loadingWord
     ? "Preparing example sentence..."
     : highlightSelectedWord(item.example || "A short example appears here after you choose a word.", state.selectedWord);
+
+  selectedWordEl.textContent = state.selectedWord || "Word";
+  selectedMeaningEl.textContent = meaning;
+  selectedContextEl.innerHTML = contextHtml;
+  selectedExampleEl.innerHTML = exampleHtml;
   flipCardEl.classList.remove("flipped");
   flipCardEl.classList.toggle("clickable", !state.loadingWord && Boolean(state.selectedWord));
+
+  if (mobileWordTitleEl) mobileWordTitleEl.textContent = state.selectedWord || "Word";
+  if (mobileWordMeaningEl) mobileWordMeaningEl.textContent = meaning;
+  if (mobileWordContextEl) mobileWordContextEl.innerHTML = contextHtml;
+  if (mobileWordExampleEl) mobileWordExampleEl.innerHTML = exampleHtml;
+
+  if (!isMobilePreview() || !state.selectedWord || state.loadingWord) {
+    setMobileWordSheetOpen(false);
+  } else if (state.glossary[state.selectedWord]) {
+    setMobileWordSheetOpen(true);
+  }
 }
 
 function renderSavedWords() {
@@ -617,7 +672,8 @@ async function loadWordDetail(word) {
     if (state.user && (state.lastPayload?.content_source || state.contentSource) === "library") {
       void saveWordSelection(word);
     }
-    if (state.pendingFlip && state.selectedWord === word) flipCardEl.classList.add("flipped");
+    if (state.pendingFlip && state.selectedWord === word && !isMobilePreview()) flipCardEl.classList.add("flipped");
+    if (state.selectedWord === word && isMobilePreview()) setMobileWordSheetOpen(true);
     state.pendingFlip = false;
     return;
   }
@@ -647,7 +703,8 @@ async function loadWordDetail(word) {
   } finally {
     state.loadingWord = false;
     renderSelection();
-    if (state.pendingFlip && state.selectedWord === word && state.glossary[word]) flipCardEl.classList.add("flipped");
+    if (state.pendingFlip && state.selectedWord === word && state.glossary[word] && !isMobilePreview()) flipCardEl.classList.add("flipped");
+    if (state.selectedWord === word && state.glossary[word] && isMobilePreview()) setMobileWordSheetOpen(true);
     state.pendingFlip = false;
   }
 }
@@ -903,7 +960,10 @@ profileMenuEl?.addEventListener("click", (event) => {
 document.addEventListener("click", () => setProfileMenuOpen(false));
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") setProfileMenuOpen(false);
+  if (event.key === "Escape") {
+    setProfileMenuOpen(false);
+    setMobileWordSheetOpen(false);
+  }
 });
 
 logoutBtn.addEventListener("click", async () => {
@@ -948,6 +1008,7 @@ clearBtn.addEventListener("click", () => {
   state.selectedWord = "";
   state.loadingWord = false;
   state.pendingFlip = false;
+  setMobileWordSheetOpen(false);
   previewStateEl.classList.remove("hidden");
   readingExperienceEl.classList.add("hidden");
   manualResultEl.classList.add("hidden");
@@ -964,6 +1025,10 @@ openQuizBtn.addEventListener("click", async () => {
   setLibraryView("quiz");
 });
 openManualHelpBtn.addEventListener("click", () => setLibraryView("manual"));
+viewWebBtn?.addEventListener("click", () => setViewMode("web"));
+viewMobileBtn?.addEventListener("click", () => setViewMode("mobile"));
+closeMobileWordBtn?.addEventListener("click", () => setMobileWordSheetOpen(false));
+mobileWordBackdropEl?.addEventListener("click", () => setMobileWordSheetOpen(false));
 closeLibraryBtn.addEventListener("click", () => setLibraryView(null));
 libraryOverlayEl.addEventListener("click", () => setLibraryView(null));
 
@@ -1017,6 +1082,7 @@ renderAuthMode();
 renderUserPanel();
 setLibraryView(null);
 updateSourceModeUi();
+updateViewModeUi();
 renderKeywordChips();
 renderWelcomeGate();
 refreshSession().then(async () => {
