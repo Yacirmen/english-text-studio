@@ -32,6 +32,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = ROOT_DIR / "frontend"
 ENV_PATH = ROOT_DIR / ".env"
 DB_PATH = ROOT_DIR / "backend" / "app.db"
+EXTRA_WORD_MAP_PATH = ROOT_DIR / "backend" / "extra_word_map.json"
 SESSION_COOKIE = "ets_session"
 WORD_DETAIL_CACHE: dict[str, dict[str, str]] = {}
 GENERATE_CACHE: dict[str, str] = {}
@@ -587,6 +588,13 @@ IRREGULAR_WORD_MAP = {
     "interpreted": "yorumlanmÄ±ÅŸ",
     "narrow": "dar",
 }
+if EXTRA_WORD_MAP_PATH.exists():
+    try:
+        EXTRA_WORD_MAP: dict[str, str] = json.loads(EXTRA_WORD_MAP_PATH.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        EXTRA_WORD_MAP = {}
+else:
+    EXTRA_WORD_MAP = {}
 TOPIC_SENTENCE_BANK = {
     "Serbest": [
         "The day starts quietly, but it soon becomes full of small decisions and new plans.",
@@ -1610,34 +1618,50 @@ def infer_turkish_meaning(word: str) -> str:
         return repair_mojibake(LOCAL_WORD_MAP[lowered])
     if lowered in IRREGULAR_WORD_MAP:
         return repair_mojibake(IRREGULAR_WORD_MAP[lowered])
+    if lowered in EXTRA_WORD_MAP:
+        return repair_mojibake(EXTRA_WORD_MAP[lowered])
     if lowered.endswith("ies") and len(lowered) > 4:
         singular = lowered[:-3] + "y"
         if singular in LOCAL_WORD_MAP:
             return repair_mojibake(LOCAL_WORD_MAP[singular])
+        if singular in EXTRA_WORD_MAP:
+            return repair_mojibake(EXTRA_WORD_MAP[singular])
     if lowered.endswith("es") and len(lowered) > 3:
         singular = lowered[:-2]
         if singular in LOCAL_WORD_MAP:
             return repair_mojibake(LOCAL_WORD_MAP[singular])
+        if singular in EXTRA_WORD_MAP:
+            return repair_mojibake(EXTRA_WORD_MAP[singular])
     if lowered.endswith("s") and len(lowered) > 3:
         singular = lowered[:-1]
         if singular in LOCAL_WORD_MAP:
             return repair_mojibake(LOCAL_WORD_MAP[singular])
+        if singular in EXTRA_WORD_MAP:
+            return repair_mojibake(EXTRA_WORD_MAP[singular])
     if lowered.endswith("ing") and len(lowered) > 4:
         stem = lowered[:-3]
         if stem in LOCAL_WORD_MAP:
             return repair_mojibake(LOCAL_WORD_MAP[stem])
+        if stem in EXTRA_WORD_MAP:
+            return repair_mojibake(EXTRA_WORD_MAP[stem])
         return f"{stem} yapmak"
     if lowered.endswith("ed") and len(lowered) > 3:
         stem = lowered[:-2]
         if stem in LOCAL_WORD_MAP:
             return repair_mojibake(LOCAL_WORD_MAP[stem])
+        if stem in EXTRA_WORD_MAP:
+            return repair_mojibake(EXTRA_WORD_MAP[stem])
         if stem.endswith("i") and stem[:-1] + "y" in LOCAL_WORD_MAP:
             return repair_mojibake(LOCAL_WORD_MAP[stem[:-1] + "y"])
+        if stem.endswith("i") and stem[:-1] + "y" in EXTRA_WORD_MAP:
+            return repair_mojibake(EXTRA_WORD_MAP[stem[:-1] + "y"])
         return stem
     if lowered.endswith("ly") and len(lowered) > 4:
         root = lowered[:-2]
         if root in LOCAL_WORD_MAP:
             return repair_mojibake(f"{LOCAL_WORD_MAP[root]} bir ÅŸekilde")
+        if root in EXTRA_WORD_MAP:
+            return repair_mojibake(f"{EXTRA_WORD_MAP[root]} bir ÅŸekilde")
     return lowered
 
 
