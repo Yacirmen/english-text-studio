@@ -489,8 +489,8 @@ function setLibraryView(view) {
     libraryKickerEl.textContent = "Mini Quiz";
     libraryTitleEl.textContent = "Quick review";
   } else if (view === "manual") {
-    libraryKickerEl.textContent = "Quick Word Help";
-    libraryTitleEl.textContent = "Fast word support";
+    libraryKickerEl.textContent = "Translate";
+    libraryTitleEl.textContent = "Quick translation";
   }
 }
 
