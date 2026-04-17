@@ -1945,6 +1945,22 @@ def translate_sentence_locally(text: str) -> str:
     return repair_mojibake(translated)
 
 
+def translation_looks_usable(value: str) -> bool:
+    if not value:
+        return False
+    cleaned = repair_mojibake(value).strip()
+    lowered = cleaned.lower()
+    english_tokens = re.findall(r"\b[a-z]{2,}\b", lowered)
+    blocked = {
+        "the", "and", "but", "than", "of", "to", "in", "with", "a", "an", "as", "at",
+        "on", "for", "from", "by", "is", "are", "has", "have", "had", "that", "this",
+        "these", "those", "can", "will", "would", "should", "could", "looks", "become",
+        "becomes", "became", "feel", "feels", "felt", "used", "like",
+    }
+    english_hits = [token for token in english_tokens if token in blocked]
+    return len(english_hits) <= 1
+
+
 def build_library_sentence_index(readings: list[dict[str, Any]]) -> dict[str, list[str]]:
     index: dict[str, list[str]] = {}
     for item in readings:
@@ -2013,7 +2029,7 @@ def build_library_word_detail(text: str, word: str) -> dict[str, str]:
                 example_translation = ""
         if not example_translation:
             example_translation = translate_sentence_locally(example_sentence)
-        if example_translation:
+        if translation_looks_usable(example_translation):
             example_lines.append(f"{index}. {example_sentence} ({example_translation})")
         else:
             example_lines.append(f"{index}. {example_sentence}")
