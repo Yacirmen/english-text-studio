@@ -406,6 +406,18 @@ body::before{
   margin-top:12px;
   align-items:start;
 }
+.site-footer{
+  display:flex;
+  justify-content:center;
+  margin-top:18px;
+  padding:8px 12px 2px;
+}
+.site-footer small{
+  color:#7a8da8;
+  font-size:.8rem;
+  font-weight:700;
+  letter-spacing:.01em;
+}
 .tool-rail{
   position:sticky;
   top:18px;
@@ -1345,6 +1357,14 @@ body.mobile-sheet-open{
   }
   .mobile-word-panel{
     border-radius:26px 26px 0 0;
+  }
+  .site-footer{
+    margin-top:14px;
+    padding-bottom:6px;
+  }
+  .site-footer small{
+    text-align:center;
+    line-height:1.45;
   }
 }
 
