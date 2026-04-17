@@ -312,6 +312,18 @@ function closeMobileWordSheet() {
   setMobileWordSheetOpen(false);
 }
 
+function playDesktopFlip(word) {
+  if (!flipCardEl || isMobilePreview() || state.selectedWord !== word) return;
+  flipCardEl.classList.remove("flipped");
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      if (state.selectedWord === word && !isMobilePreview()) {
+        flipCardEl.classList.add("flipped");
+      }
+    });
+  });
+}
+
 function updateViewModeUi() {
   document.body.classList.toggle("mobile-mode", isMobilePreview());
   document.body.classList.toggle("web-mode", !isMobilePreview());
@@ -734,6 +746,7 @@ async function loadWordDetail(word) {
     if (state.user && (state.lastPayload?.content_source || state.contentSource) === "library") {
       void saveWordSelection(word);
     }
+    if (state.pendingFlip && state.selectedWord === word) playDesktopFlip(word);
     if (state.selectedWord === word && isMobilePreview() && state.dismissedMobileWord !== word) {
       setMobileWordSheetOpen(true);
     }
@@ -766,6 +779,7 @@ async function loadWordDetail(word) {
   } finally {
     state.loadingWord = false;
     renderSelection();
+    if (state.pendingFlip && state.selectedWord === word && state.glossary[word]) playDesktopFlip(word);
     if (
       state.selectedWord === word &&
       state.glossary[word] &&
