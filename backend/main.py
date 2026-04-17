@@ -1586,42 +1586,58 @@ def parse_json_response(raw_text: str) -> dict[str, Any]:
         return {}
 
 
+def repair_mojibake(value: str) -> str:
+    if not value:
+        return value
+    suspicious = ("Ã", "Å", "Ä", "Ä±", "ÄŸ", "ÅŸ", "Ã¼", "Ã¶", "Ã§", "â")
+    if not any(token in value for token in suspicious):
+        return value
+    for source_encoding in ("latin1", "cp1252"):
+        try:
+            repaired = value.encode(source_encoding).decode("utf-8")
+            if repaired:
+                return repaired
+        except (UnicodeEncodeError, UnicodeDecodeError):
+            continue
+    return value
+
+
 def infer_turkish_meaning(word: str) -> str:
     lowered = word.lower().strip()
     if lowered in LOCAL_PHRASE_MAP:
-        return LOCAL_PHRASE_MAP[lowered]
+        return repair_mojibake(LOCAL_PHRASE_MAP[lowered])
     if lowered in LOCAL_WORD_MAP:
-        return LOCAL_WORD_MAP[lowered]
+        return repair_mojibake(LOCAL_WORD_MAP[lowered])
     if lowered in IRREGULAR_WORD_MAP:
-        return IRREGULAR_WORD_MAP[lowered]
+        return repair_mojibake(IRREGULAR_WORD_MAP[lowered])
     if lowered.endswith("ies") and len(lowered) > 4:
         singular = lowered[:-3] + "y"
         if singular in LOCAL_WORD_MAP:
-            return LOCAL_WORD_MAP[singular]
+            return repair_mojibake(LOCAL_WORD_MAP[singular])
     if lowered.endswith("es") and len(lowered) > 3:
         singular = lowered[:-2]
         if singular in LOCAL_WORD_MAP:
-            return LOCAL_WORD_MAP[singular]
+            return repair_mojibake(LOCAL_WORD_MAP[singular])
     if lowered.endswith("s") and len(lowered) > 3:
         singular = lowered[:-1]
         if singular in LOCAL_WORD_MAP:
-            return LOCAL_WORD_MAP[singular]
+            return repair_mojibake(LOCAL_WORD_MAP[singular])
     if lowered.endswith("ing") and len(lowered) > 4:
         stem = lowered[:-3]
         if stem in LOCAL_WORD_MAP:
-            return LOCAL_WORD_MAP[stem]
+            return repair_mojibake(LOCAL_WORD_MAP[stem])
         return f"{stem} yapmak"
     if lowered.endswith("ed") and len(lowered) > 3:
         stem = lowered[:-2]
         if stem in LOCAL_WORD_MAP:
-            return LOCAL_WORD_MAP[stem]
+            return repair_mojibake(LOCAL_WORD_MAP[stem])
         if stem.endswith("i") and stem[:-1] + "y" in LOCAL_WORD_MAP:
-            return LOCAL_WORD_MAP[stem[:-1] + "y"]
+            return repair_mojibake(LOCAL_WORD_MAP[stem[:-1] + "y"])
         return stem
     if lowered.endswith("ly") and len(lowered) > 4:
         root = lowered[:-2]
         if root in LOCAL_WORD_MAP:
-            return f"{LOCAL_WORD_MAP[root]} bir ÅŸekilde"
+            return repair_mojibake(f"{LOCAL_WORD_MAP[root]} bir ÅŸekilde")
     return lowered
 
 
@@ -1643,11 +1659,13 @@ def choose_local_scenario(topic: str, keywords: list[str]) -> dict[str, Any]:
 def build_local_word_detail(text: str, word: str) -> dict[str, str]:
     meaning = infer_turkish_meaning(word)
     sentence = find_sentence_for_word(text, word)
-    context = f'"{word}" burada bÃ¼yÃ¼k olasÄ±lÄ±kla "{meaning}" anlamÄ±nda kullanÄ±lÄ±yor.'
+    context = repair_mojibake(f'"{word}" burada bÃ¼yÃ¼k olasÄ±lÄ±kla "{meaning}" anlamÄ±nda kullanÄ±lÄ±yor.')
     example = f"The word {word} appears in this reading text."
     if sentence:
         compact_sentence = re.sub(r"\s+", " ", sentence).strip()
-        context = f'Bu metinde "{word}" kelimesi "{meaning}" fikrini veriyor. GeÃ§tiÄŸi bÃ¶lÃ¼m: {compact_sentence}'
+        context = repair_mojibake(
+            f'Bu metinde "{word}" kelimesi "{meaning}" fikrini veriyor. GeÃ§tiÄŸi bÃ¶lÃ¼m: {compact_sentence}'
+        )
         example = compact_sentence
     return {"turkish": meaning, "context": context, "example": example}
 
@@ -1919,6 +1937,7 @@ def request_word_detail(text: str, word: str) -> dict[str, str]:
         "context": translated_context or local_fallback["context"],
         "example": sentence or local_fallback["example"],
     }
+    result = {key: repair_mojibake(str(value)) for key, value in result.items()}
     WORD_DETAIL_CACHE[cache_key] = result
     return result
 
