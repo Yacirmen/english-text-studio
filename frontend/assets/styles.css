@@ -139,14 +139,7 @@ body::before{
   border:1px solid rgba(255,255,255,.95);
   box-shadow:0 10px 24px rgba(24,49,83,.08);
 }
-.brand-lockup{display:flex;align-items:center;gap:12px}
-.brand-mark{
-  width:16px;
-  height:16px;
-  border-radius:50%;
-  background:linear-gradient(135deg,var(--green),#8be636);
-  box-shadow:0 0 0 8px rgba(88,204,2,.15);
-}
+.brand-lockup{display:flex;align-items:center}
 .theme-toggle{
   position:relative;
   display:inline-flex;
