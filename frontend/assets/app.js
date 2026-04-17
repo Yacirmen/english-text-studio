@@ -589,9 +589,9 @@ function renderUserPanel() {
 
 function setProfileMenuOpen(isOpen) {
   profileMenuEl?.classList.toggle("hidden", !isOpen);
-  profileOverlayEl?.classList.toggle("hidden", !isOpen);
+  profileOverlayEl?.classList.toggle("hidden", !isOpen || !isMobilePreview());
   profileTriggerBtn?.setAttribute("aria-expanded", isOpen ? "true" : "false");
-  document.body.classList.toggle("profile-open", isOpen);
+  document.body.classList.toggle("profile-open", isOpen && isMobilePreview());
   if (profileMenuEl) profileMenuEl.style.transform = "";
 }
 
