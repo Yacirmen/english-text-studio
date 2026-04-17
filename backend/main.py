@@ -1799,6 +1799,18 @@ def infer_turkish_meaning(word: str) -> str:
     return lowered
 
 
+def infer_contextual_library_meaning(word: str, sentence: str) -> str:
+    lowered_word = word.lower().strip()
+    compact_sentence = re.sub(r"\s+", " ", sentence).strip().lower()
+    if lowered_word.startswith("treat") and " as " in compact_sentence:
+        return "ele almak"
+    if lowered_word in {"illustrates", "illustrated", "illustrating"}:
+        return "örnekleyerek göstermek"
+    if lowered_word in {"simplified", "simplifies", "simplifying"}:
+        return "sadeleştirmek"
+    return infer_turkish_meaning(word)
+
+
 def choose_local_scenario(topic: str, keywords: list[str]) -> dict[str, Any]:
     topic_key = topic if topic in TOPIC_SCENARIOS else "Serbest"
     scenario_seed = TOPIC_SCENARIOS[topic_key][len(keywords) % len(TOPIC_SCENARIOS[topic_key])]
@@ -1954,25 +1966,32 @@ def gather_library_examples(word: str, current_sentence: str = "") -> list[str]:
     candidates = LIBRARY_SENTENCE_INDEX.get(word.lower(), [])
     picked: list[str] = []
     normalized_current = re.sub(r"\s+", " ", current_sentence).strip()
-    if normalized_current:
-        picked.append(normalized_current)
     for sentence in candidates:
+        if normalized_current and sentence == normalized_current:
+            continue
         if sentence not in picked:
             picked.append(sentence)
         if len(picked) >= 3:
             break
+    if not picked and normalized_current:
+        picked.append(normalized_current)
     return picked[:3]
 
 
 def build_library_word_detail(text: str, word: str) -> dict[str, str]:
     lowered_word = word.lower()
     raw_library_meaning = repair_mojibake(str(LIBRARY_WORD_MAP.get(lowered_word, "")))
-    library_meaning = infer_turkish_meaning(word) if is_suspicious_meaning(word, raw_library_meaning) else raw_library_meaning
-    if not library_meaning:
-        library_meaning = infer_turkish_meaning(word)
     sentence = find_sentence_for_word(text, word)
+    library_meaning = infer_contextual_library_meaning(word, sentence) if is_suspicious_meaning(word, raw_library_meaning) else raw_library_meaning
+    if not library_meaning:
+        library_meaning = infer_contextual_library_meaning(word, sentence)
     compact_sentence = re.sub(r"\s+", " ", sentence).strip() if sentence else ""
-    translated_sentence = translate_sentence_locally(compact_sentence) if compact_sentence else ""
+    translated_sentence = ""
+    if compact_sentence and GOOGLE_TRANSLATE_API_KEY:
+        try:
+            translated_sentence = translate_text_google(compact_sentence, target_language="tr", source_language="en")
+        except Exception:
+            translated_sentence = ""
     form_info = describe_word_form(lowered_word)
     context_lines = [
         f'Bu metindeki karşılığı: "{library_meaning}"',
