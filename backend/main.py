@@ -1815,6 +1815,8 @@ def choose_local_scenario(topic: str, keywords: list[str]) -> dict[str, Any]:
 
 
 def build_local_word_detail(text: str, word: str) -> dict[str, str]:
+    if word.lower() in LIBRARY_WORD_MAP:
+        return build_library_word_detail(text, word)
     meaning = infer_turkish_meaning(word)
     sentence = find_sentence_for_word(text, word)
     context = repair_mojibake(f'"{word}" burada bÃ¼yÃ¼k olasÄ±lÄ±kla "{meaning}" anlamÄ±nda kullanÄ±lÄ±yor.')
@@ -1886,23 +1888,116 @@ def extract_unique_words(text: str) -> list[str]:
     return ordered
 
 
+def describe_word_form(word: str) -> dict[str, str]:
+    lowered = word.lower().strip()
+    root = lowered
+    note = "yalın biçim"
+    if lowered.endswith("ies") and len(lowered) > 4:
+        root = lowered[:-3] + "y"
+        note = "köküne -ies eklenmiş; çoğul ya da 3. tekil çekim olabilir"
+    elif lowered.endswith("es") and len(lowered) > 3:
+        root = lowered[:-2]
+        note = "köküne -es eklenmiş; çoğul ya da 3. tekil çekim olabilir"
+    elif lowered.endswith("s") and len(lowered) > 3:
+        root = lowered[:-1]
+        note = "köküne -s eklenmiş; bu cümlede çoğunlukla 3. tekil ya da çoğul kullanım verir"
+    elif lowered.endswith("ing") and len(lowered) > 4:
+        root = lowered[:-3]
+        if len(root) > 2 and root[-1] == root[-2]:
+            root = root[:-1]
+        note = "-ing eki almış; süreç, isimleşme ya da sıfat görevi taşıyabilir"
+    elif lowered.endswith("ed") and len(lowered) > 3:
+        root = lowered[:-2]
+        if root.endswith("i"):
+            root = root[:-1] + "y"
+        elif len(root) > 2 and root[-1] == root[-2]:
+            root = root[:-1]
+        note = "-ed eki almış; geçmiş zaman, edilgen ya da sıfatlaşmış kullanım olabilir"
+    elif lowered.endswith("ly") and len(lowered) > 4:
+        root = lowered[:-2]
+        note = "-ly eki almış; zarf biçiminde kullanılıyor"
+    return {"root": root or lowered, "note": note}
+
+
+def translate_sentence_locally(text: str) -> str:
+    parts = re.findall(r"[A-Za-z]+(?:['-][A-Za-z]+)*|\s+|[^A-Za-z\s]", text)
+    translated_parts: list[str] = []
+    for part in parts:
+        if re.fullmatch(r"[A-Za-z]+(?:['-][A-Za-z]+)*", part):
+            translated_parts.append(infer_turkish_meaning(part))
+        else:
+            translated_parts.append(part)
+    translated = "".join(translated_parts)
+    translated = re.sub(r"\s+([,.!?;:])", r"\1", translated)
+    translated = re.sub(r"\s+", " ", translated).strip()
+    return repair_mojibake(translated)
+
+
+def build_library_sentence_index(readings: list[dict[str, Any]]) -> dict[str, list[str]]:
+    index: dict[str, list[str]] = {}
+    for item in readings:
+        for sentence in re.split(r"(?<=[.!?])\s+", str(item.get("text", "")).strip()):
+            compact_sentence = re.sub(r"\s+", " ", sentence).strip()
+            if not compact_sentence:
+                continue
+            for word in extract_unique_words(compact_sentence):
+                bucket = index.setdefault(word, [])
+                if compact_sentence not in bucket:
+                    bucket.append(compact_sentence)
+    return index
+
+
+LIBRARY_SENTENCE_INDEX = build_library_sentence_index(READING_SEEDS)
+
+
+def gather_library_examples(word: str, current_sentence: str = "") -> list[str]:
+    candidates = LIBRARY_SENTENCE_INDEX.get(word.lower(), [])
+    picked: list[str] = []
+    normalized_current = re.sub(r"\s+", " ", current_sentence).strip()
+    if normalized_current:
+        picked.append(normalized_current)
+    for sentence in candidates:
+        if sentence not in picked:
+            picked.append(sentence)
+        if len(picked) >= 3:
+            break
+    return picked[:3]
+
+
+def build_library_word_detail(text: str, word: str) -> dict[str, str]:
+    lowered_word = word.lower()
+    raw_library_meaning = repair_mojibake(str(LIBRARY_WORD_MAP.get(lowered_word, "")))
+    library_meaning = infer_turkish_meaning(word) if is_suspicious_meaning(word, raw_library_meaning) else raw_library_meaning
+    if not library_meaning:
+        library_meaning = infer_turkish_meaning(word)
+    sentence = find_sentence_for_word(text, word)
+    compact_sentence = re.sub(r"\s+", " ", sentence).strip() if sentence else ""
+    translated_sentence = translate_sentence_locally(compact_sentence) if compact_sentence else ""
+    form_info = describe_word_form(lowered_word)
+    context_lines = [
+        f'Bu metindeki karşılığı: "{library_meaning}"',
+        f'Kök: {form_info["root"]}',
+        f'Çekim / biçim: {form_info["note"]}',
+    ]
+    if compact_sentence:
+        context_lines.append(f"Geçtiği bölüm: {compact_sentence}")
+    if translated_sentence:
+        context_lines.append(f"Yaklaşık Türkçesi: {translated_sentence}")
+    example_sentences = gather_library_examples(lowered_word, compact_sentence)
+    example_lines = [f"{index}. {sentence}" for index, sentence in enumerate(example_sentences, start=1)]
+    if not example_lines:
+        example_lines = [f"1. The word {word} appears in this reading text."]
+    return {
+        "turkish": repair_mojibake(library_meaning),
+        "context": repair_mojibake("\n".join(context_lines)),
+        "example": repair_mojibake("\n".join(example_lines)),
+    }
+
+
 def build_library_glossary(text: str) -> dict[str, dict[str, str]]:
     glossary: dict[str, dict[str, str]] = {}
     for word in extract_unique_words(text):
-        raw_library_meaning = repair_mojibake(str(LIBRARY_WORD_MAP.get(word, "")))
-        library_meaning = infer_turkish_meaning(word) if is_suspicious_meaning(word, raw_library_meaning) else raw_library_meaning
-        if not library_meaning:
-            library_meaning = infer_turkish_meaning(word)
-        sentence = find_sentence_for_word(text, word)
-        context = repair_mojibake(f'"{word}" burada büyük olasılıkla "{library_meaning}" anlamında kullanılıyor.')
-        example = f"The word {word} appears in this reading text."
-        if sentence:
-            compact_sentence = re.sub(r"\s+", " ", sentence).strip()
-            context = repair_mojibake(
-                f'Bu metinde "{word}" kelimesi "{library_meaning}" fikrini veriyor. Geçtiği bölüm: {compact_sentence}'
-            )
-            example = compact_sentence
-        glossary[word] = {"turkish": library_meaning, "context": context, "example": example}
+        glossary[word] = build_library_word_detail(text, word)
     return glossary
 
 

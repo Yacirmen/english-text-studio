@@ -191,9 +191,9 @@ function escapeHtml(value) {
 
 function highlightSelectedWord(text, selectedWord) {
   const escapedText = escapeHtml(text || "");
-  if (!selectedWord) return escapedText;
+  if (!selectedWord) return escapedText.replace(/\n/g, "<br>");
   const pattern = new RegExp(`\\b(${selectedWord.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})\\b`, "gi");
-  return escapedText.replace(pattern, '<strong class="inline-highlight">$1</strong>');
+  return escapedText.replace(pattern, '<strong class="inline-highlight">$1</strong>').replace(/\n/g, "<br>");
 }
 
 function tokenizeText(text) {
