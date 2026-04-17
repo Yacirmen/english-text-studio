@@ -1674,6 +1674,154 @@ body.dark-mode .insight-block p,
 body.dark-mode .insight-block .mini-label{
   color:#dfe9f8;
 }
+body.dark-mode .topbar,
+body.dark-mode .tool-rail,
+body.dark-mode .rail-panel,
+body.dark-mode .profile-panel,
+body.dark-mode .account-card,
+body.dark-mode .profile-tip,
+body.dark-mode .reading-header,
+body.dark-mode .reading-body,
+body.dark-mode .insight-card,
+body.dark-mode .preview-state,
+body.dark-mode .welcome-auth,
+body.dark-mode .profile-menu,
+body.dark-mode .library-panel,
+body.dark-mode .mobile-word-panel{
+  color:#eef5ff;
+}
+body.dark-mode .rail-kicker,
+body.dark-mode .mini-label,
+body.dark-mode .mini-stat-label,
+body.dark-mode .profile-menu-badge,
+body.dark-mode .quiz-mini-badge,
+body.dark-mode .count-pill,
+body.dark-mode .insight-block .mini-label,
+body.dark-mode .mobile-word-head .mini-label,
+body.dark-mode .mobile-insight-card .mini-label{
+  color:#aebfd6;
+}
+body.dark-mode .preview-state,
+body.dark-mode .reading-title,
+body.dark-mode .muted-copy,
+body.dark-mode .insight-block p,
+body.dark-mode .insight-block .mini-label,
+body.dark-mode .mobile-insight-card p,
+body.dark-mode .mobile-word-body p,
+body.dark-mode .library-copy,
+body.dark-mode .helper-note,
+body.dark-mode .setup-footer-note,
+body.dark-mode .field-note,
+body.dark-mode .profile-tip p,
+body.dark-mode .saved-word-item span,
+body.dark-mode .manual-result-block p,
+body.dark-mode .quiz-feedback{
+  color:#dfe8f7;
+}
+body.dark-mode .section-head h3,
+body.dark-mode .rail-intro h2,
+body.dark-mode .reading-title,
+body.dark-mode .reading-body,
+body.dark-mode .preview-state,
+body.dark-mode .quiz-prompt,
+body.dark-mode .saved-word-item strong,
+body.dark-mode .profile-menu-head strong,
+body.dark-mode .account-card h4,
+body.dark-mode .mobile-word-head strong,
+body.dark-mode .mobile-word-card h3{
+  color:#f7fbff;
+}
+body.dark-mode .reading-header .tag,
+body.dark-mode .library-count-badge{
+  background:rgba(255,216,77,.16);
+  color:#fff0aa;
+}
+body.dark-mode .tag{
+  background:rgba(255,216,77,.16);
+  color:#fff0aa;
+  border:1px solid rgba(255,216,77,.12);
+}
+body.dark-mode .toolbar-btn-green,
+body.dark-mode .toolbar-btn-blue,
+body.dark-mode .toolbar-btn-cream,
+body.dark-mode .source-pill.active,
+body.dark-mode .auth-tab.active,
+body.dark-mode .outline-btn,
+body.dark-mode .gate-guest-btn,
+body.dark-mode .light-outline{
+  filter:none;
+}
+body.dark-mode .primary-btn,
+body.dark-mode .secondary-btn,
+body.dark-mode .outline-btn,
+body.dark-mode .light-outline,
+body.dark-mode .gate-guest-btn,
+body.dark-mode .toolbar-btn,
+body.dark-mode .source-pill,
+body.dark-mode .auth-tab,
+body.dark-mode .profile-trigger{
+  opacity:1;
+}
+body.dark-mode .primary-btn:disabled,
+body.dark-mode .secondary-btn:disabled,
+body.dark-mode .outline-btn:disabled,
+body.dark-mode .light-outline:disabled,
+body.dark-mode .gate-guest-btn:disabled,
+body.dark-mode .toolbar-btn:disabled,
+body.dark-mode .source-pill:disabled,
+body.dark-mode .auth-tab:disabled{
+  opacity:.92;
+  filter:saturate(.92);
+}
+body.dark-mode .outline-btn:disabled,
+body.dark-mode .light-outline:disabled,
+body.dark-mode .gate-guest-btn:disabled{
+  color:#6d819f;
+}
+body.dark-mode .primary-btn:disabled{
+  color:#184e00;
+}
+body.dark-mode .secondary-btn:disabled{
+  color:#dff3ff;
+}
+body.dark-mode .field input,
+body.dark-mode .field select{
+  color:#f8fbff;
+}
+body.dark-mode .field select option{
+  background:#13243a;
+  color:#f3f8ff;
+}
+body.dark-mode .saved-word-item,
+body.dark-mode .saved-word-remove,
+body.dark-mode .ghost-btn,
+body.dark-mode .quiz-option,
+body.dark-mode .quiz-feedback,
+body.dark-mode .quiz-sentence,
+body.dark-mode .helper-note,
+body.dark-mode .profile-tip,
+body.dark-mode .account-card{
+  box-shadow:none;
+}
+body.dark-mode .profile-overlay{
+  background:rgba(8,18,31,.18);
+}
+body.dark-mode .profile-menu{
+  background:linear-gradient(180deg, rgba(23,48,79,.99), rgba(29,58,95,.99));
+}
+body.dark-mode .profile-panel{
+  background:rgba(255,255,255,.07);
+}
+body.dark-mode .mobile-word-card{
+  box-shadow:0 18px 34px rgba(255,109,59,.18);
+}
+body.dark-mode .word{
+  color:#f1f6ff;
+}
+body.dark-mode .word:hover,
+body.dark-mode .word.active{
+  color:#ffd872;
+}
 @media (max-width: 768px){
   body.dark-mode .profile-overlay,
   body.dark-mode .library-overlay,
