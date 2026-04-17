@@ -634,6 +634,19 @@ IRREGULAR_WORD_MAP = {
     "interpreted": "yorumlanmÄ±ÅŸ",
     "narrow": "dar",
 }
+WORD_MEANING_OVERRIDES = {
+    "simplified": "sadeleÅŸtirilmiÅŸ",
+    "irritated": "sinirli",
+    "misguided": "yanlÄ±ÅŸ yÃ¶nlendirilmiÅŸ",
+    "disciplined": "disiplinli",
+    "blurred": "bulanÄ±k",
+    "unsupported": "desteklenmeyen",
+    "wanted": "istenen",
+    "needed": "gerekli",
+    "looked": "gÃ¶rÃ¼ndÃ¼",
+    "unfocused": "odaksÄ±z",
+    "unresolved": "Ã§Ã¶zÃ¼lmemiÅŸ",
+}
 if EXTRA_WORD_MAP_PATH.exists():
     try:
         EXTRA_WORD_MAP: dict[str, str] = json.loads(EXTRA_WORD_MAP_PATH.read_text(encoding="utf-8"))
@@ -1666,51 +1679,90 @@ def repair_mojibake(value: str) -> str:
     return value
 
 
-def infer_turkish_meaning(word: str) -> str:
-    lowered = word.lower().strip()
-    if lowered in LOCAL_PHRASE_MAP:
-        return repair_mojibake(LOCAL_PHRASE_MAP[lowered])
+def is_suspicious_meaning(source_word: str, candidate: str) -> bool:
+    cleaned = repair_mojibake(candidate).strip().lower()
+    source = source_word.strip().lower()
+    if not cleaned:
+        return True
+    if cleaned == source or cleaned.startswith(source + " "):
+        return True
+    compact = re.sub(r"[^a-z]", "", cleaned)
+    if compact and compact in {
+        "simplifi",
+        "irritat",
+        "misguid",
+        "disciplin",
+        "blurr",
+        "unsupport",
+        "want",
+        "need",
+        "look",
+        "unfocus",
+        "unresolv",
+    }:
+        return True
+    if compact and source.startswith(compact) and len(source) - len(compact) <= 3:
+        return True
+    return False
+
+
+def lookup_word_map_value(key: str) -> str | None:
+    lowered = key.lower()
+    if lowered in WORD_MEANING_OVERRIDES:
+        return repair_mojibake(WORD_MEANING_OVERRIDES[lowered])
     if lowered in LOCAL_WORD_MAP:
         return repair_mojibake(LOCAL_WORD_MAP[lowered])
     if lowered in IRREGULAR_WORD_MAP:
         return repair_mojibake(IRREGULAR_WORD_MAP[lowered])
     if lowered in EXTRA_WORD_MAP:
         return repair_mojibake(EXTRA_WORD_MAP[lowered])
+    return None
+
+
+def infer_turkish_meaning(word: str) -> str:
+    lowered = word.lower().strip()
+    if lowered in LOCAL_PHRASE_MAP:
+        return repair_mojibake(LOCAL_PHRASE_MAP[lowered])
+    direct = lookup_word_map_value(lowered)
+    if direct:
+        return direct
     if lowered.endswith("ies") and len(lowered) > 4:
         singular = lowered[:-3] + "y"
-        if singular in LOCAL_WORD_MAP:
-            return repair_mojibake(LOCAL_WORD_MAP[singular])
-        if singular in EXTRA_WORD_MAP:
-            return repair_mojibake(EXTRA_WORD_MAP[singular])
+        resolved = lookup_word_map_value(singular)
+        if resolved:
+            return resolved
     if lowered.endswith("es") and len(lowered) > 3:
         singular = lowered[:-2]
-        if singular in LOCAL_WORD_MAP:
-            return repair_mojibake(LOCAL_WORD_MAP[singular])
-        if singular in EXTRA_WORD_MAP:
-            return repair_mojibake(EXTRA_WORD_MAP[singular])
+        resolved = lookup_word_map_value(singular)
+        if resolved:
+            return resolved
     if lowered.endswith("s") and len(lowered) > 3:
         singular = lowered[:-1]
-        if singular in LOCAL_WORD_MAP:
-            return repair_mojibake(LOCAL_WORD_MAP[singular])
-        if singular in EXTRA_WORD_MAP:
-            return repair_mojibake(EXTRA_WORD_MAP[singular])
+        resolved = lookup_word_map_value(singular)
+        if resolved:
+            return resolved
     if lowered.endswith("ing") and len(lowered) > 4:
         stem = lowered[:-3]
-        if stem in LOCAL_WORD_MAP:
-            return repair_mojibake(LOCAL_WORD_MAP[stem])
-        if stem in EXTRA_WORD_MAP:
-            return repair_mojibake(EXTRA_WORD_MAP[stem])
+        for candidate in [stem, stem + "e", stem[:-1] if len(stem) > 2 and stem[-1] == stem[-2] else ""]:
+            if not candidate:
+                continue
+            resolved = lookup_word_map_value(candidate)
+            if resolved:
+                return resolved
         return f"{stem} yapmak"
     if lowered.endswith("ed") and len(lowered) > 3:
         stem = lowered[:-2]
-        if stem in LOCAL_WORD_MAP:
-            return repair_mojibake(LOCAL_WORD_MAP[stem])
-        if stem in EXTRA_WORD_MAP:
-            return repair_mojibake(EXTRA_WORD_MAP[stem])
-        if stem.endswith("i") and stem[:-1] + "y" in LOCAL_WORD_MAP:
-            return repair_mojibake(LOCAL_WORD_MAP[stem[:-1] + "y"])
-        if stem.endswith("i") and stem[:-1] + "y" in EXTRA_WORD_MAP:
-            return repair_mojibake(EXTRA_WORD_MAP[stem[:-1] + "y"])
+        candidate_roots = [stem, stem + "e"]
+        if stem.endswith("i"):
+            candidate_roots.append(stem[:-1] + "y")
+        if len(stem) > 2 and stem[-1] == stem[-2]:
+            candidate_roots.append(stem[:-1])
+        for candidate in candidate_roots:
+            if not candidate:
+                continue
+            resolved = lookup_word_map_value(candidate)
+            if resolved:
+                return resolved
         return stem
     if lowered.endswith("ly") and len(lowered) > 4:
         root = lowered[:-2]
@@ -1753,7 +1805,7 @@ def build_local_word_detail(text: str, word: str) -> dict[str, str]:
 def should_use_local_meaning(word: str, candidate: str) -> bool:
     cleaned = candidate.strip().lower()
     lowered_word = word.strip().lower()
-    return not cleaned or cleaned == lowered_word or cleaned.startswith(lowered_word + " ")
+    return not cleaned or cleaned == lowered_word or cleaned.startswith(lowered_word + " ") or is_suspicious_meaning(lowered_word, cleaned)
 
 
 def html_unescape(value: str) -> str:
@@ -1811,7 +1863,10 @@ def extract_unique_words(text: str) -> list[str]:
 def build_library_glossary(text: str) -> dict[str, dict[str, str]]:
     glossary: dict[str, dict[str, str]] = {}
     for word in extract_unique_words(text):
-        library_meaning = repair_mojibake(LIBRARY_WORD_MAP.get(word, infer_turkish_meaning(word)))
+        raw_library_meaning = repair_mojibake(str(LIBRARY_WORD_MAP.get(word, "")))
+        library_meaning = infer_turkish_meaning(word) if is_suspicious_meaning(word, raw_library_meaning) else raw_library_meaning
+        if not library_meaning:
+            library_meaning = infer_turkish_meaning(word)
         sentence = find_sentence_for_word(text, word)
         context = repair_mojibake(f'"{word}" burada büyük olasılıkla "{library_meaning}" anlamında kullanılıyor.')
         example = f"The word {word} appears in this reading text."
