@@ -523,9 +523,32 @@ async function loadQuiz(excludeWordId = null) {
   renderQuiz();
 }
 
+async function saveWordSelection(word) {
+  if (!state.user || !word || !state.text) return;
+  try {
+    const parsed = await apiFetch("/api/word-detail", {
+      method: "POST",
+      body: JSON.stringify({
+        text: state.text,
+        word,
+        content_source: state.lastPayload?.content_source || state.contentSource,
+      }),
+    });
+    if (!parsed.ok) return;
+    state.glossary[word] = parsed.data;
+    await refreshSession();
+    await loadQuiz();
+  } catch {
+    // Keep the UI responsive even if the save side-effect fails.
+  }
+}
+
 async function loadWordDetail(word) {
   if (!word) return;
   if (state.glossary[word]) {
+    if (state.user && (state.lastPayload?.content_source || state.contentSource) === "library") {
+      void saveWordSelection(word);
+    }
     if (state.pendingFlip && state.selectedWord === word) flipCardEl.classList.add("flipped");
     state.pendingFlip = false;
     return;
