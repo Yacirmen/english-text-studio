@@ -1330,20 +1330,46 @@ def quiz_candidate_meanings(words: list[dict[str, Any]], target_id: int, target_
     return values
 
 
-def get_recent_words(user_id: int, limit: int = 20, *, randomize: bool = False) -> list[dict[str, Any]]:
+def get_recent_words(
+    user_id: int,
+    limit: int = 20,
+    *,
+    randomize: bool = False,
+    exclude_ids: list[int] | None = None,
+) -> list[dict[str, Any]]:
     order_clause = "RANDOM()" if not USE_POSTGRES else "RANDOM()"
     if not randomize:
         order_clause = "updated_at DESC"
-    return db_fetchall(
+    filtered_exclude = [int(item) for item in (exclude_ids or []) if str(item).strip()]
+    params: list[Any] = [user_id]
+    where_parts = ["user_id = ?"]
+    if randomize and filtered_exclude:
+        placeholders = ", ".join(["?"] * len(filtered_exclude))
+        where_parts.append(f"id NOT IN ({placeholders})")
+        params.extend(filtered_exclude)
+    params.append(limit)
+    rows = db_fetchall(
         f"""
         SELECT id, word, turkish, click_count, last_result, updated_at
         FROM saved_words
-        WHERE user_id = ?
+        WHERE {' AND '.join(where_parts)}
         ORDER BY {order_clause}
         LIMIT ?
         """,
-        (user_id, limit),
+        tuple(params),
     )
+    if randomize and filtered_exclude and len(rows) < limit:
+        rows = db_fetchall(
+            f"""
+            SELECT id, word, turkish, click_count, last_result, updated_at
+            FROM saved_words
+            WHERE user_id = ?
+            ORDER BY {order_clause}
+            LIMIT ?
+            """,
+            (user_id, limit),
+        )
+    return rows
 
 
 def build_quiz_question(user_id: int, exclude_word_id: int | None = None) -> dict[str, Any] | None:
@@ -2295,11 +2321,18 @@ def clear_saved_words(session_token: str | None = Cookie(default=None, alias=SES
 def list_saved_words(
     mode: str = Query(default="recent"),
     limit: int = Query(default=20, ge=1, le=50),
+    exclude_ids: str = Query(default=""),
     session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE),
 ) -> dict[str, Any]:
     user = require_user(session_token)
+    parsed_exclude_ids = [int(piece) for piece in exclude_ids.split(",") if piece.strip().isdigit()]
     return {
-        "words": get_recent_words(int(user["id"]), limit=limit, randomize=(mode == "random")),
+        "words": get_recent_words(
+            int(user["id"]),
+            limit=limit,
+            randomize=(mode == "random"),
+            exclude_ids=parsed_exclude_ids,
+        ),
     }
 
 

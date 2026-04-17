@@ -1363,7 +1363,17 @@ body.library-open{
   .detail-column{top:auto}
   .flip-card{min-height:240px}
   .flip-face{padding:20px;border-radius:24px}
-  .library-panel{padding:18px;border-radius:24px}
+  .library-panel{
+    top:auto;
+    right:0;
+    left:0;
+    bottom:0;
+    width:100%;
+    max-height:min(86dvh, 760px);
+    margin:0;
+    padding:12px 16px calc(18px + env(safe-area-inset-bottom, 0px));
+    border-radius:26px 26px 0 0;
+  }
   .form-row.compact-filters{grid-template-columns:1fr}
   .sheet-handle-btn{display:block}
   .profile-menu{
@@ -1378,9 +1388,10 @@ body.library-open{
     max-height:min(86dvh, 760px);
   }
   .profile-close-btn{display:inline-flex}
-  .library-panel{
-    padding-top:12px;
-    border-radius:26px 26px 0 0;
+  .library-head{
+    top:0;
+    margin-bottom:14px;
+    padding-bottom:10px;
   }
   .mobile-word-panel{
     border-radius:26px 26px 0 0;

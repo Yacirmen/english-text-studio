@@ -431,7 +431,14 @@ function renderSavedWords() {
 
 async function fetchSavedWords(mode = "recent") {
   if (!state.user) return;
-  const parsed = await apiFetch(`/api/saved-words?mode=${encodeURIComponent(mode)}&limit=20`);
+  const excludeIds =
+    mode === "random" ? state.recentWords.map((item) => item.id).filter(Boolean).join(",") : "";
+  const query = new URLSearchParams({
+    mode,
+    limit: "20",
+  });
+  if (excludeIds) query.set("exclude_ids", excludeIds);
+  const parsed = await apiFetch(`/api/saved-words?${query.toString()}`);
   if (!parsed.ok) return;
   state.recentWords = parsed.data.words || [];
   renderSavedWords();
