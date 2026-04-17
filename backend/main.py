@@ -2003,7 +2003,20 @@ def build_library_word_detail(text: str, word: str) -> dict[str, str]:
     if translated_sentence:
         context_lines.append(f"Yaklaşık Türkçesi: {translated_sentence}")
     example_sentences = gather_library_examples(lowered_word, compact_sentence)
-    example_lines = [f"{index}. {sentence}" for index, sentence in enumerate(example_sentences, start=1)]
+    example_lines: list[str] = []
+    for index, example_sentence in enumerate(example_sentences, start=1):
+        example_translation = ""
+        if GOOGLE_TRANSLATE_API_KEY:
+            try:
+                example_translation = translate_text_google(example_sentence, target_language="tr", source_language="en")
+            except Exception:
+                example_translation = ""
+        if not example_translation:
+            example_translation = translate_sentence_locally(example_sentence)
+        if example_translation:
+            example_lines.append(f"{index}. {example_sentence} ({example_translation})")
+        else:
+            example_lines.append(f"{index}. {example_sentence}")
     if not example_lines:
         example_lines = [f"1. The word {word} appears in this reading text."]
     return {
