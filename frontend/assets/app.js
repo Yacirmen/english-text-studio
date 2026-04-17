@@ -28,6 +28,7 @@ const state = {
   contentSource: "library",
   loadingWord: false,
   pendingFlip: false,
+  dismissedMobileWord: "",
   authMode: "login",
   user: null,
   stats: { saved_words: 0, mastered_words: 0 },
@@ -306,12 +307,29 @@ function setMobileWordSheetOpen(isOpen) {
   if (mobileWordPanelEl) mobileWordPanelEl.style.transform = "";
 }
 
+function closeMobileWordSheet() {
+  if (state.selectedWord) state.dismissedMobileWord = state.selectedWord;
+  setMobileWordSheetOpen(false);
+}
+
+function playDesktopFlip(word) {
+  if (!flipCardEl || isMobilePreview() || state.selectedWord !== word) return;
+  flipCardEl.classList.remove("flipped");
+  void flipCardEl.offsetWidth;
+  flipCardEl.classList.add("flipped");
+}
+
 function updateViewModeUi() {
   document.body.classList.toggle("mobile-mode", isMobilePreview());
   document.body.classList.toggle("web-mode", !isMobilePreview());
   if (!isMobilePreview()) {
     setMobileWordSheetOpen(false);
-  } else if (state.selectedWord && !state.loadingWord && state.glossary[state.selectedWord]) {
+  } else if (
+    state.selectedWord &&
+    !state.loadingWord &&
+    state.glossary[state.selectedWord] &&
+    state.dismissedMobileWord !== state.selectedWord
+  ) {
     setMobileWordSheetOpen(true);
   }
 }
@@ -368,7 +386,7 @@ function renderSelection() {
 
   if (!isMobilePreview() || !state.selectedWord || state.loadingWord) {
     setMobileWordSheetOpen(false);
-  } else if (state.glossary[state.selectedWord]) {
+  } else if (state.glossary[state.selectedWord] && state.dismissedMobileWord !== state.selectedWord) {
     setMobileWordSheetOpen(true);
   }
 }
@@ -536,7 +554,7 @@ function renderQuiz() {
             await loadQuiz(state.quiz?.word_id || null);
             nextQuizBtn.disabled = false;
             nextQuizBtn.textContent = "Next Question";
-          }, 950);
+          }, 2200);
         }
       });
     });
@@ -723,8 +741,10 @@ async function loadWordDetail(word) {
     if (state.user && (state.lastPayload?.content_source || state.contentSource) === "library") {
       void saveWordSelection(word);
     }
-    if (state.pendingFlip && state.selectedWord === word && !isMobilePreview()) flipCardEl.classList.add("flipped");
-    if (state.selectedWord === word && isMobilePreview()) setMobileWordSheetOpen(true);
+    if (state.pendingFlip && state.selectedWord === word) playDesktopFlip(word);
+    if (state.selectedWord === word && isMobilePreview() && state.dismissedMobileWord !== word) {
+      setMobileWordSheetOpen(true);
+    }
     state.pendingFlip = false;
     return;
   }
@@ -754,8 +774,15 @@ async function loadWordDetail(word) {
   } finally {
     state.loadingWord = false;
     renderSelection();
-    if (state.pendingFlip && state.selectedWord === word && state.glossary[word] && !isMobilePreview()) flipCardEl.classList.add("flipped");
-    if (state.selectedWord === word && state.glossary[word] && isMobilePreview()) setMobileWordSheetOpen(true);
+    if (state.pendingFlip && state.selectedWord === word && state.glossary[word]) playDesktopFlip(word);
+    if (
+      state.selectedWord === word &&
+      state.glossary[word] &&
+      isMobilePreview() &&
+      state.dismissedMobileWord !== word
+    ) {
+      setMobileWordSheetOpen(true);
+    }
     state.pendingFlip = false;
   }
 }
@@ -780,6 +807,7 @@ function renderReadingText() {
         selectedExampleEl.textContent = "Preparing example sentence...";
       }
       state.selectedWord = nextWord;
+      state.dismissedMobileWord = "";
       state.pendingFlip = true;
       renderSelection();
       renderReadingText();
@@ -803,6 +831,7 @@ function renderExperience() {
   state.selectedWord = "";
   state.loadingWord = false;
   state.pendingFlip = false;
+  state.dismissedMobileWord = "";
   renderSelection();
   selectedContextEl.textContent = "The reading is ready. Tap a word to open its Turkish context.";
   selectedExampleEl.textContent = "A short example will appear here after you choose a word.";
@@ -1080,14 +1109,14 @@ openQuizBtn.addEventListener("click", async () => {
   setLibraryView("quiz");
 });
 openManualHelpBtn.addEventListener("click", () => setLibraryView("manual"));
-closeMobileWordBtn?.addEventListener("click", () => setMobileWordSheetOpen(false));
-mobileWordHandleBtn?.addEventListener("click", () => setMobileWordSheetOpen(false));
-mobileWordBackdropEl?.addEventListener("click", () => setMobileWordSheetOpen(false));
+closeMobileWordBtn?.addEventListener("click", closeMobileWordSheet);
+mobileWordHandleBtn?.addEventListener("click", closeMobileWordSheet);
+mobileWordBackdropEl?.addEventListener("click", closeMobileWordSheet);
 closeLibraryBtn.addEventListener("click", () => setLibraryView(null));
 libraryHandleBtn?.addEventListener("click", () => setLibraryView(null));
 libraryOverlayEl.addEventListener("click", () => setLibraryView(null));
 
-registerSheetDrag(mobileWordHandleBtn, mobileWordPanelEl, () => setMobileWordSheetOpen(false), () => mobileWordSheetEl?.classList.contains("sheet-open"));
+registerSheetDrag(mobileWordHandleBtn, mobileWordPanelEl, closeMobileWordSheet, () => mobileWordSheetEl?.classList.contains("sheet-open"));
 registerSheetDrag(libraryHandleBtn, libraryPanelScrollEl, () => setLibraryView(null), () => !libraryPanelEl?.classList.contains("hidden"));
 registerSheetDrag(profileHandleBtn, profileMenuEl, () => setProfileMenuOpen(false), () => !profileMenuEl?.classList.contains("hidden"));
 
