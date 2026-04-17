@@ -37,7 +37,7 @@ const state = {
   libraryStats: null,
   quizStats: { answered: 0, correct: 0, streak: 0 },
   hasEnteredApp: window.sessionStorage.getItem("ets_guest") === "1",
-  viewMode: window.sessionStorage.getItem("ets_view_mode") || (window.innerWidth < 860 ? "mobile" : "web"),
+  viewMode: window.innerWidth < 860 ? "mobile" : "web",
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -132,8 +132,6 @@ const libraryLevelEl = $("#libraryLevel");
 const libraryTopicEl = $("#libraryTopic");
 const aiControlsEl = $("#aiControls");
 const libraryCountBadgeEl = $("#libraryCountBadge");
-const viewWebBtn = $("#viewWebBtn");
-const viewMobileBtn = $("#viewMobileBtn");
 const mobileWordSheetEl = $("#mobileWordSheet");
 const mobileWordBackdropEl = $("#mobileWordBackdrop");
 const closeMobileWordBtn = $("#closeMobileWordBtn");
@@ -303,8 +301,6 @@ function setMobileWordSheetOpen(isOpen) {
 function updateViewModeUi() {
   document.body.classList.toggle("mobile-mode", isMobilePreview());
   document.body.classList.toggle("web-mode", !isMobilePreview());
-  viewWebBtn?.classList.toggle("active", !isMobilePreview());
-  viewMobileBtn?.classList.toggle("active", isMobilePreview());
   if (!isMobilePreview()) {
     setMobileWordSheetOpen(false);
   } else if (state.selectedWord && !state.loadingWord && state.glossary[state.selectedWord]) {
@@ -312,9 +308,11 @@ function updateViewModeUi() {
   }
 }
 
-function setViewMode(mode) {
-  state.viewMode = mode === "mobile" ? "mobile" : "web";
-  window.sessionStorage.setItem("ets_view_mode", state.viewMode);
+function syncViewModeFromViewport() {
+  const nextMode = window.innerWidth < 860 ? "mobile" : "web";
+  if (state.viewMode !== nextMode) {
+    state.viewMode = nextMode;
+  }
   updateViewModeUi();
 }
 
@@ -1025,8 +1023,6 @@ openQuizBtn.addEventListener("click", async () => {
   setLibraryView("quiz");
 });
 openManualHelpBtn.addEventListener("click", () => setLibraryView("manual"));
-viewWebBtn?.addEventListener("click", () => setViewMode("web"));
-viewMobileBtn?.addEventListener("click", () => setViewMode("mobile"));
 closeMobileWordBtn?.addEventListener("click", () => setMobileWordSheetOpen(false));
 mobileWordBackdropEl?.addEventListener("click", () => setMobileWordSheetOpen(false));
 closeLibraryBtn.addEventListener("click", () => setLibraryView(null));
@@ -1082,9 +1078,10 @@ renderAuthMode();
 renderUserPanel();
 setLibraryView(null);
 updateSourceModeUi();
-updateViewModeUi();
+syncViewModeFromViewport();
 renderKeywordChips();
 renderWelcomeGate();
+window.addEventListener("resize", syncViewModeFromViewport);
 refreshSession().then(async () => {
   if (state.user) completeAppEntry(false);
   renderWelcomeGate();
