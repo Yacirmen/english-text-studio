@@ -256,6 +256,15 @@ body.dark-mode .toolbar-btn,
 body.dark-mode .profile-trigger{
   box-shadow:0 8px 18px rgba(0,0,0,.22);
 }
+body.dark-mode .insight-block .mini-label{
+  color:#9fb4cf;
+}
+body.dark-mode .insight-block p{
+  color:#e3edfb;
+}
+body.dark-mode .inline-highlight{
+  color:#ffd872;
+}
 .top-status{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .top-tools{
   display:flex;
