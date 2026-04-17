@@ -42,7 +42,11 @@ body::before{
   z-index:0;
 }
 .page-shell{position:relative;z-index:1;max-width:1460px;margin:0 auto;padding:18px 18px 28px}
-.gate-open{overflow:hidden}
+.gate-open{overflow:auto}
+.gate-open .page-shell{
+  pointer-events:none;
+  user-select:none;
+}
 .welcome-gate{
   position:fixed;
   inset:0;
@@ -55,6 +59,8 @@ body::before{
   backdrop-filter:blur(18px);
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  min-height:100dvh;
 }
 .welcome-card{
   width:min(1120px, 100%);
@@ -1129,7 +1135,7 @@ input[type="range"]::-moz-range-thumb{
   }
   .welcome-card{
     width:100%;
-    margin:auto 0;
+    margin:0;
     padding:18px;
     border-radius:26px;
     gap:18px;
@@ -1164,6 +1170,6 @@ input[type="range"]::-moz-range-thumb{
     padding-bottom:12px;
   }
   .welcome-card{
-    margin:auto 0;
+    margin:0;
   }
 }
