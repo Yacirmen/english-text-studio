@@ -49,6 +49,12 @@ const gateShowLoginBtn = $("#gateShowLoginBtn");
 const gateShowRegisterBtn = $("#gateShowRegisterBtn");
 const continueGuestBtn = $("#continueGuestBtn");
 const pageShell = $(".page-shell");
+const profileTriggerBtn = $("#profileTriggerBtn");
+const profileTriggerInitialsEl = $("#profileTriggerInitials");
+const profileMenuEl = $("#profileMenu");
+const profileMenuTitleEl = $("#profileMenuTitle");
+const profileMenuBadgeEl = $("#profileMenuBadge");
+const profileTipTextEl = $("#profileTipText");
 const generateForm = $("#generate-form");
 const manualForm = $("#manual-form");
 const authForm = $("#authForm");
@@ -457,9 +463,32 @@ function renderUserPanel() {
     accountNameEl.textContent = state.user.username;
     savedWordsCountEl.textContent = state.stats.saved_words || 0;
     masteredWordsCountEl.textContent = state.stats.mastered_words || 0;
+    if (profileMenuTitleEl) profileMenuTitleEl.textContent = state.user.username;
+    if (profileMenuBadgeEl) profileMenuBadgeEl.textContent = `${state.stats.saved_words || 0} saved`;
+    if (profileTipTextEl) {
+      profileTipTextEl.textContent =
+        (state.stats.saved_words || 0) > 0
+          ? "Your saved words and quiz streak live here. Open review from the toolbar anytime."
+          : "Start tapping words in a reading and your personal review stack will build here.";
+    }
+    if (profileTriggerInitialsEl) {
+      profileTriggerInitialsEl.textContent = state.user.username.slice(0, 1).toUpperCase();
+    }
+    profileTriggerBtn?.classList.add("signed-in");
+  } else {
+    if (profileMenuTitleEl) profileMenuTitleEl.textContent = "Guest mode";
+    if (profileMenuBadgeEl) profileMenuBadgeEl.textContent = "Explore";
+    if (profileTriggerInitialsEl) profileTriggerInitialsEl.textContent = "G";
+    profileTriggerBtn?.classList.remove("signed-in");
   }
   renderSavedWords();
   renderQuiz();
+}
+
+function setProfileMenuOpen(isOpen) {
+  profileMenuEl?.classList.toggle("hidden", !isOpen);
+  profileTriggerBtn?.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  document.body.classList.toggle("profile-open", isOpen);
 }
 
 function updateAccountStatsOnly() {
@@ -820,6 +849,22 @@ gateShowRegisterBtn?.addEventListener("click", () => {
 
 continueGuestBtn?.addEventListener("click", () => completeAppEntry(true));
 
+profileTriggerBtn?.addEventListener("click", (event) => {
+  event.stopPropagation();
+  const willOpen = profileMenuEl?.classList.contains("hidden");
+  setProfileMenuOpen(Boolean(willOpen));
+});
+
+profileMenuEl?.addEventListener("click", (event) => {
+  event.stopPropagation();
+});
+
+document.addEventListener("click", () => setProfileMenuOpen(false));
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") setProfileMenuOpen(false);
+});
+
 logoutBtn.addEventListener("click", async () => {
   await apiFetch("/api/auth/logout", { method: "POST" });
   state.user = null;
@@ -830,6 +875,7 @@ logoutBtn.addEventListener("click", async () => {
   window.sessionStorage.removeItem("ets_guest");
   renderUserPanel();
   renderWelcomeGate();
+  setProfileMenuOpen(false);
 });
 
 clearSavedWordsBtn?.addEventListener("click", async () => {

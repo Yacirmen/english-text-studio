@@ -59,6 +59,69 @@
       </div>
       <div class="top-status">
         <span class="nav-pill">Focused practice</span>
+        <div class="profile-shell">
+          <button id="profileTriggerBtn" class="profile-trigger" type="button" aria-label="Open profile menu" aria-expanded="false">
+            <span id="profileTriggerInitials" class="profile-trigger-initials">G</span>
+          </button>
+          <div id="profileMenu" class="profile-menu hidden">
+            <div class="profile-menu-head">
+              <div>
+                <span class="mini-label">Profile</span>
+                <strong id="profileMenuTitle">Guest mode</strong>
+              </div>
+              <span id="profileMenuBadge" class="profile-menu-badge">Explore</span>
+            </div>
+
+            <section class="profile-panel auth-panel">
+              <div id="authGuest" class="stack-md">
+                <div class="section-head compact">
+                  <h3>Account</h3>
+                  <p>Sign in to save words and unlock personal review.</p>
+                </div>
+
+                <div class="auth-toggle">
+                  <button id="showLoginBtn" class="auth-tab active" type="button">Log In</button>
+                  <button id="showRegisterBtn" class="auth-tab" type="button">Sign Up</button>
+                </div>
+
+                <form id="authForm" class="stack-md">
+                  <label class="field">
+                    <span>Username</span>
+                    <input id="authUsername" type="text" placeholder="your_username" />
+                  </label>
+                  <label class="field">
+                    <span>Password</span>
+                    <input id="authPassword" type="password" placeholder="at least 6 characters" />
+                  </label>
+                  <p id="authError" class="error-text hidden"></p>
+                  <button id="authSubmitBtn" class="primary-btn" type="submit">Log In</button>
+                </form>
+              </div>
+
+              <div id="authUser" class="stack-md hidden">
+                <div class="account-card">
+                  <span class="mini-label on-dark">Active account</span>
+                  <h4 id="accountName">username</h4>
+                  <div class="account-stats">
+                    <div>
+                      <span>Saved words</span>
+                      <strong id="savedWordsCount">0</strong>
+                    </div>
+                    <div>
+                      <span>Mastered</span>
+                      <strong id="masteredWordsCount">0</strong>
+                    </div>
+                  </div>
+                </div>
+                <div class="profile-tip">
+                  <span class="mini-label on-dark">Session</span>
+                  <p id="profileTipText">Tap saved words or quiz from the toolbar to continue where you left off.</p>
+                </div>
+                <button id="logoutBtn" class="outline-btn light-outline" type="button">Log Out</button>
+              </div>
+            </section>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -88,55 +151,10 @@
 
     <main class="studio-layout">
       <aside class="tool-rail">
-        <section class="rail-panel auth-panel">
-          <div class="section-head compact">
-            <h3>Account</h3>
-            <p>Sign in to save words and unlock personal review.</p>
-          </div>
-
-          <div id="authGuest" class="stack-md">
-            <div class="auth-toggle">
-              <button id="showLoginBtn" class="auth-tab active" type="button">Log In</button>
-              <button id="showRegisterBtn" class="auth-tab" type="button">Sign Up</button>
-            </div>
-
-            <form id="authForm" class="stack-md">
-              <label class="field">
-                <span>Username</span>
-                <input id="authUsername" type="text" placeholder="your_username" />
-              </label>
-              <label class="field">
-                <span>Password</span>
-                <input id="authPassword" type="password" placeholder="at least 6 characters" />
-              </label>
-              <p id="authError" class="error-text hidden"></p>
-              <button id="authSubmitBtn" class="primary-btn" type="submit">Log In</button>
-            </form>
-          </div>
-
-          <div id="authUser" class="stack-md hidden">
-            <div class="account-card">
-              <span class="mini-label on-dark">Active account</span>
-              <h4 id="accountName">username</h4>
-              <div class="account-stats">
-                <div>
-                  <span>Saved words</span>
-                  <strong id="savedWordsCount">0</strong>
-                </div>
-                <div>
-                  <span>Mastered</span>
-                  <strong id="masteredWordsCount">0</strong>
-                </div>
-              </div>
-            </div>
-            <button id="logoutBtn" class="outline-btn light-outline" type="button">Log Out</button>
-          </div>
-        </section>
-
         <div class="rail-intro">
           <span class="rail-kicker">Setup</span>
           <h2>Pick a lane. Keep the rhythm.</h2>
-          <p>Library mode is curated and clean. AI mode stays flexible when you want custom prompts.</p>
+          <p>Pick the mode, tune the reading, and keep the rest of the screen focused on the text.</p>
         </div>
 
         <section class="rail-panel">
