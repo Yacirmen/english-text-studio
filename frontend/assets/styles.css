@@ -53,6 +53,8 @@ body::before{
   padding:24px;
   background:linear-gradient(180deg, rgba(243,247,255,.72), rgba(235,243,255,.92));
   backdrop-filter:blur(18px);
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
 }
 .welcome-card{
   width:min(1120px, 100%);
@@ -1120,8 +1122,18 @@ input[type="range"]::-moz-range-thumb{
 
 @media (max-width: 768px){
   .page-shell{padding:10px 10px 22px}
-  .welcome-gate{padding:12px}
-  .welcome-card{padding:18px;border-radius:26px;gap:18px}
+  .welcome-gate{
+    align-items:flex-start;
+    justify-content:stretch;
+    padding:12px;
+  }
+  .welcome-card{
+    width:100%;
+    margin:auto 0;
+    padding:18px;
+    border-radius:26px;
+    gap:18px;
+  }
   .welcome-auth{padding:18px;border-radius:22px}
   .topbar{padding:12px 14px}
   .hero-band{padding:16px 16px 18px;border-radius:24px}
@@ -1143,4 +1155,15 @@ input[type="range"]::-moz-range-thumb{
   .flip-face{padding:20px;border-radius:24px}
   .library-panel{padding:18px;border-radius:24px}
   .form-row.compact-filters{grid-template-columns:1fr}
+}
+
+@media (max-height: 820px){
+  .welcome-gate{
+    align-items:flex-start;
+    padding-top:12px;
+    padding-bottom:12px;
+  }
+  .welcome-card{
+    margin:auto 0;
+  }
 }
