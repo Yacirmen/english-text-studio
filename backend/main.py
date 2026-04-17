@@ -1317,13 +1317,16 @@ def quiz_candidate_meanings(words: list[dict[str, Any]], target_id: int, target_
     return values
 
 
-def get_recent_words(user_id: int, limit: int = 6) -> list[dict[str, Any]]:
+def get_recent_words(user_id: int, limit: int = 20, *, randomize: bool = False) -> list[dict[str, Any]]:
+    order_clause = "RANDOM()" if not USE_POSTGRES else "RANDOM()"
+    if not randomize:
+        order_clause = "updated_at DESC"
     return db_fetchall(
-        """
+        f"""
         SELECT id, word, turkish, click_count, last_result, updated_at
         FROM saved_words
         WHERE user_id = ?
-        ORDER BY updated_at DESC
+        ORDER BY {order_clause}
         LIMIT ?
         """,
         (user_id, limit),
@@ -1449,25 +1452,24 @@ def pick_library_reading(
     )
     if not rows:
         return None
-    if exclude_title:
-        alternate_rows = [row for row in rows if str(row["title"]) != exclude_title]
-        if alternate_rows:
-            rows = alternate_rows
-    if normalized_topic != "Serbest":
-        exact_topic_rows = [row for row in rows if row["topic"] == normalized_topic]
+    filtered_rows = rows
+    if normalized_topic not in {"Open", "Serbest", "Random"}:
+        exact_topic_rows = [row for row in filtered_rows if row["topic"] == normalized_topic]
         if exact_topic_rows:
-            rows = exact_topic_rows
-    scored: list[tuple[int, int, dict[str, Any]]] = []
-    for row in rows:
-        row_keywords = parse_keywords_field(row["keywords"])
-        keyword_hits = sum(1 for keyword in keywords if keyword.lower() in {item.lower() for item in row_keywords})
-        topic_score = 2 if row["topic"] == normalized_topic else 0
+            filtered_rows = exact_topic_rows
+    if exclude_title:
+        alternate_rows = [row for row in filtered_rows if str(row["title"]) != exclude_title]
+        if alternate_rows:
+            filtered_rows = alternate_rows
+    if not filtered_rows:
+        filtered_rows = rows
+    scored: list[tuple[int, dict[str, Any]]] = []
+    for row in filtered_rows:
         length_score = abs(int(row["word_count"]) - int(length_target))
-        scored.append((-(keyword_hits + topic_score), length_score, row))
-    scored.sort(key=lambda item: (item[0], item[1], item[2]["id"]))
-    top_score = scored[0][0]
-    candidate_rows = [row for score, _length, row in scored if score == top_score]
-    best = random.choice(candidate_rows)
+        scored.append((length_score, row))
+    scored.sort(key=lambda item: (item[0], item[1]["id"]))
+    candidate_pool = [row for _score, row in scored[: min(24, len(scored))]]
+    best = random.choice(candidate_pool or filtered_rows)
     return {
         "id": best["id"],
         "title": best["title"],
@@ -2234,6 +2236,32 @@ def clear_saved_words(session_token: str | None = Cookie(default=None, alias=SES
     return {"ok": True, "stats": build_user_stats(int(user["id"]))}
 
 
+@app.get("/api/saved-words")
+def list_saved_words(
+    mode: str = Query(default="recent"),
+    limit: int = Query(default=20, ge=1, le=50),
+    session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE),
+) -> dict[str, Any]:
+    user = require_user(session_token)
+    return {
+        "words": get_recent_words(int(user["id"]), limit=limit, randomize=(mode == "random")),
+    }
+
+
+@app.delete("/api/saved-words/{word_id}")
+def delete_saved_word(
+    word_id: int,
+    session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE),
+) -> dict[str, Any]:
+    user = require_user(session_token)
+    db_execute("DELETE FROM saved_words WHERE id = ? AND user_id = ?", (word_id, int(user["id"])))
+    return {
+        "ok": True,
+        "stats": build_user_stats(int(user["id"])),
+        "recent_words": get_recent_words(int(user["id"]), limit=20),
+    }
+
+
 @app.post("/api/quiz/check")
 def quiz_check(payload: QuizAnswerRequest, session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE)) -> dict[str, Any]:
     user = require_user(session_token)
@@ -2281,6 +2309,7 @@ def generate(payload: GenerateRequest) -> dict[str, Any]:
             return {
                 "text": library_match["text"],
                 "title": library_match["title"],
+                "topic": library_match["topic"],
                 "content_source": "library",
                 "glossary": build_library_glossary(library_match["text"]),
             }
@@ -2290,6 +2319,7 @@ def generate(payload: GenerateRequest) -> dict[str, Any]:
         return {
             "text": request_text(prompt, payload.level, payload.topic, keywords),
             "title": "",
+            "topic": payload.topic,
             "content_source": "ai",
             "glossary": {},
         }

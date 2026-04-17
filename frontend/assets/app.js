@@ -8,15 +8,16 @@ const LEVEL_CONFIG = {
 };
 
 const TOPIC_KEYWORDS = {
-  "Günlük Hayat": ["morning", "coffee", "routine", "friend"],
-  Okul: ["student", "teacher", "library", "study"],
-  Seyahat: ["travel", "city", "hotel", "ticket"],
-  "İş Hayatı": ["meeting", "project", "office", "email"],
-  Akademik: ["research", "analysis", "evidence", "study"],
+  Random: ["story", "daily", "idea", "change"],
+  Open: ["morning", "project", "travel", "friend"],
+  "Daily Life": ["morning", "coffee", "routine", "friend"],
+  School: ["student", "teacher", "library", "study"],
+  Travel: ["travel", "city", "hotel", "ticket"],
+  "Work Life": ["meeting", "project", "office", "email"],
+  Academic: ["research", "analysis", "evidence", "study"],
   Science: ["science", "evidence", "method", "observation"],
   Health: ["health", "routine", "balance", "habit"],
   Sport: ["team", "practice", "focus", "goal"],
-  Serbest: ["morning", "project", "travel", "friend"],
 };
 
 const state = {
@@ -99,6 +100,9 @@ const masteredWordsCountEl = $("#masteredWordsCount");
 const savedWordsEmptyEl = $("#savedWordsEmpty");
 const savedWordsListEl = $("#savedWordsList");
 const clearSavedWordsBtn = $("#clearSavedWordsBtn");
+const randomizeSavedWordsBtn = $("#randomizeSavedWordsBtn");
+const savedWordsActionsEl = $("#savedWordsActions");
+const savedWordsMetaEl = $("#savedWordsMeta");
 const quizEmptyEl = $("#quizEmpty");
 const quizCardEl = $("#quizCard");
 const quizPromptEl = $("#quizPrompt");
@@ -267,7 +271,11 @@ function updateSourceModeUi() {
   previewStateEl.textContent = isLibrary
     ? "Ready. Pick a level and topic, then load a curated reading."
     : "Ready. Set your level, topic, and keywords, then generate a custom reading.";
-  renderMeta(state.lastPayload?.level || levelEl.value, state.lastPayload?.topic || topicEl.value, state.text || "");
+  renderMeta(
+    state.lastPayload?.level || levelEl.value,
+    state.lastPayload?.resolved_topic || state.lastPayload?.topic || topicEl.value,
+    state.text || ""
+  );
 }
 
 function renderLibraryStats() {
@@ -309,19 +317,25 @@ function renderSavedWords() {
     savedWordsEmptyEl.classList.remove("hidden");
     savedWordsListEl.classList.add("hidden");
     savedWordsListEl.innerHTML = "";
-    clearSavedWordsBtn?.classList.add("hidden");
+    savedWordsActionsEl?.classList.add("hidden");
     return;
   }
   savedWordsEmptyEl.classList.add("hidden");
   savedWordsListEl.classList.remove("hidden");
-  clearSavedWordsBtn?.classList.remove("hidden");
+  savedWordsActionsEl?.classList.remove("hidden");
+  if (savedWordsMetaEl) {
+    savedWordsMetaEl.textContent = `${state.recentWords.length} words on deck`;
+  }
   savedWordsListEl.innerHTML = state.recentWords
     .map(
       (item) => `
-        <button class="saved-word-item" type="button" data-word="${escapeHtml(item.word)}">
-          <strong>${escapeHtml(item.word)}</strong>
-          <span>${escapeHtml(item.turkish)}</span>
-        </button>
+        <div class="saved-word-row" data-word-id="${item.id}">
+          <button class="saved-word-item" type="button" data-word="${escapeHtml(item.word)}">
+            <strong>${escapeHtml(item.word)}</strong>
+            <span>${escapeHtml(item.turkish)}</span>
+          </button>
+          <button class="saved-word-remove" type="button" data-word-id="${item.id}" aria-label="Remove ${escapeHtml(item.word)}">×</button>
+        </div>
       `
     )
     .join("");
@@ -335,6 +349,31 @@ function renderSavedWords() {
       await loadWordDetail(button.dataset.word);
     });
   });
+  savedWordsListEl.querySelectorAll(".saved-word-remove").forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      event.stopPropagation();
+      const wordId = button.dataset.wordId;
+      const parsed = await apiFetch(`/api/saved-words/${wordId}`, { method: "DELETE" });
+      if (!parsed.ok) return;
+      state.stats = parsed.data.stats || state.stats;
+      state.recentWords = parsed.data.recent_words || [];
+      renderUserPanel();
+      if (state.quiz && String(state.quiz.word_id) === String(wordId)) {
+        state.quiz = null;
+        await loadQuiz();
+      } else {
+        renderQuiz();
+      }
+    });
+  });
+}
+
+async function fetchSavedWords(mode = "recent") {
+  if (!state.user) return;
+  const parsed = await apiFetch(`/api/saved-words?mode=${encodeURIComponent(mode)}&limit=20`);
+  if (!parsed.ok) return;
+  state.recentWords = parsed.data.words || [];
+  renderSavedWords();
 }
 
 function renderQuiz() {
@@ -644,7 +683,7 @@ function renderReadingText() {
 function renderExperience() {
   previewStateEl.classList.add("hidden");
   readingExperienceEl.classList.remove("hidden");
-  renderMeta(state.lastPayload.level, state.lastPayload.topic, state.text);
+  renderMeta(state.lastPayload.level, state.lastPayload.resolved_topic || state.lastPayload.topic, state.text);
   if (state.lastPayload.title) {
     readingTitleEl.textContent = state.lastPayload.title;
     readingTitleEl.classList.remove("hidden");
@@ -675,6 +714,8 @@ async function generateExperience(payload, triggerButton) {
     state.lastPayload = {
       ...payload,
       title: parsed.data.title || "",
+      topic: payload.topic,
+      resolved_topic: parsed.data.topic || payload.topic,
       content_source: parsed.data.content_source || payload.source,
     };
     manualResultEl.classList.add("hidden");
@@ -888,6 +929,10 @@ clearSavedWordsBtn?.addEventListener("click", async () => {
   renderUserPanel();
 });
 
+randomizeSavedWordsBtn?.addEventListener("click", async () => {
+  await fetchSavedWords("random");
+});
+
 regenBtn.addEventListener("click", async () => {
   if (!state.lastPayload) return;
   const payload = {
@@ -910,7 +955,10 @@ clearBtn.addEventListener("click", () => {
 });
 
 nextQuizBtn.addEventListener("click", () => loadQuiz(state.quiz?.word_id || null));
-openSavedWordsBtn.addEventListener("click", () => setLibraryView("saved"));
+openSavedWordsBtn.addEventListener("click", async () => {
+  if (state.user) await fetchSavedWords("recent");
+  setLibraryView("saved");
+});
 openQuizBtn.addEventListener("click", async () => {
   if (!state.quiz && state.user) await loadQuiz();
   setLibraryView("quiz");

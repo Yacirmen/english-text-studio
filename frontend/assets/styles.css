@@ -799,6 +799,36 @@ input[type="range"]::-moz-range-thumb{
   display:grid;
   gap:8px;
 }
+.saved-words-actions{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin:0 0 14px;
+}
+.saved-words-buttons{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.saved-words-meta{
+  color:#dbe7f5;
+  font-size:.88rem;
+  font-weight:800;
+  letter-spacing:.02em;
+}
+.ghost-btn-inline{
+  width:auto;
+  min-width:132px;
+  margin:0;
+  padding:0 16px;
+}
+.saved-word-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 44px;
+  gap:8px;
+  align-items:stretch;
+}
 .saved-word-item{
   width:100%;
   padding:12px 14px;
@@ -809,6 +839,10 @@ input[type="range"]::-moz-range-thumb{
   text-align:left;
   cursor:pointer;
 }
+.saved-word-item:hover{
+  background:rgba(255,255,255,.14);
+  box-shadow:0 10px 18px rgba(0,0,0,.12);
+}
 .saved-word-item strong{
   display:block;
   font-size:.98rem;
@@ -818,6 +852,22 @@ input[type="range"]::-moz-range-thumb{
   margin-top:5px;
   color:#cad8e8;
   font-size:.84rem;
+}
+.saved-word-remove{
+  border:none;
+  border-radius:16px;
+  background:rgba(255,255,255,.08);
+  color:#ffdfe4;
+  font:inherit;
+  font-size:1.2rem;
+  font-weight:900;
+  cursor:pointer;
+  transition:transform .18s ease, background .18s ease, box-shadow .18s ease;
+}
+.saved-word-remove:hover{
+  transform:translateY(-1px);
+  background:rgba(255,107,107,.18);
+  box-shadow:0 0 16px rgba(255,107,107,.14);
 }
 .quiz-card{
   display:flex;
@@ -1244,6 +1294,10 @@ input[type="range"]::-moz-range-thumb{
   .reading-body{min-height:280px;padding:20px;font-size:1.03rem;line-height:1.9}
   .action-row{grid-template-columns:1fr;gap:12px}
   .secondary-btn,.outline-btn,.primary-btn{width:100%}
+  .saved-words-actions{flex-direction:column;align-items:stretch}
+  .saved-words-buttons{width:100%}
+  .ghost-btn-inline{flex:1 1 0;width:100%}
+  .saved-word-row{grid-template-columns:minmax(0,1fr) 40px}
   .detail-column{top:auto}
   .flip-card{min-height:240px}
   .flip-face{padding:20px;border-radius:24px}

@@ -196,12 +196,13 @@
                 <label class="field">
                   <span>Topic</span>
                   <select id="libraryTopic">
-                    <option value="Serbest">Open</option>
-                    <option value="Günlük Hayat">Daily Life</option>
-                    <option value="Okul">School</option>
-                    <option value="Seyahat">Travel</option>
-                    <option value="İş Hayatı">Work Life</option>
-                    <option value="Akademik">Academic</option>
+                    <option value="Random" selected>Random</option>
+                    <option value="Open">Open</option>
+                    <option value="Daily Life">Daily Life</option>
+                    <option value="School">School</option>
+                    <option value="Travel">Travel</option>
+                    <option value="Work Life">Work Life</option>
+                    <option value="Academic">Academic</option>
                     <option value="Science">Science</option>
                     <option value="Health">Health</option>
                     <option value="Sport">Sport</option>
@@ -226,12 +227,13 @@
                 <label class="field">
                   <span id="topicLabel">Topic</span>
                   <select id="topic">
-                    <option value="Serbest">Open</option>
-                    <option value="Günlük Hayat">Daily Life</option>
-                    <option value="Okul">School</option>
-                    <option value="Seyahat">Travel</option>
-                    <option value="İş Hayatı">Work Life</option>
-                    <option value="Akademik">Academic</option>
+                    <option value="Random" selected>Random</option>
+                    <option value="Open">Open</option>
+                    <option value="Daily Life">Daily Life</option>
+                    <option value="School">School</option>
+                    <option value="Travel">Travel</option>
+                    <option value="Work Life">Work Life</option>
+                    <option value="Academic">Academic</option>
                     <option value="Science">Science</option>
                     <option value="Health">Health</option>
                     <option value="Sport">Sport</option>
@@ -356,7 +358,13 @@
 
     <section id="savedWordsPanel" class="library-section hidden">
       <p class="library-copy">Saved words build up here. Tap one to jump back into the reading flow.</p>
-      <button id="clearSavedWordsBtn" class="ghost-btn hidden" type="button">Clear word history</button>
+      <div id="savedWordsActions" class="saved-words-actions hidden">
+        <span id="savedWordsMeta" class="saved-words-meta">0 words ready</span>
+        <div class="saved-words-buttons">
+          <button id="randomizeSavedWordsBtn" class="ghost-btn ghost-btn-inline" type="button">Randomize</button>
+          <button id="clearSavedWordsBtn" class="ghost-btn ghost-btn-inline" type="button">Clear history</button>
+        </div>
+      </div>
       <div id="savedWordsEmpty" class="helper-note">Sign in to start building your saved word list.</div>
       <div id="savedWordsList" class="saved-word-list hidden"></div>
     </section>
