@@ -129,6 +129,7 @@ const libraryTitleEl = $("#libraryTitle");
 const libraryKickerEl = $("#libraryKicker");
 const closeLibraryBtn = $("#closeLibraryBtn");
 const libraryHandleBtn = $("#libraryHandleBtn");
+const libraryPanelScrollEl = $("#libraryPanel");
 const sourceSwitchEl = $("#sourceSwitch");
 const libraryModeHintEl = $("#libraryModeHint");
 const libraryControlsEl = $("#libraryControls");
@@ -140,6 +141,7 @@ const mobileWordSheetEl = $("#mobileWordSheet");
 const mobileWordBackdropEl = $("#mobileWordBackdrop");
 const closeMobileWordBtn = $("#closeMobileWordBtn");
 const mobileWordHandleBtn = $("#mobileWordHandleBtn");
+const mobileWordPanelEl = $(".mobile-word-panel");
 const mobileWordTitleEl = $("#mobileWordTitle");
 const mobileWordMeaningEl = $("#mobileWordMeaning");
 const mobileWordContextEl = $("#mobileWordContext");
@@ -301,6 +303,7 @@ function setMobileWordSheetOpen(isOpen) {
   mobileWordSheetEl.classList.toggle("sheet-open", isOpen);
   mobileWordSheetEl.setAttribute("aria-hidden", String(!isOpen));
   document.body.classList.toggle("mobile-sheet-open", isOpen);
+  if (mobileWordPanelEl) mobileWordPanelEl.style.transform = "";
 }
 
 function updateViewModeUi() {
@@ -537,9 +540,11 @@ function setLibraryView(view) {
   const isOpen = Boolean(view);
   libraryOverlayEl.classList.toggle("hidden", !isOpen);
   libraryPanelEl.classList.toggle("hidden", !isOpen);
+  document.body.classList.toggle("library-open", isOpen);
   savedWordsPanelEl.classList.toggle("hidden", view !== "saved");
   quizPanelEl.classList.toggle("hidden", view !== "quiz");
   manualHelpPanelEl.classList.toggle("hidden", view !== "manual");
+  if (libraryPanelScrollEl) libraryPanelScrollEl.style.transform = "";
   if (view === "saved") {
     libraryKickerEl.textContent = "Saved Words";
     libraryTitleEl.textContent = "Your saved words";
@@ -587,6 +592,41 @@ function setProfileMenuOpen(isOpen) {
   profileOverlayEl?.classList.toggle("hidden", !isOpen);
   profileTriggerBtn?.setAttribute("aria-expanded", isOpen ? "true" : "false");
   document.body.classList.toggle("profile-open", isOpen);
+  if (profileMenuEl) profileMenuEl.style.transform = "";
+}
+
+function registerSheetDrag(handleEl, panelEl, closeFn, isOpenFn) {
+  if (!handleEl || !panelEl) return;
+  let startY = 0;
+  let dragging = false;
+
+  handleEl.addEventListener("touchstart", (event) => {
+    if (!isOpenFn()) return;
+    const touch = event.touches[0];
+    startY = touch.clientY;
+    dragging = true;
+    panelEl.style.transition = "none";
+  }, { passive: true });
+
+  handleEl.addEventListener("touchmove", (event) => {
+    if (!dragging) return;
+    const touch = event.touches[0];
+    const deltaY = Math.max(0, touch.clientY - startY);
+    panelEl.style.transform = `translateY(${deltaY}px)`;
+  }, { passive: true });
+
+  const finishDrag = (event) => {
+    if (!dragging) return;
+    const touch = event.changedTouches?.[0];
+    const deltaY = touch ? Math.max(0, touch.clientY - startY) : 0;
+    dragging = false;
+    panelEl.style.transition = "";
+    panelEl.style.transform = "";
+    if (deltaY > 72) closeFn();
+  };
+
+  handleEl.addEventListener("touchend", finishDrag, { passive: true });
+  handleEl.addEventListener("touchcancel", finishDrag, { passive: true });
 }
 
 function updateAccountStatsOnly() {
@@ -1039,6 +1079,10 @@ mobileWordBackdropEl?.addEventListener("click", () => setMobileWordSheetOpen(fal
 closeLibraryBtn.addEventListener("click", () => setLibraryView(null));
 libraryHandleBtn?.addEventListener("click", () => setLibraryView(null));
 libraryOverlayEl.addEventListener("click", () => setLibraryView(null));
+
+registerSheetDrag(mobileWordHandleBtn, mobileWordPanelEl, () => setMobileWordSheetOpen(false), () => mobileWordSheetEl?.classList.contains("sheet-open"));
+registerSheetDrag(libraryHandleBtn, libraryPanelScrollEl, () => setLibraryView(null), () => !libraryPanelEl?.classList.contains("hidden"));
+registerSheetDrag(profileHandleBtn, profileMenuEl, () => setProfileMenuOpen(false), () => !profileMenuEl?.classList.contains("hidden"));
 
 flipCardEl.addEventListener("click", () => {
   if (state.loadingWord || !state.selectedWord) return;
