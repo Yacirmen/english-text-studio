@@ -176,6 +176,8 @@ GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMI
 HF_MODEL = os.getenv("HF_MODEL", "Qwen/Qwen2.5-72B-Instruct").strip()
 HF_TOKEN = os.getenv("HF_TOKEN", "").strip()
 HF_BASE_URL = os.getenv("HF_BASE_URL", "https://router.huggingface.co/v1").strip()
+GOOGLE_TRANSLATE_API_KEY = os.getenv("GOOGLE_TRANSLATE_API_KEY", "").strip()
+GOOGLE_TRANSLATE_API_URL = "https://translation.googleapis.com/language/translate/v2"
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 USE_POSTGRES = DATABASE_URL.startswith("postgres")
 APP_BASE_URL = os.getenv("APP_BASE_URL", "http://127.0.0.1:8041").strip().rstrip("/")
@@ -1141,6 +1143,47 @@ def should_use_local_meaning(word: str, candidate: str) -> bool:
     return not cleaned or cleaned == lowered_word or cleaned.startswith(lowered_word + " ")
 
 
+def html_unescape(value: str) -> str:
+    return (
+        value.replace("&#39;", "'")
+        .replace("&quot;", '"')
+        .replace("&amp;", "&")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+    )
+
+
+def translate_text_google(text: str, *, target_language: str = "tr", source_language: str | None = None) -> str:
+    if not GOOGLE_TRANSLATE_API_KEY:
+        raise HTTPException(status_code=500, detail="GOOGLE_TRANSLATE_API_KEY bulunamadÄ±.")
+    payload: dict[str, Any] = {
+        "q": text,
+        "target": target_language,
+        "format": "text",
+        "key": GOOGLE_TRANSLATE_API_KEY,
+    }
+    if source_language:
+        payload["source"] = source_language
+    with build_http_client() as client:
+        response = client.post(GOOGLE_TRANSLATE_API_URL, data=payload)
+        response.raise_for_status()
+        data = response.json()
+    translated = (
+        data.get("data", {})
+        .get("translations", [{}])[0]
+        .get("translatedText", "")
+    )
+    return html_unescape(str(translated).strip())
+
+
+def find_sentence_for_word(text: str, word: str) -> str:
+    candidates = re.split(r"(?<=[.!?])\s+", text.strip())
+    for sentence in candidates:
+        if re.search(rf"\b{re.escape(word)}\b", sentence, flags=re.IGNORECASE):
+            return sentence.strip()
+    return ""
+
+
 def build_local_reading(level: str, topic: str, keywords: list[str], length_target: int) -> str:
     topic_key = topic if topic in TOPIC_SENTENCE_BANK else "Serbest"
     base_sentences = TOPIC_SENTENCE_BANK[topic_key][:]
@@ -1330,36 +1373,36 @@ def request_text(prompt: str, level: str, topic: str, keywords: list[str]) -> st
 
 
 def request_manual_explanation(text: str, word: str) -> str:
-    return request_model(
-        build_word_prompt(text, word),
-        "You are a concise English vocabulary tutor.",
-        temperature=0.25,
-        max_output_tokens=140,
+    detail = request_word_detail(text, word)
+    return (
+        f"Turkish meaning: {detail['turkish']}\n"
+        f"Context in Turkish: {detail['context']}\n"
+        f"Simple example: {detail['example']}"
     )
 
 
 def request_word_detail(text: str, word: str) -> dict[str, str]:
-    cache_key = f"{hashlib.sha1(text.encode('utf-8')).hexdigest()}::{word.lower()}::{MODEL_PROVIDER}"
+    cache_key = f"{hashlib.sha1(text.encode('utf-8')).hexdigest()}::{word.lower()}::google-translate"
     cached = WORD_DETAIL_CACHE.get(cache_key)
     if cached:
         return cached
-    try:
-        raw = request_model(
-            build_word_strict_prompt(text, word),
-            "You are a bilingual vocabulary tutor. Return compact and correct JSON.",
-            temperature=0.2,
-            max_output_tokens=180,
-            json_mode=True,
-        )
-        parsed = parse_json_response(raw)
-    except Exception:
-        parsed = {}
     local_fallback = build_local_word_detail(text, word)
-    parsed_meaning = str(parsed.get("turkish", "")).strip()
+    sentence = find_sentence_for_word(text, word)
+    translated_meaning = ""
+    translated_context = ""
+    try:
+        translated_meaning = translate_text_google(word, target_language="tr", source_language="en")
+    except Exception:
+        translated_meaning = ""
+    if sentence:
+        try:
+            translated_context = translate_text_google(sentence, target_language="tr", source_language="en")
+        except Exception:
+            translated_context = ""
     result = {
-        "turkish": local_fallback["turkish"] if should_use_local_meaning(word, parsed_meaning) else parsed_meaning,
-        "context": str(parsed.get("context", "")).strip() or local_fallback["context"],
-        "example": str(parsed.get("example", "")).strip() or local_fallback["example"],
+        "turkish": local_fallback["turkish"] if should_use_local_meaning(word, translated_meaning) else translated_meaning,
+        "context": translated_context or local_fallback["context"],
+        "example": sentence or local_fallback["example"],
     }
     WORD_DETAIL_CACHE[cache_key] = result
     return result
