@@ -54,6 +54,9 @@ const pageShell = $(".page-shell");
 const profileTriggerBtn = $("#profileTriggerBtn");
 const profileTriggerInitialsEl = $("#profileTriggerInitials");
 const profileMenuEl = $("#profileMenu");
+const profileOverlayEl = $("#profileOverlay");
+const closeProfileMenuBtn = $("#closeProfileMenuBtn");
+const profileHandleBtn = $("#profileHandleBtn");
 const profileMenuTitleEl = $("#profileMenuTitle");
 const profileMenuBadgeEl = $("#profileMenuBadge");
 const profileTipTextEl = $("#profileTipText");
@@ -125,6 +128,7 @@ const manualHelpPanelEl = $("#manualHelpPanel");
 const libraryTitleEl = $("#libraryTitle");
 const libraryKickerEl = $("#libraryKicker");
 const closeLibraryBtn = $("#closeLibraryBtn");
+const libraryHandleBtn = $("#libraryHandleBtn");
 const sourceSwitchEl = $("#sourceSwitch");
 const libraryModeHintEl = $("#libraryModeHint");
 const libraryControlsEl = $("#libraryControls");
@@ -135,6 +139,7 @@ const libraryCountBadgeEl = $("#libraryCountBadge");
 const mobileWordSheetEl = $("#mobileWordSheet");
 const mobileWordBackdropEl = $("#mobileWordBackdrop");
 const closeMobileWordBtn = $("#closeMobileWordBtn");
+const mobileWordHandleBtn = $("#mobileWordHandleBtn");
 const mobileWordTitleEl = $("#mobileWordTitle");
 const mobileWordMeaningEl = $("#mobileWordMeaning");
 const mobileWordContextEl = $("#mobileWordContext");
@@ -579,6 +584,7 @@ function renderUserPanel() {
 
 function setProfileMenuOpen(isOpen) {
   profileMenuEl?.classList.toggle("hidden", !isOpen);
+  profileOverlayEl?.classList.toggle("hidden", !isOpen);
   profileTriggerBtn?.setAttribute("aria-expanded", isOpen ? "true" : "false");
   document.body.classList.toggle("profile-open", isOpen);
 }
@@ -955,6 +961,10 @@ profileMenuEl?.addEventListener("click", (event) => {
   event.stopPropagation();
 });
 
+profileOverlayEl?.addEventListener("click", () => setProfileMenuOpen(false));
+closeProfileMenuBtn?.addEventListener("click", () => setProfileMenuOpen(false));
+profileHandleBtn?.addEventListener("click", () => setProfileMenuOpen(false));
+
 document.addEventListener("click", () => setProfileMenuOpen(false));
 
 document.addEventListener("keydown", (event) => {
@@ -1024,8 +1034,10 @@ openQuizBtn.addEventListener("click", async () => {
 });
 openManualHelpBtn.addEventListener("click", () => setLibraryView("manual"));
 closeMobileWordBtn?.addEventListener("click", () => setMobileWordSheetOpen(false));
+mobileWordHandleBtn?.addEventListener("click", () => setMobileWordSheetOpen(false));
 mobileWordBackdropEl?.addEventListener("click", () => setMobileWordSheetOpen(false));
 closeLibraryBtn.addEventListener("click", () => setLibraryView(null));
+libraryHandleBtn?.addEventListener("click", () => setLibraryView(null));
 libraryOverlayEl.addEventListener("click", () => setLibraryView(null));
 
 flipCardEl.addEventListener("click", () => {

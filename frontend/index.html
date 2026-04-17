@@ -69,12 +69,18 @@
             <span id="profileTriggerInitials" class="profile-trigger-initials">G</span>
           </button>
           <div id="profileMenu" class="profile-menu hidden">
+            <button id="profileHandleBtn" class="sheet-handle-btn profile-handle-btn" type="button" aria-label="Close profile panel">
+              <span class="sheet-handle"></span>
+            </button>
             <div class="profile-menu-head">
               <div>
                 <span class="mini-label">Profile</span>
                 <strong id="profileMenuTitle">Guest mode</strong>
               </div>
-              <span id="profileMenuBadge" class="profile-menu-badge">Explore</span>
+              <div class="profile-menu-actions">
+                <span id="profileMenuBadge" class="profile-menu-badge">Explore</span>
+                <button id="closeProfileMenuBtn" class="icon-btn profile-close-btn" type="button" aria-label="Close profile">×</button>
+              </div>
             </div>
 
             <section class="profile-panel auth-panel">
@@ -307,10 +313,13 @@
     </main>
   </div>
 
+  <div id="profileOverlay" class="profile-overlay hidden"></div>
   <div id="mobileWordSheet" class="mobile-word-sheet hidden" aria-hidden="true">
     <div id="mobileWordBackdrop" class="mobile-word-backdrop"></div>
     <div class="mobile-word-panel">
-      <div class="mobile-word-handle"></div>
+      <button id="mobileWordHandleBtn" class="sheet-handle-btn mobile-sheet-handle" type="button" aria-label="Close translation">
+        <span class="sheet-handle"></span>
+      </button>
       <div class="mobile-word-head">
         <div>
           <span class="mini-label">Tap Translation</span>
@@ -339,6 +348,9 @@
 
   <div id="libraryOverlay" class="library-overlay hidden"></div>
   <aside id="libraryPanel" class="library-panel hidden">
+    <button id="libraryHandleBtn" class="sheet-handle-btn library-handle-btn" type="button" aria-label="Close panel">
+      <span class="sheet-handle"></span>
+    </button>
     <div class="library-head">
       <div>
         <span id="libraryKicker" class="mini-label">Library</span>
