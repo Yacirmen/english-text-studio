@@ -18,7 +18,44 @@ const TOPIC_KEYWORDS = {
   Science: ["science", "evidence", "method", "observation"],
   Health: ["health", "routine", "balance", "habit"],
   Sport: ["team", "practice", "focus", "goal"],
+  "Data Science": ["dataset", "model", "pattern", "analysis"],
+  "Computer Science": ["algorithm", "logic", "system", "code"],
+  Technology: ["product", "interface", "tool", "feature"],
+  Finance: ["budget", "saving", "expense", "plan"],
+  Environment: ["energy", "waste", "climate", "action"],
+  Psychology: ["attention", "emotion", "habit", "stress"],
+  Communication: ["message", "feedback", "clarity", "conversation"],
+  Arts: ["studio", "practice", "composition", "form"],
+  Culture: ["ritual", "community", "memory", "tradition"],
+  Food: ["meal", "kitchen", "recipe", "flavor"],
+  "Public Services": ["service", "system", "access", "public"],
+  Media: ["article", "story", "platform", "audience"],
 };
+
+const TOPIC_ORDER = [
+  "Random",
+  "Open",
+  "Daily Life",
+  "School",
+  "Travel",
+  "Work Life",
+  "Science",
+  "Health",
+  "Sport",
+  "Academic",
+  "Data Science",
+  "Computer Science",
+  "Technology",
+  "Finance",
+  "Environment",
+  "Psychology",
+  "Communication",
+  "Arts",
+  "Culture",
+  "Food",
+  "Public Services",
+  "Media",
+];
 
 const state = {
   text: "",
@@ -31,9 +68,11 @@ const state = {
   dismissedMobileWord: "",
   authMode: "login",
   user: null,
-  stats: { saved_words: 0, mastered_words: 0 },
+  stats: { saved_words: 0, mastered_words: 0, saved_today: 0, daily_goal: 5, streak: 0, hard_words: 0 },
   recentWords: [],
+  readingHistory: [],
   quiz: null,
+  quizMode: "saved",
   libraryView: null,
   libraryStats: null,
   quizStats: { answered: 0, correct: 0, streak: 0 },
@@ -84,6 +123,7 @@ const selectedWordEl = $("#selectedWord");
 const selectedMeaningEl = $("#selectedMeaning");
 const selectedContextEl = $("#selectedContext");
 const selectedExampleEl = $("#selectedExample");
+const selectedCollocationsEl = $("#selectedCollocations");
 const manualResultEl = $("#manualResult");
 const manualWordEl = $("#manualWord");
 const regenBtn = $("#regenBtn");
@@ -103,6 +143,11 @@ const logoutBtn = $("#logoutBtn");
 const accountNameEl = $("#accountName");
 const savedWordsCountEl = $("#savedWordsCount");
 const masteredWordsCountEl = $("#masteredWordsCount");
+const dailyGoalTextEl = $("#dailyGoalText");
+const streakBadgeEl = $("#streakBadge");
+const goalBarFillEl = $("#goalBarFill");
+const hardWordsTextEl = $("#hardWordsText");
+const readingHistoryListEl = $("#readingHistoryList");
 const savedWordsEmptyEl = $("#savedWordsEmpty");
 const savedWordsListEl = $("#savedWordsList");
 const clearSavedWordsBtn = $("#clearSavedWordsBtn");
@@ -119,6 +164,9 @@ const nextQuizBtn = $("#nextQuizBtn");
 const quizAnsweredBadgeEl = $("#quizAnsweredBadge");
 const quizStreakBadgeEl = $("#quizStreakBadge");
 const quizTypeBadgeEl = $("#quizTypeBadge");
+const quizModeSavedBtn = $("#quizModeSavedBtn");
+const quizModeHardBtn = $("#quizModeHardBtn");
+const quizModeReadingBtn = $("#quizModeReadingBtn");
 const openSavedWordsBtn = $("#openSavedWordsBtn");
 const openQuizBtn = $("#openQuizBtn");
 const openManualHelpBtn = $("#openManualHelpBtn");
@@ -148,6 +196,25 @@ const mobileWordTitleEl = $("#mobileWordTitle");
 const mobileWordMeaningEl = $("#mobileWordMeaning");
 const mobileWordContextEl = $("#mobileWordContext");
 const mobileWordExampleEl = $("#mobileWordExample");
+const pronounceWordBtn = $("#pronounceWordBtn");
+const mobilePronounceWordBtn = $("#mobilePronounceWordBtn");
+let mobileWordCollocationsEl = $("#mobileWordCollocations");
+
+if (!mobileWordCollocationsEl && mobileWordExampleEl) {
+  const hostBlock = mobileWordExampleEl.closest(".insight-block")?.parentElement;
+  if (hostBlock) {
+    const block = document.createElement("div");
+    block.className = "insight-block";
+    block.innerHTML = `
+      <span class="mini-label">Collocations</span>
+      <div id="mobileWordCollocations" class="collocation-list">
+        <span class="helper-note">Useful word pairs appear here after you choose a word.</span>
+      </div>
+    `;
+    hostBlock.appendChild(block);
+    mobileWordCollocationsEl = $("#mobileWordCollocations");
+  }
+}
 
 function applyTheme(mode) {
   const isDark = mode === "dark";
@@ -211,6 +278,80 @@ function highlightSelectedWord(text, selectedWord) {
 
 function tokenizeText(text) {
   return text.match(/[A-Za-z]+(?:['-][A-Za-z]+)*|\s+|[^A-Za-z\s]/g) || [];
+}
+
+function renderCollocations(targetEl, collocations = []) {
+  if (!targetEl) return;
+  if (!collocations.length) {
+    targetEl.innerHTML = `<span class="helper-note">Useful word pairs appear here after you choose a word.</span>`;
+    return;
+  }
+  targetEl.innerHTML = collocations
+    .map((item) => `<span class="chip collocation-chip">${escapeHtml(item)}</span>`)
+    .join("");
+}
+
+function playPronunciation(word) {
+  if (!word || !("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(word);
+  utterance.lang = "en-US";
+  utterance.rate = 0.95;
+  window.speechSynthesis.speak(utterance);
+}
+
+function buildReadingQuizQuestion(excludeWord = "") {
+  const glossaryEntries = Object.entries(state.glossary || {}).filter(([, detail]) => detail?.turkish);
+  if (glossaryEntries.length < 4) return null;
+  const filtered = excludeWord ? glossaryEntries.filter(([word]) => word !== excludeWord) : glossaryEntries;
+  const pool = filtered.length >= 4 ? filtered : glossaryEntries;
+  const target = pool[Math.floor(Math.random() * pool.length)];
+  const [word, detail] = target;
+  const turkish = String(detail.turkish || "").trim();
+  const exampleSource = String(detail.example || "").split("\n").find((line) => line.trim()) || "";
+  const plainExample = exampleSource.replace(/^\d+\.\s*/, "").replace(/\s*\([^)]*\)\s*$/, "").trim();
+  const canMakeBlank = plainExample && new RegExp(`\\b${word}\\b`, "i").test(plainExample);
+  if (canMakeBlank && Math.random() < 0.5) {
+    const sentence = plainExample.replace(new RegExp(`\\b${word}\\b`, "i"), "_____");
+    const distractors = glossaryEntries
+      .filter(([candidate]) => candidate !== word)
+      .map(([candidate]) => candidate)
+      .slice(0, 12)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 3);
+    const options = [...new Set([...distractors, word])].sort(() => Math.random() - 0.5);
+    return {
+      word_id: `reading-${word}`,
+      question_type: "blank",
+      question: "Which word best completes the sentence?",
+      sentence,
+      word,
+      answer: word,
+      options,
+      context: detail.context || "",
+      example: detail.example || "",
+      mode: "reading",
+    };
+  }
+  const distractors = glossaryEntries
+    .filter(([candidate, candidateDetail]) => candidate !== word && candidateDetail?.turkish)
+    .map(([, candidateDetail]) => String(candidateDetail.turkish).trim())
+    .filter(Boolean)
+    .slice(0, 12)
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 3);
+  const options = [...new Set([...distractors, turkish])].sort(() => Math.random() - 0.5);
+  return {
+    word_id: `reading-${word}`,
+    question_type: "meaning",
+    question: `What is the best Turkish meaning of "${word}"?`,
+    word,
+    answer: turkish,
+    options,
+    context: detail.context || "",
+    example: detail.example || "",
+    mode: "reading",
+  };
 }
 
 function setLoading(button, loadingText, isLoading) {
@@ -365,6 +506,28 @@ function renderLibraryStats() {
   libraryCountBadgeEl.textContent = `${Number(state.libraryStats.total || 0)} curated readings inside`;
 }
 
+function buildTopicListFromStats() {
+  const statTopics = Array.isArray(state.libraryStats?.by_topic)
+    ? state.libraryStats.by_topic.map((item) => item.topic).filter(Boolean)
+    : [];
+  const ordered = TOPIC_ORDER.filter((topic) => topic === "Random" || statTopics.includes(topic));
+  const extras = statTopics.filter((topic) => !ordered.includes(topic)).sort((a, b) => a.localeCompare(b));
+  return ["Random", ...ordered.filter((topic) => topic !== "Random"), ...extras];
+}
+
+function populateTopicOptions() {
+  const topics = buildTopicListFromStats();
+  if (!topics.length) return;
+  const currentTopic = libraryTopicEl?.value || topicEl?.value || "Random";
+  const html = topics
+    .map((topic) => `<option value="${escapeHtml(topic)}">${escapeHtml(topic)}</option>`)
+    .join("");
+  if (topicEl) topicEl.innerHTML = html;
+  if (libraryTopicEl) libraryTopicEl.innerHTML = html;
+  const nextTopic = topics.includes(currentTopic) ? currentTopic : "Random";
+  syncTopicPickers(nextTopic);
+}
+
 function renderMeta(level, topic, text) {
   if (!text) {
     metaTagsEl.innerHTML = "";
@@ -394,13 +557,17 @@ function renderSelection() {
   selectedMeaningEl.textContent = meaning;
   selectedContextEl.innerHTML = contextHtml;
   selectedExampleEl.innerHTML = exampleHtml;
+  renderCollocations(selectedCollocationsEl, item.collocations || []);
   flipCardEl.classList.remove("flipped");
   flipCardEl.classList.toggle("clickable", !state.loadingWord && Boolean(state.selectedWord));
+  pronounceWordBtn?.classList.toggle("hidden", !state.selectedWord);
 
   if (mobileWordTitleEl) mobileWordTitleEl.textContent = state.selectedWord || "Word";
   if (mobileWordMeaningEl) mobileWordMeaningEl.textContent = meaning;
   if (mobileWordContextEl) mobileWordContextEl.innerHTML = contextHtml;
   if (mobileWordExampleEl) mobileWordExampleEl.innerHTML = exampleHtml;
+  renderCollocations(mobileWordCollocationsEl, item.collocations || []);
+  mobilePronounceWordBtn?.classList.toggle("hidden", !state.selectedWord);
 
   if (!isMobilePreview() || !state.selectedWord || state.loadingWord) {
     setMobileWordSheetOpen(false);
@@ -483,14 +650,21 @@ async function fetchSavedWords(mode = "recent") {
 function renderQuiz() {
   if (quizAnsweredBadgeEl) quizAnsweredBadgeEl.textContent = `${state.quizStats.answered} played`;
   if (quizStreakBadgeEl) quizStreakBadgeEl.textContent = `Streak ${state.quizStats.streak}`;
-  if (!state.user) {
+  quizModeSavedBtn?.classList.toggle("active", state.quizMode === "saved");
+  quizModeHardBtn?.classList.toggle("active", state.quizMode === "hard");
+  quizModeReadingBtn?.classList.toggle("active", state.quizMode === "reading");
+  if (state.quizMode !== "reading" && !state.user) {
     quizEmptyEl.textContent = "Sign in first to unlock the quiz.";
     quizEmptyEl.classList.remove("hidden");
     quizCardEl.classList.add("hidden");
     return;
   }
   if (!state.quiz) {
-    quizEmptyEl.textContent = "You need at least 4 saved words to start the quiz.";
+    quizEmptyEl.textContent = state.quizMode === "reading"
+      ? "Open a reading and tap into the glossary first to start a reading quiz."
+      : state.quizMode === "hard"
+        ? "You need at least 4 saved words before hard-word review can begin."
+        : "You need at least 4 saved words to start the quiz.";
     quizEmptyEl.classList.remove("hidden");
     quizCardEl.classList.add("hidden");
     return;
@@ -520,10 +694,44 @@ function renderQuiz() {
     .join("");
   quizOptionsEl.querySelectorAll(".quiz-option").forEach((button) => {
     button.addEventListener("click", async () => {
-        const parsed = await apiFetch("/api/quiz/check", {
-          method: "POST",
-          body: JSON.stringify({
-            word_id: state.quiz.word_id,
+      if (state.quizMode === "reading") {
+        const isCorrect = button.dataset.answer === state.quiz.answer;
+        state.quizStats.answered += 1;
+        state.quizStats.correct += isCorrect ? 1 : 0;
+        state.quizStats.streak = isCorrect ? state.quizStats.streak + 1 : 0;
+        quizFeedbackEl.textContent = isCorrect
+          ? (state.quiz.question_type === "blank"
+            ? `Correct. "${state.quiz.answer}" fits the sentence.`
+            : `Correct. "${state.quiz.word}" = "${state.quiz.answer}".`)
+          : (state.quiz.question_type === "blank"
+            ? `Not this time. Correct word: ${state.quiz.answer}`
+            : `Not this time. Correct answer: ${state.quiz.answer}`);
+        quizFeedbackEl.classList.remove("hidden");
+        quizOptionsEl.querySelectorAll(".quiz-option").forEach((optionButton) => {
+          optionButton.disabled = true;
+          optionButton.classList.toggle("correct", optionButton.dataset.answer === state.quiz.answer);
+          optionButton.classList.toggle(
+            "wrong",
+            optionButton.dataset.answer === button.dataset.answer && button.dataset.answer !== state.quiz.answer
+          );
+        });
+        if (quizAnsweredBadgeEl) quizAnsweredBadgeEl.textContent = `${state.quizStats.answered} played`;
+        if (quizStreakBadgeEl) quizStreakBadgeEl.textContent = `Streak ${state.quizStats.streak}`;
+        if (!isCorrect) {
+          nextQuizBtn.disabled = true;
+          nextQuizBtn.textContent = "Next incoming...";
+          window.setTimeout(async () => {
+            await loadQuiz(state.quiz?.word || null);
+            nextQuizBtn.disabled = false;
+            nextQuizBtn.textContent = "Next Question";
+          }, 3000);
+        }
+        return;
+      }
+      const parsed = await apiFetch("/api/quiz/check", {
+        method: "POST",
+        body: JSON.stringify({
+          word_id: state.quiz.word_id,
             answer: button.dataset.answer,
             question_type: state.quiz.question_type || "meaning",
           }),
@@ -616,6 +824,52 @@ function renderUserPanel() {
           ? "Your saved words and quiz streak live here. Open review from the toolbar anytime."
           : "Start tapping words in a reading and your personal review stack will build here.";
     }
+    if (dailyGoalTextEl) {
+      dailyGoalTextEl.textContent = `${state.stats.saved_today || 0} / ${state.stats.daily_goal || 5} today`;
+    }
+    if (streakBadgeEl) {
+      streakBadgeEl.textContent = `Streak ${state.stats.streak || 0}`;
+    }
+    if (goalBarFillEl) {
+      const ratio = Math.min(100, ((state.stats.saved_today || 0) / Math.max(1, state.stats.daily_goal || 5)) * 100);
+      goalBarFillEl.style.width = `${ratio}%`;
+    }
+    if (hardWordsTextEl) {
+      hardWordsTextEl.textContent = `${state.stats.hard_words || 0} hard words ready for review.`;
+    }
+    if (readingHistoryListEl) {
+      if (!state.readingHistory.length) {
+        readingHistoryListEl.innerHTML = `<p class="history-empty">Your recent readings will appear here.</p>`;
+      } else {
+        readingHistoryListEl.innerHTML = state.readingHistory
+          .map((item) => `
+            <button class="history-item" type="button" data-history-id="${item.id}">
+              <strong>${escapeHtml(item.title)}</strong>
+              <span>${escapeHtml(item.level)} · ${escapeHtml(item.topic)}</span>
+            </button>
+          `)
+          .join("");
+        readingHistoryListEl.querySelectorAll(".history-item").forEach((button) => {
+          button.addEventListener("click", async () => {
+            const parsed = await apiFetch(`/api/history/${button.dataset.historyId}`, { method: "GET", headers: {} });
+            if (!parsed.ok) return;
+            const reading = parsed.data.reading;
+            state.text = reading.text;
+            state.glossary = reading.glossary || {};
+            state.lastPayload = {
+              level: reading.level,
+              topic: reading.topic,
+              resolved_topic: reading.topic,
+              title: reading.title,
+              content_source: reading.content_source,
+              source: reading.content_source,
+            };
+            setProfileMenuOpen(false);
+            renderExperience();
+          });
+        });
+      }
+    }
     if (profileTriggerInitialsEl) {
       profileTriggerInitialsEl.textContent = state.user.username.slice(0, 1).toUpperCase();
     }
@@ -624,6 +878,11 @@ function renderUserPanel() {
     if (profileMenuTitleEl) profileMenuTitleEl.textContent = "Guest mode";
     if (profileMenuBadgeEl) profileMenuBadgeEl.textContent = "Explore";
     if (profileTriggerInitialsEl) profileTriggerInitialsEl.textContent = "G";
+    if (readingHistoryListEl) readingHistoryListEl.innerHTML = `<p class="history-empty">Sign in to keep your reading trail.</p>`;
+    if (dailyGoalTextEl) dailyGoalTextEl.textContent = "0 / 5 today";
+    if (streakBadgeEl) streakBadgeEl.textContent = "Streak 0";
+    if (goalBarFillEl) goalBarFillEl.style.width = "0%";
+    if (hardWordsTextEl) hardWordsTextEl.textContent = "0 hard words ready for review.";
     profileTriggerBtn?.classList.remove("signed-in");
   }
   renderSavedWords();
@@ -707,8 +966,9 @@ async function refreshSession() {
   const parsed = await apiFetch("/api/auth/me", { method: "GET", headers: {} });
   if (parsed.ok) {
     state.user = parsed.data.user;
-    state.stats = parsed.data.stats || { saved_words: 0, mastered_words: 0 };
+    state.stats = parsed.data.stats || { saved_words: 0, mastered_words: 0, saved_today: 0, daily_goal: 5, streak: 0, hard_words: 0 };
     state.recentWords = parsed.data.recent_words || [];
+    state.readingHistory = parsed.data.history || [];
   }
   renderUserPanel();
 }
@@ -717,17 +977,25 @@ async function loadLibraryStats() {
   const parsed = await apiFetch("/api/library/stats", { method: "GET", headers: {} });
   if (parsed.ok) {
     state.libraryStats = parsed.data;
+    populateTopicOptions();
     renderLibraryStats();
   }
 }
 
 async function loadQuiz(excludeWordId = null) {
+  if (state.quizMode === "reading") {
+    state.quiz = buildReadingQuizQuestion(excludeWordId || "");
+    renderQuiz();
+    return;
+  }
   if (!state.user) {
     state.quiz = null;
     renderQuiz();
     return;
   }
-  const suffix = excludeWordId ? `?exclude_word_id=${encodeURIComponent(excludeWordId)}` : "";
+  const query = new URLSearchParams({ mode: state.quizMode });
+  if (excludeWordId) query.set("exclude_word_id", excludeWordId);
+  const suffix = `?${query.toString()}`;
   const parsed = await apiFetch(`/api/quiz/next${suffix}`, { method: "GET", headers: {} });
   state.quiz = parsed.ok ? parsed.data.question : null;
   renderQuiz();
@@ -747,7 +1015,7 @@ async function saveWordSelection(word) {
     if (!parsed.ok) return;
     state.glossary[word] = parsed.data;
     await refreshSession();
-    await loadQuiz();
+    await loadQuiz(state.quiz?.word || null);
   } catch {
     // Keep the UI responsive even if the save side-effect fails.
   }
@@ -788,6 +1056,7 @@ async function loadWordDetail(word) {
       turkish: "Türkçe anlam alınamadı.",
       context: error.message || "Word detail is not available right now.",
       example: "No example sentence available.",
+      collocations: [],
     };
   } finally {
     state.loadingWord = false;
@@ -850,9 +1119,13 @@ function renderExperience() {
   state.loadingWord = false;
   state.pendingFlip = false;
   state.dismissedMobileWord = "";
+  if (state.quizMode === "reading") {
+    state.quiz = buildReadingQuizQuestion();
+  }
   renderSelection();
   selectedContextEl.textContent = "The reading is ready. Tap a word to open its Turkish context.";
   selectedExampleEl.textContent = "A short example will appear here after you choose a word.";
+  renderQuiz();
 }
 
 async function generateExperience(payload, triggerButton) {
@@ -874,6 +1147,9 @@ async function generateExperience(payload, triggerButton) {
       content_source: parsed.data.content_source || payload.source,
     };
     manualResultEl.classList.add("hidden");
+    if (state.user) {
+      await refreshSession();
+    }
     renderExperience();
   } catch (error) {
     showError(error.message);
@@ -1073,6 +1349,7 @@ logoutBtn.addEventListener("click", async () => {
   state.user = null;
   state.stats = { saved_words: 0, mastered_words: 0 };
   state.recentWords = [];
+  state.readingHistory = [];
   state.quiz = null;
   state.hasEnteredApp = false;
   window.sessionStorage.removeItem("ets_guest");
@@ -1095,6 +1372,21 @@ randomizeSavedWordsBtn?.addEventListener("click", async () => {
   await fetchSavedWords("random");
 });
 
+quizModeSavedBtn?.addEventListener("click", async () => {
+  state.quizMode = "saved";
+  await loadQuiz();
+});
+
+quizModeHardBtn?.addEventListener("click", async () => {
+  state.quizMode = "hard";
+  await loadQuiz();
+});
+
+quizModeReadingBtn?.addEventListener("click", async () => {
+  state.quizMode = "reading";
+  await loadQuiz();
+});
+
 regenBtn.addEventListener("click", async () => {
   if (!state.lastPayload) return;
   const payload = {
@@ -1110,6 +1402,7 @@ clearBtn.addEventListener("click", () => {
   state.selectedWord = "";
   state.loadingWord = false;
   state.pendingFlip = false;
+  state.quiz = null;
   setMobileWordSheetOpen(false);
   previewStateEl.classList.remove("hidden");
   readingExperienceEl.classList.add("hidden");
@@ -1117,7 +1410,7 @@ clearBtn.addEventListener("click", () => {
   clearError();
 });
 
-nextQuizBtn.addEventListener("click", () => loadQuiz(state.quiz?.word_id || null));
+nextQuizBtn.addEventListener("click", () => loadQuiz(state.quizMode === "reading" ? state.quiz?.word || null : state.quiz?.word_id || null));
 openSavedWordsBtn.addEventListener("click", async () => {
   if (state.user) await fetchSavedWords("recent");
   setLibraryView("saved");
@@ -1130,6 +1423,14 @@ openManualHelpBtn.addEventListener("click", () => setLibraryView("manual"));
 closeMobileWordBtn?.addEventListener("click", closeMobileWordSheet);
 mobileWordHandleBtn?.addEventListener("click", closeMobileWordSheet);
 mobileWordBackdropEl?.addEventListener("click", closeMobileWordSheet);
+pronounceWordBtn?.addEventListener("click", (event) => {
+  event.stopPropagation();
+  playPronunciation(state.selectedWord);
+});
+mobilePronounceWordBtn?.addEventListener("click", (event) => {
+  event.stopPropagation();
+  playPronunciation(state.selectedWord);
+});
 closeLibraryBtn.addEventListener("click", () => setLibraryView(null));
 libraryHandleBtn?.addEventListener("click", () => setLibraryView(null));
 libraryOverlayEl.addEventListener("click", () => setLibraryView(null));
