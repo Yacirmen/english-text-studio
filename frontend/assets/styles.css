@@ -2067,6 +2067,40 @@ body.dark-mode .mobile-word-panel,
 body.dark-mode .mobile-insight-card{
   color:#edf5ff;
 }
+body.dark-mode .topbar,
+body.dark-mode .tool-rail,
+body.dark-mode .rail-panel,
+body.dark-mode .reading-header,
+body.dark-mode .reading-body,
+body.dark-mode .insight-card,
+body.dark-mode .preview-state,
+body.dark-mode .profile-menu,
+body.dark-mode .library-panel,
+body.dark-mode .mobile-word-panel{
+  border:1px solid rgba(163, 191, 224, .12);
+  box-shadow:
+    0 18px 42px rgba(0,0,0,.24),
+    inset 0 1px 0 rgba(255,255,255,.03);
+}
+body.dark-mode .rail-panel,
+body.dark-mode .account-card,
+body.dark-mode .profile-tip,
+body.dark-mode .quiz-sentence,
+body.dark-mode .quiz-feedback,
+body.dark-mode .saved-word-item,
+body.dark-mode .ghost-btn,
+body.dark-mode .helper-note,
+body.dark-mode .manual-result{
+  border:1px solid rgba(173, 198, 229, .10);
+}
+body.dark-mode .reading-body{
+  background:linear-gradient(180deg,#16293f 0%,#172b42 100%);
+}
+body.dark-mode .insight-card,
+body.dark-mode .reading-header,
+body.dark-mode .preview-state{
+  background:linear-gradient(180deg,#15283f 0%,#182c44 100%);
+}
 body.dark-mode .section-head p,
 body.dark-mode .rail-intro p,
 body.dark-mode .muted-copy,
