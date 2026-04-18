@@ -30,30 +30,13 @@ except ImportError:  # pragma: no cover
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = ROOT_DIR / "frontend"
-CONTENT_DIR = ROOT_DIR / "content"
 ENV_PATH = ROOT_DIR / ".env"
 DB_PATH = ROOT_DIR / "backend" / "app.db"
 EXTRA_WORD_MAP_PATH = ROOT_DIR / "backend" / "extra_word_map.json"
 LIBRARY_WORD_MAP_PATH = ROOT_DIR / "backend" / "library_word_map.json"
-TEXTS_JSON_PATH = CONTENT_DIR / "texts.json"
-VOCAB_BANK_JSON_PATH = CONTENT_DIR / "vocabulary_bank.json"
-COLLOCATIONS_JSON_PATH = CONTENT_DIR / "collocations.json"
-CONTENT_RULES_JSON_PATH = CONTENT_DIR / "content_rules.json"
 SESSION_COOKIE = "ets_session"
 WORD_DETAIL_CACHE: dict[str, dict[str, str]] = {}
 GENERATE_CACHE: dict[str, str] = {}
-
-
-def load_json_document(path: Path) -> dict[str, Any]:
-    if not path.exists():
-        return {}
-    try:
-        loaded = json.loads(path.read_text(encoding="utf-8"))
-        return loaded if isinstance(loaded, dict) else {}
-    except json.JSONDecodeError:
-        return {}
-
-
 QUIZ_DISTRACTOR_BANK = {
     "verb": ["kaydetmek", "yorumlamak", "ta??mak", "dengelemek", "kar??la?t?rmak", "geli?tirmek"],
     "adjective": ["d?zenli", "kar???k", "dar", "geni?", "yo?un", "sakin", "net", "karma??k", "yava?", "h?zl?", "g??l?", "zay?f"],
@@ -652,39 +635,6 @@ IRREGULAR_WORD_MAP = {
     "narrow": "dar",
 }
 WORD_MEANING_OVERRIDES = {
-    "about": "hakkında",
-    "another": "başka bir",
-    "because": "çünkü",
-    "before": "önce",
-    "between": "arasında",
-    "by": "tarafından / ile",
-    "cross-functional": "fonksiyonlar arası",
-    "current-affairs": "güncel olaylar",
-    "did": "yaptı",
-    "down": "aşağı",
-    "during": "sırasında",
-    "errands": "günlük işler",
-    "for": "için",
-    "how": "nasıl",
-    "in": "içinde",
-    "inside": "içinde",
-    "into": "içine",
-    "keep": "sürdürmek",
-    "late-stage": "geç aşama",
-    "living-room": "oturma odası",
-    "many": "birçok",
-    "most": "en çok",
-    "much": "çok",
-    "near": "yakınında",
-    "need": "ihtiyaç duymak",
-    "needs": "ihtiyaç duyar",
-    "no": "hayır / yok",
-    "not": "değil",
-    "note": "not / kayıt",
-    "often": "sık sık",
-    "on": "üzerinde",
-    "outside": "dışında",
-    "over": "üzerinde",
     "simplified": "sadeleÅŸtirilmiÅŸ",
     "irritated": "sinirli",
     "misguided": "yanlÄ±ÅŸ yÃ¶nlendirilmiÅŸ",
@@ -711,23 +661,6 @@ if LIBRARY_WORD_MAP_PATH.exists():
         LIBRARY_WORD_MAP = {}
 else:
     LIBRARY_WORD_MAP = {}
-TEXTS_DOCUMENT = load_json_document(TEXTS_JSON_PATH)
-TEXT_ITEMS: list[dict[str, Any]] = [item for item in TEXTS_DOCUMENT.get("items", []) if isinstance(item, dict)]
-PUBLISHED_TEXT_ITEMS: list[dict[str, Any]] = [item for item in TEXT_ITEMS if str(item.get("status", "published")) == "published"]
-TEXT_BY_ID: dict[str, dict[str, Any]] = {
-    str(item.get("id")): item for item in TEXT_ITEMS if item.get("id")
-}
-VOCAB_DOCUMENT = load_json_document(VOCAB_BANK_JSON_PATH)
-VOCAB_ITEMS: list[dict[str, Any]] = [item for item in VOCAB_DOCUMENT.get("items", []) if isinstance(item, dict)]
-VOCAB_BY_ID: dict[str, dict[str, Any]] = {
-    str(item.get("id")): item for item in VOCAB_ITEMS if item.get("id")
-}
-COLLOCATION_DOCUMENT = load_json_document(COLLOCATIONS_JSON_PATH)
-COLLOCATION_ITEMS: list[dict[str, Any]] = [item for item in COLLOCATION_DOCUMENT.get("items", []) if isinstance(item, dict)]
-COLLOCATION_BY_ID: dict[str, dict[str, Any]] = {
-    str(item.get("id")): item for item in COLLOCATION_ITEMS if item.get("id")
-}
-CONTENT_RULES = load_json_document(CONTENT_RULES_JSON_PATH)
 TOPIC_SENTENCE_BANK = {
     "Serbest": [
         "The day starts quietly, but it soon becomes full of small decisions and new plans.",
@@ -822,8 +755,6 @@ class GenerateRequest(BaseModel):
     length_target: int = Field(ge=60, le=320)
     keywords: list[str] = Field(default_factory=list)
     source: str = "library"
-    content_type: str | None = None
-    content_id: str | None = None
     exclude_title: str | None = None
 
 
@@ -831,9 +762,6 @@ class ExplainRequest(BaseModel):
     text: str
     word: str
     content_source: str | None = None
-    ref_id: str | None = None
-    item_type: str | None = None
-    content_id: str | None = None
 
 
 class AuthRequest(BaseModel):
@@ -2142,230 +2070,6 @@ def find_sentence_for_word(text: str, word: str) -> str:
     return ""
 
 
-def find_sentence_for_surface(text: str, surface: str) -> str:
-    candidates = re.split(r"(?<=[.!?])\s+", text.strip())
-    for sentence in candidates:
-        if re.search(rf"\b{re.escape(surface)}\b", sentence, flags=re.IGNORECASE):
-            return sentence.strip()
-    return ""
-
-
-def content_stats_by_level() -> list[dict[str, Any]]:
-    counts: dict[str, int] = {}
-    for item in PUBLISHED_TEXT_ITEMS:
-        level = str(item.get("level") or "").strip()
-        if not level:
-            continue
-        counts[level] = counts.get(level, 0) + 1
-    order = ["A1", "A2", "B1", "B2", "C1", "C2"]
-    return [{"level": level, "total": counts[level]} for level in order if level in counts]
-
-
-def content_stats_by_topic() -> list[dict[str, Any]]:
-    counts: dict[str, int] = {}
-    for item in PUBLISHED_TEXT_ITEMS:
-        topic = str(item.get("topic") or "").strip()
-        if not topic:
-            continue
-        counts[topic] = counts.get(topic, 0) + 1
-    return [{"topic": topic, "total": counts[topic]} for topic in sorted(counts)]
-
-
-def content_stats_by_type() -> list[dict[str, Any]]:
-    counts: dict[str, int] = {}
-    for item in PUBLISHED_TEXT_ITEMS:
-        content_type = str(item.get("content_type") or "").strip()
-        if not content_type:
-            continue
-        counts[content_type] = counts.get(content_type, 0) + 1
-    return [{"content_type": content_type, "total": counts[content_type]} for content_type in sorted(counts)]
-
-
-def filter_content_texts(
-    level: str | None = None,
-    topic: str | None = None,
-    content_type: str | None = None,
-) -> list[dict[str, Any]]:
-    rows = PUBLISHED_TEXT_ITEMS
-    if level and level not in {"All", ""}:
-        rows = [item for item in rows if str(item.get("level")) == level]
-    normalized_topic = normalize_topic(topic or "")
-    if normalized_topic and normalized_topic not in {"Open", "Serbest", "Random", "All"}:
-        rows = [item for item in rows if str(item.get("topic")) == normalized_topic]
-    normalized_type = str(content_type or "").strip()
-    if normalized_type and normalized_type not in {"All"}:
-        rows = [item for item in rows if str(item.get("content_type")) == normalized_type]
-    return rows
-
-
-def pick_content_text(
-    level: str,
-    topic: str,
-    length_target: int,
-    content_type: str | None = None,
-    content_id: str | None = None,
-    exclude_title: str | None = None,
-) -> dict[str, Any] | None:
-    if content_id:
-        exact_match = TEXT_BY_ID.get(content_id)
-        if exact_match and exact_match in PUBLISHED_TEXT_ITEMS:
-            return exact_match
-    rows = filter_content_texts(level=level, topic=topic, content_type=content_type)
-    if not rows:
-        return None
-    filtered_rows = rows
-    if exclude_title:
-        alternate_rows = [row for row in filtered_rows if str(row.get("title")) != exclude_title]
-        if alternate_rows:
-            filtered_rows = alternate_rows
-    if not filtered_rows:
-        filtered_rows = rows
-    scored = sorted(
-        filtered_rows,
-        key=lambda row: (
-            abs(int(row.get("word_count") or 0) - int(length_target)),
-            str(row.get("id") or ""),
-        ),
-    )
-    candidate_pool = scored[: min(24, len(scored))]
-    return random.choice(candidate_pool or filtered_rows)
-
-
-def related_collocations_for_lemma(lemma: str) -> list[str]:
-    lowered = lemma.lower().strip()
-    phrases: list[str] = []
-    for item in COLLOCATION_ITEMS:
-        focus_words = [str(word).lower() for word in item.get("focus_words", [])]
-        if lowered in focus_words:
-            phrase = str(item.get("phrase") or "").strip()
-            if phrase and phrase not in phrases:
-                phrases.append(phrase)
-    return phrases[:3]
-
-
-def build_content_pack_detail(
-    text: str,
-    surface: str,
-    ref_id: str | None,
-    item_type: str | None,
-) -> dict[str, str]:
-    compact_surface = surface.strip()
-    if item_type == "collocation" and ref_id and ref_id in COLLOCATION_BY_ID:
-        item = COLLOCATION_BY_ID[ref_id]
-        sentence = find_sentence_for_surface(text, compact_surface or str(item.get("phrase") or ""))
-        context_lines = [
-            f'Bu metindeki karşılığı: "{item.get("turkish_meaning", "")}"',
-            "Tür: collocation",
-            f'Düzey: {item.get("level", "")}',
-        ]
-        if sentence:
-            context_lines.append(f"Geçtiği bölüm: {sentence}")
-        example_en = str(item.get("example_en") or "").strip()
-        example_tr = str(item.get("example_tr") or "").strip()
-        example_lines = [f"1. {example_en} ({example_tr})"] if example_en and example_tr else ([f"1. {example_en}"] if example_en else [])
-        return {
-            "turkish": str(item.get("turkish_meaning") or "").strip() or "Türkçe anlam alınamadı.",
-            "context": "\n".join(line for line in context_lines if line.strip()),
-            "example": "\n".join(example_lines) if example_lines else "No example sentence available.",
-            "collocations": [str(item.get("phrase") or "").strip()] if item.get("phrase") else [],
-        }
-    if ref_id and ref_id in VOCAB_BY_ID:
-        item = VOCAB_BY_ID[ref_id]
-        sentence = find_sentence_for_surface(text, compact_surface or str(item.get("word") or ""))
-        lemma = str(item.get("lemma") or compact_surface or "")
-        context_lines = [
-            f'Bu metindeki karşılığı: "{item.get("turkish_meaning", "")}"',
-            f'Kök: {lemma}',
-            f'Tür: {item.get("part_of_speech", "")}',
-            f'Düzey: {item.get("cefr_level", "")}',
-        ]
-        if sentence:
-            context_lines.append(f"Geçtiği bölüm: {sentence}")
-        example_en = str(item.get("example_en") or "").strip()
-        example_tr = str(item.get("example_tr") or "").strip()
-        example_lines = [f"1. {example_en} ({example_tr})"] if example_en and example_tr else ([f"1. {example_en}"] if example_en else [])
-        return {
-            "turkish": str(item.get("turkish_meaning") or "").strip() or "Türkçe anlam alınamadı.",
-            "context": "\n".join(line for line in context_lines if line.strip()),
-            "example": "\n".join(example_lines) if example_lines else "No example sentence available.",
-            "collocations": related_collocations_for_lemma(lemma),
-        }
-    return build_local_word_detail(text, compact_surface)
-
-
-def build_content_quiz_question(content_id: str, exclude_ref_id: str | None = None) -> dict[str, Any] | None:
-    item = TEXT_BY_ID.get(content_id)
-    if not item:
-        return None
-    click_map = item.get("click_map", [])
-    candidates = [
-        entry
-        for entry in click_map
-        if isinstance(entry, dict)
-        and str(entry.get("ref_id") or "").strip()
-        and str(entry.get("surface") or "").strip()
-        and str(entry.get("ref_id")) != str(exclude_ref_id or "")
-    ]
-    unique_candidates: list[dict[str, Any]] = []
-    seen_refs: set[str] = set()
-    for entry in candidates:
-        ref_id = str(entry.get("ref_id"))
-        if ref_id in seen_refs:
-            continue
-        seen_refs.add(ref_id)
-        unique_candidates.append(entry)
-    if len(unique_candidates) < 4:
-        return None
-    target_entry = random.choice(unique_candidates)
-    target_type = str(target_entry.get("type") or "word")
-    target_ref_id = str(target_entry.get("ref_id") or "")
-    target_surface = str(target_entry.get("surface") or "").strip()
-    target_bank = COLLOCATION_BY_ID if target_type == "collocation" else VOCAB_BY_ID
-    target_item = target_bank.get(target_ref_id)
-    if not target_item:
-        return None
-    target_meaning = str(target_item.get("turkish_meaning") or "").strip()
-    if not target_meaning:
-        return None
-    same_type_pool = [entry for entry in unique_candidates if str(entry.get("type") or "word") == target_type and str(entry.get("ref_id")) != target_ref_id]
-    distractor_meanings: list[str] = []
-    for entry in same_type_pool:
-        bank = COLLOCATION_BY_ID if str(entry.get("type") or "word") == "collocation" else VOCAB_BY_ID
-        distractor = bank.get(str(entry.get("ref_id") or ""))
-        meaning = str((distractor or {}).get("turkish_meaning") or "").strip()
-        if meaning and meaning != target_meaning and meaning not in distractor_meanings:
-            distractor_meanings.append(meaning)
-        if len(distractor_meanings) >= 3:
-            break
-    if len(distractor_meanings) < 3:
-        global_pool = COLLOCATION_ITEMS if target_type == "collocation" else VOCAB_ITEMS
-        for candidate in global_pool:
-            meaning = str(candidate.get("turkish_meaning") or "").strip()
-            if not meaning or meaning == target_meaning or meaning in distractor_meanings:
-                continue
-            distractor_meanings.append(meaning)
-            if len(distractor_meanings) >= 3:
-                break
-    if len(distractor_meanings) < 3:
-        return None
-    sentence = find_sentence_for_surface(str(item.get("content") or ""), target_surface)
-    options = distractor_meanings[:3] + [target_meaning]
-    random.shuffle(options)
-    return {
-        "word_id": f"reading:{content_id}:{target_ref_id}",
-        "ref_id": target_ref_id,
-        "item_type": target_type,
-        "question_type": "meaning",
-        "question": f'What is the best Turkish meaning of "{target_surface}"?' if target_type == "word" else f'What is the best Turkish meaning of "{target_surface}"?',
-        "word": target_surface,
-        "answer": target_meaning,
-        "options": options,
-        "context": sentence,
-        "example": str(target_item.get("example_en") or sentence or "").strip(),
-        "mode": "reading",
-    }
-
-
 def extract_unique_words(text: str) -> list[str]:
     seen: set[str] = set()
     ordered: list[str] = []
@@ -2967,15 +2671,6 @@ def quiz_next(
     return {"question": {key: value for key, value in question.items() if key != "answer"}}
 
 
-@app.get("/api/quiz/from-reading")
-def quiz_from_reading(
-    content_id: str,
-    exclude_ref_id: str | None = Query(default=None),
-) -> dict[str, Any]:
-    question = build_content_quiz_question(content_id, exclude_ref_id)
-    return {"question": {key: value for key, value in question.items() if key != "answer"}} if question else {"question": None}
-
-
 @app.get("/api/history/{history_id}")
 def reading_history_item(
     history_id: int,
@@ -2993,16 +2688,6 @@ def reading_history_item(
     if not row:
         raise HTTPException(status_code=404, detail="Reading history item not found.")
     glossary = build_library_glossary(str(row["text"])) if str(row["content_source"]) == "library" else {}
-    content_item = None
-    if str(row["content_source"]) == "library":
-        content_item = next(
-            (
-                item
-                for item in PUBLISHED_TEXT_ITEMS
-                if str(item.get("title")) == str(row["title"]) and str(item.get("content")) == str(row["text"])
-            ),
-            None,
-        )
     return {
         "reading": {
             "id": row["id"],
@@ -3012,8 +2697,6 @@ def reading_history_item(
             "topic": row["topic"],
             "content_source": row["content_source"],
             "glossary": glossary,
-            "click_map": content_item.get("click_map", []) if content_item else [],
-            "content_id": content_item.get("id", "") if content_item else "",
         }
     }
 
@@ -3094,13 +2777,12 @@ def generate(payload: GenerateRequest, session_token: str | None = Cookie(defaul
     if payload.source == "ai" and (len(keywords) < 2 or len(keywords) > 12):
         raise HTTPException(status_code=400, detail="2 ile 12 arasÄ±nda anahtar kelime gerekli.")
     if payload.source == "library":
-        library_match = pick_content_text(
+        library_match = pick_library_reading(
             payload.level,
             payload.topic,
+            keywords,
             payload.length_target,
-            content_type=payload.content_type,
-            content_id=payload.content_id,
-            exclude_title=payload.exclude_title,
+            payload.exclude_title,
         )
         if library_match:
             user = optional_user(session_token)
@@ -3108,20 +2790,17 @@ def generate(payload: GenerateRequest, session_token: str | None = Cookie(defaul
                 record_reading_history(
                     int(user["id"]),
                     title=str(library_match["title"]),
-                    text=str(library_match["content"]),
+                    text=str(library_match["text"]),
                     level=payload.level,
                     topic=str(library_match["topic"]),
                     content_source="library",
                 )
             return {
-                "text": library_match["content"],
+                "text": library_match["text"],
                 "title": library_match["title"],
                 "topic": library_match["topic"],
-                "content_type": library_match.get("content_type", ""),
                 "content_source": "library",
-                "glossary": {},
-                "click_map": library_match.get("click_map", []),
-                "content_id": library_match.get("id", ""),
+                "glossary": build_library_glossary(library_match["text"]),
             }
         raise HTTPException(status_code=404, detail="Bu filtreler iÃ§in library iÃ§inde uygun bir metin bulunamadÄ±.")
     prompt = build_text_prompt(payload.level, payload.topic, keywords, payload.length_target)
@@ -3149,38 +2828,51 @@ def generate(payload: GenerateRequest, session_token: str | None = Cookie(defaul
 
 
 @app.get("/api/library/readings")
-def list_library_readings(
-    level: str | None = None,
-    topic: str | None = None,
-    content_type: str | None = None,
-) -> dict[str, Any]:
-    rows = filter_content_texts(level=level, topic=topic, content_type=content_type)
-    serialized = [
-        {
-            "id": row.get("id"),
-            "title": row.get("title"),
-            "level": row.get("level"),
-            "topic": row.get("topic"),
-            "subtopic": row.get("subtopic"),
-            "content_type": row.get("content_type"),
-            "keywords": row.get("target_vocabulary_ids", []),
-            "word_count": row.get("word_count", 0),
-            "estimated_reading_time_sec": row.get("estimated_reading_time_sec", 0),
-            "preview": str(row.get("content") or "")[:180].strip(),
-            "source": "content_pack",
-        }
-        for row in rows
-    ]
-    return {"readings": serialized}
+def list_library_readings(level: str | None = None, topic: str | None = None) -> dict[str, Any]:
+    query = """
+        SELECT id, title, level, topic, keywords, word_count, source
+        FROM readings
+        WHERE is_published = 1
+    """
+    params: list[Any] = []
+    if level:
+        query += " AND level = ?"
+        params.append(level)
+    if topic:
+        query += " AND topic = ?"
+        params.append(normalize_topic(topic))
+    query += " ORDER BY level, topic, id"
+    rows = db_fetchall(query, tuple(params))
+    for row in rows:
+        row["keywords"] = parse_keywords_field(row["keywords"])
+    return {"readings": rows}
 
 
 @app.get("/api/library/stats")
 def library_stats() -> dict[str, Any]:
+    total_row = db_fetchone("SELECT COUNT(*) AS total FROM readings WHERE is_published = 1")
+    level_rows = db_fetchall(
+        """
+        SELECT level, COUNT(*) AS total
+        FROM readings
+        WHERE is_published = 1
+        GROUP BY level
+        ORDER BY level
+        """
+    )
+    topic_rows = db_fetchall(
+        """
+        SELECT topic, COUNT(*) AS total
+        FROM readings
+        WHERE is_published = 1
+        GROUP BY topic
+        ORDER BY topic
+        """
+    )
     return {
-        "total": len(PUBLISHED_TEXT_ITEMS),
-        "by_level": content_stats_by_level(),
-        "by_topic": content_stats_by_topic(),
-        "by_content_type": content_stats_by_type(),
+        "total": int((total_row or {}).get("total", 0)),
+        "by_level": level_rows,
+        "by_topic": topic_rows,
     }
 
 
@@ -3202,7 +2894,7 @@ def word_detail(payload: ExplainRequest, session_token: str | None = Cookie(defa
         raise HTTPException(status_code=400, detail="GeÃ§erli bir kelime gerekli.")
     try:
         if (payload.content_source or "").lower() == "library":
-            detail = build_content_pack_detail(payload.text, safe_word, payload.ref_id, payload.item_type)
+            detail = build_local_word_detail(payload.text, safe_word)
         else:
             detail = request_word_detail(payload.text, safe_word)
         user = optional_user(session_token)

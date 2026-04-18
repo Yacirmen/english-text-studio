@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260418ah" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260418af" />
 </head>
 <body>
   <div id="welcomeGate" class="welcome-gate">
@@ -125,23 +125,6 @@
                     </div>
                   </div>
                 </div>
-                <div class="profile-tip profile-progress-card">
-                  <span class="mini-label on-dark">Daily progress</span>
-                  <div class="profile-progress-topline">
-                    <strong id="dailyGoalText">0 / 5 today</strong>
-                    <span id="streakBadge" class="profile-menu-badge">Streak 0</span>
-                  </div>
-                  <div class="goal-bar">
-                    <span id="goalBarFill"></span>
-                  </div>
-                  <p id="hardWordsText">0 hard words ready for review.</p>
-                </div>
-                <div class="profile-tip profile-history-card">
-                  <span class="mini-label on-dark">Continue reading</span>
-                  <div id="readingHistoryList" class="history-list">
-                    <p class="history-empty">Your recent readings will appear here.</p>
-                  </div>
-                </div>
                 <div class="profile-tip">
                   <span class="mini-label on-dark">Session</span>
                   <p id="profileTipText">Tap saved words or quiz from the toolbar to continue where you left off.</p>
@@ -214,12 +197,6 @@
                   </select>
                 </label>
               </div>
-              <label class="field">
-                <span>Content type</span>
-                <select id="libraryContentType">
-                  <option value="All" selected>All types</option>
-                </select>
-              </label>
             </div>
 
             <div id="aiControls" class="stack-lg hidden">
@@ -279,7 +256,7 @@
             <p id="generateError" class="error-text hidden"></p>
             <button id="generateBtn" class="primary-btn" type="submit">Get Reading</button>
             <div class="setup-footer">
-              <button id="libraryCountBadge" class="library-count-badge hidden" type="button">150 curated readings inside</button>
+              <div id="libraryCountBadge" class="library-count-badge hidden">150 curated readings inside</div>
               <p id="libraryModeHint" class="setup-footer-note hidden">Pick a level and a topic. We will pull a reading from the curated library.</p>
             </div>
           </form>
@@ -309,13 +286,8 @@
             <div class="flip-scene">
               <div id="flipCard" class="flip-card" role="button" tabindex="0" aria-label="Flip word card">
                 <div class="flip-face flip-front">
-                  <div class="word-card-head">
-                    <div>
-                      <span class="mini-label">Selected Word</span>
-                      <h3 id="selectedWord">Word</h3>
-                    </div>
-                    <button id="pronounceWordBtn" class="icon-btn pronounce-btn hidden" type="button" aria-label="Play pronunciation">🔊</button>
-                  </div>
+                  <span class="mini-label">Selected Word</span>
+                  <h3 id="selectedWord">Word</h3>
                   <p>Tap anywhere on the card to flip to the Turkish meaning.</p>
                 </div>
                 <div class="flip-face flip-back">
@@ -334,12 +306,6 @@
               <div class="insight-block">
                 <span class="mini-label">Simple Example</span>
                 <p id="selectedExample">A short example appears here after you choose a word.</p>
-              </div>
-              <div class="insight-block">
-                <span class="mini-label">Collocations</span>
-                <div id="selectedCollocations" class="collocation-list">
-                  <span class="helper-note">Useful word pairs appear here after you choose a word.</span>
-                </div>
               </div>
             </div>
           </aside>
@@ -411,39 +377,8 @@
       <div id="savedWordsList" class="saved-word-list hidden"></div>
     </section>
 
-    <section id="readingListPanel" class="library-section hidden">
-      <p class="library-copy">Browse the curated content pack and jump into a specific reading.</p>
-      <div class="library-list-filters">
-        <label class="field">
-          <span>Level</span>
-          <select id="listLevelFilter">
-            <option value="All" selected>All levels</option>
-          </select>
-        </label>
-        <label class="field">
-          <span>Topic</span>
-          <select id="listTopicFilter">
-            <option value="All" selected>All topics</option>
-          </select>
-        </label>
-        <label class="field">
-          <span>Content type</span>
-          <select id="listContentTypeFilter">
-            <option value="All" selected>All types</option>
-          </select>
-        </label>
-      </div>
-      <div id="readingListEmpty" class="helper-note hidden">No readings match these filters yet.</div>
-      <div id="readingListItems" class="reading-list"></div>
-    </section>
-
     <section id="quizPanel" class="library-section hidden">
       <p class="library-copy">Review saved words with quick multiple-choice checks.</p>
-      <div class="quiz-mode-switch">
-        <button id="quizModeSavedBtn" class="ghost-btn ghost-btn-inline active" type="button">Saved</button>
-        <button id="quizModeHardBtn" class="ghost-btn ghost-btn-inline" type="button">Hard words</button>
-        <button id="quizModeReadingBtn" class="ghost-btn ghost-btn-inline" type="button">This reading</button>
-      </div>
       <div id="quizEmpty" class="helper-note">You need at least 4 saved words to start the quiz.</div>
       <div id="quizCard" class="quiz-card hidden">
         <div class="quiz-topline">
@@ -472,6 +407,6 @@
     </section>
   </aside>
 
-  <script src="/assets/app.js?v=20260418ah"></script>
+  <script src="/assets/app.js?v=20260418af"></script>
 </body>
 </html>
