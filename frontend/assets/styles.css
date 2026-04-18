@@ -2259,3 +2259,198 @@ body.dark-mode .mobile-word-card{
     box-shadow:0 -18px 42px rgba(0,0,0,.30);
   }
 }
+
+/* Dark mode final polish */
+body.dark-mode .topbar{
+  background:linear-gradient(180deg,#17304d 0%,#1a3553 100%) !important;
+  border-color:rgba(184,208,236,.16) !important;
+}
+body.dark-mode .rail-panel{
+  background:linear-gradient(180deg,#1b3554 0%,#203b5d 100%) !important;
+  border-color:rgba(184,208,236,.16) !important;
+}
+body.dark-mode .reading-header{
+  background:linear-gradient(180deg,#182f4a 0%,#1d3654 100%) !important;
+}
+body.dark-mode .reading-body{
+  background:linear-gradient(180deg,#162b45 0%,#1a314d 100%) !important;
+}
+body.dark-mode .insight-card,
+body.dark-mode .mobile-insight-card{
+  background:linear-gradient(180deg,#17304b 0%,#1c3552 100%) !important;
+  border-color:rgba(184,208,236,.14) !important;
+}
+body.dark-mode .preview-state{
+  background:linear-gradient(180deg,#17304b 0%,#1c3552 100%) !important;
+}
+body.dark-mode .welcome-card{
+  background:linear-gradient(180deg,#142a44 0%,#1a3452 100%) !important;
+  border-color:rgba(184,208,236,.16) !important;
+}
+body.dark-mode .welcome-auth{
+  background:linear-gradient(180deg,#1a3554 0%,#224061 100%) !important;
+  border-color:rgba(184,208,236,.16) !important;
+}
+body.dark-mode .profile-menu{
+  background:linear-gradient(180deg,#17304d 0%,#1d3958 100%) !important;
+  border-color:rgba(184,208,236,.16) !important;
+}
+body.dark-mode .profile-menu-head{
+  background:linear-gradient(180deg,#193556 0%,#193556 100%) !important;
+}
+body.dark-mode .profile-panel,
+body.dark-mode .account-card,
+body.dark-mode .profile-tip,
+body.dark-mode .saved-word-item,
+body.dark-mode .quiz-sentence,
+body.dark-mode .quiz-feedback,
+body.dark-mode .manual-result,
+body.dark-mode .ghost-btn,
+body.dark-mode .helper-note{
+  background:rgba(255,255,255,.10) !important;
+  border-color:rgba(201,221,244,.12) !important;
+}
+body.dark-mode .library-panel,
+body.dark-mode .mobile-word-panel{
+  background:linear-gradient(180deg,#17304d 0%,#1d3958 100%) !important;
+  border-color:rgba(184,208,236,.16) !important;
+}
+body.dark-mode .field input,
+body.dark-mode .field select{
+  background:rgba(255,255,255,.15) !important;
+  border-color:rgba(205,222,244,.16) !important;
+  color:#f7fbff !important;
+}
+body.dark-mode .field select option{
+  background:#18314d;
+  color:#f7fbff;
+}
+body.dark-mode .field > span,
+body.dark-mode .field small,
+body.dark-mode .field-note,
+body.dark-mode .muted-copy,
+body.dark-mode .library-copy,
+body.dark-mode .helper-note,
+body.dark-mode .saved-word-item span,
+body.dark-mode .history-item span,
+body.dark-mode .history-empty,
+body.dark-mode .manual-result,
+body.dark-mode .manual-result-block p,
+body.dark-mode .quiz-feedback,
+body.dark-mode .mobile-word-body p,
+body.dark-mode .mobile-insight-card p,
+body.dark-mode .insight-block p,
+body.dark-mode .welcome-copy p,
+body.dark-mode .site-footer small{
+  color:#dce9f8 !important;
+}
+body.dark-mode .welcome-copy h1,
+body.dark-mode .rail-intro h2,
+body.dark-mode .section-head h3,
+body.dark-mode .reading-title,
+body.dark-mode .reading-body,
+body.dark-mode .quiz-prompt,
+body.dark-mode .saved-word-item strong,
+body.dark-mode .history-item strong,
+body.dark-mode .profile-menu-head strong,
+body.dark-mode .account-card h4,
+body.dark-mode .mobile-word-head strong,
+body.dark-mode .mobile-word-card h3,
+body.dark-mode .manual-result-block strong,
+body.dark-mode .profile-panel strong{
+  color:#f8fbff !important;
+}
+body.dark-mode .mini-label,
+body.dark-mode .rail-kicker,
+body.dark-mode .mini-stat-label,
+body.dark-mode .profile-menu-badge,
+body.dark-mode .quiz-mini-badge,
+body.dark-mode .count-pill,
+body.dark-mode .insight-block .mini-label,
+body.dark-mode .mobile-word-head .mini-label,
+body.dark-mode .mobile-insight-card .mini-label,
+body.dark-mode .hero-kicker{
+  color:#b7c8dc !important;
+}
+body.dark-mode .theme-toggle{
+  background:linear-gradient(180deg,#1a3554 0%,#1f3c5d 100%) !important;
+  border:1px solid rgba(201,221,244,.14);
+}
+body.dark-mode .toolbar-btn,
+body.dark-mode .profile-trigger{
+  box-shadow:0 10px 20px rgba(0,0,0,.22) !important;
+}
+body.dark-mode .source-pill,
+body.dark-mode .auth-tab{
+  background:rgba(255,255,255,.14) !important;
+  color:#edf5ff !important;
+  border:1px solid rgba(205,222,244,.14);
+}
+body.dark-mode .source-pill.active,
+body.dark-mode .auth-tab.active{
+  background:linear-gradient(180deg,#fff 0%,#eef5ff 100%) !important;
+  color:#183153 !important;
+}
+body.dark-mode .primary-btn{
+  color:#153200 !important;
+}
+body.dark-mode .secondary-btn{
+  color:#ffffff !important;
+}
+body.dark-mode .outline-btn,
+body.dark-mode .light-outline,
+body.dark-mode .gate-guest-btn{
+  background:linear-gradient(180deg,#ffffff 0%,#eef4fd 100%) !important;
+  color:#183153 !important;
+  border-color:rgba(255,255,255,.72) !important;
+}
+body.dark-mode .outline-btn:disabled,
+body.dark-mode .light-outline:disabled,
+body.dark-mode .gate-guest-btn:disabled{
+  opacity:1 !important;
+  color:#90a6c2 !important;
+  background:linear-gradient(180deg,#f5f8fd 0%,#e7eef8 100%) !important;
+  border-color:rgba(255,255,255,.55) !important;
+}
+body.dark-mode .primary-btn:disabled{
+  opacity:.94 !important;
+  color:#2c5307 !important;
+}
+body.dark-mode .secondary-btn:disabled{
+  opacity:.94 !important;
+  color:#eff9ff !important;
+}
+body.dark-mode .quiz-option{
+  background:rgba(255,255,255,.12) !important;
+  color:#f6fbff !important;
+  border-color:rgba(205,222,244,.12) !important;
+}
+body.dark-mode .quiz-option.correct{
+  background:rgba(88,204,2,.28) !important;
+  color:#f7ffe8 !important;
+}
+body.dark-mode .quiz-option.wrong{
+  background:rgba(255,107,107,.28) !important;
+  color:#fff2f2 !important;
+}
+body.dark-mode .saved-word-remove,
+body.dark-mode .icon-btn,
+body.dark-mode .mobile-sheet-close{
+  background:rgba(255,255,255,.14) !important;
+  color:#f7fbff !important;
+  border-color:rgba(205,222,244,.12) !important;
+}
+body.dark-mode .profile-overlay,
+body.dark-mode .library-overlay,
+body.dark-mode .mobile-word-backdrop{
+  background:rgba(7,14,23,.20) !important;
+  backdrop-filter:none !important;
+}
+body.dark-mode .count-pill,
+body.dark-mode .library-count-badge,
+body.dark-mode .profile-menu-badge{
+  background:rgba(255,255,255,.12) !important;
+}
+body.dark-mode .inline-highlight{
+  color:#ffe082 !important;
+}
