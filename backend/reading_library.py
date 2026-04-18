@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from typing import Any
 
 
@@ -680,79 +681,170 @@ def title_for(base: str, level: str) -> str:
     return f"{base} · {level}"
 
 
+def _variant_index(item: dict[str, Any], level: str, variant_count: int) -> int:
+    seed = f"{level}|{item['topic']}|{item['title']}|{item['person']}|{item['setting']}"
+    digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()
+    return int(digest[:8], 16) % variant_count
+
+
+def _pick_variant(item: dict[str, Any], level: str, variants: list[str]) -> str:
+    return variants[_variant_index(item, level, len(variants))]
+
+
+def _clean_fragment(value: str) -> str:
+    return value.strip().rstrip(".")
+
+
 def build_a1(item: dict[str, Any]) -> str:
+    routine = _clean_fragment(item["routine"])
+    detail = _clean_fragment(item["detail"])
+    opener = _pick_variant(
+        item,
+        "A1",
+        [
+            f"{item['person']} is at {item['setting']}.",
+            f"This scene happens in {item['setting']}.",
+            f"{item['person']} starts in {item['setting']}.",
+        ],
+    )
     return (
-        f"{item['person']} spends time at {item['setting']}. "
-        f"{item['routine']}. "
+        f"{opener} "
+        f"{routine}. "
         f"{item['person']} wants to {item['goal']}. "
-        f"At first, {item['problem']}. "
+        f"But {item['problem']}. "
         f"So {item['change']}. "
-        f"{item['detail']}. "
+        f"{detail}. "
         f"In the end, {item['result']}. "
         f"{item['reflection']}."
     )
 
 
 def build_a2(item: dict[str, Any]) -> str:
+    routine = _clean_fragment(item["routine"])
+    detail = _clean_fragment(item["detail"])
+    opener = _pick_variant(
+        item,
+        "A2",
+        [
+            f"{item['person']} often works on this part of life in {item['setting']}.",
+            f"In {item['setting']}, {item['person']} follows a simple pattern that is becoming more useful.",
+            f"{item['setting'].capitalize()} gives {item['person']} a chance to build a clearer habit.",
+        ],
+    )
     return (
-        f"{item['person']} often works on this part of life at {item['setting']}. "
-        f"{item['routine']}. "
-        f"The main goal is to {item['goal']}, but {item['problem']}. "
-        f"Because of that problem, {item['change']}. "
-        f"After a few days, {item['detail']}. "
-        f"The change is not dramatic, yet {item['result']}. "
-        f"This shows that {item['reflection'].lower()}."
+        f"{opener} "
+        f"{routine}. "
+        f"{item['person']} is trying to {item['goal']}, but {item['problem']}. "
+        f"Because of that, {item['change']}. "
+        f"Soon, {detail[0].lower() + detail[1:] if detail else detail}. "
+        f"The improvement is small, yet {item['result']}. "
+        f"This suggests that {item['reflection'].lower()}."
     )
 
 
 def build_b1(item: dict[str, Any]) -> str:
+    routine = _clean_fragment(item["routine"])
+    detail = _clean_fragment(item["detail"])
+    opener = _pick_variant(
+        item,
+        "B1",
+        [
+            f"In {item['setting']}, {item['person']} follows a routine that now feels more intentional than automatic.",
+            f"{item['person']} uses {item['setting']} as a place to test a steadier way of working.",
+            f"What happens in {item['setting']} looks ordinary, although it has started to feel more deliberate for {item['person']}.",
+        ],
+    )
     return (
-        f"In {item['setting']}, {item['person']} follows a routine that now feels more intentional than automatic. "
-        f"{item['routine']}. "
-        f"The deeper aim is to {item['goal']}, although {item['problem']}. "
-        f"Instead of waiting for the situation to improve on its own, {item['change']}. "
-        f"That decision matters because {item['detail']}. "
-        f"Over time, the difference becomes easier to notice, and {item['result']}. "
-        f"For {item['person']}, the lesson is simple but important: {item['reflection'].lower()}."
+        f"{opener} "
+        f"{routine}. "
+        f"The aim is to {item['goal']}, although {item['problem']}. "
+        f"Rather than waiting for the situation to improve by itself, {item['change']}. "
+        f"That choice matters because {detail[0].lower() + detail[1:] if detail else detail}. "
+        f"Over time, {item['result']}. "
+        f"For {item['person']}, the lesson is simple but real: {item['reflection'].lower()}."
     )
 
 
 def build_b2(item: dict[str, Any]) -> str:
+    routine = _clean_fragment(item["routine"])
+    detail = _clean_fragment(item["detail"])
+    opener = _pick_variant(
+        item,
+        "B2",
+        [
+            f"In {item['setting']}, {item['person']} has learned that a routine can either clarify the work or quietly distort it.",
+            f"{item['person']} treats {item['setting']} as a place to test which habits actually survive pressure and which ones collapse.",
+            f"What happens in {item['setting']} may look modest, yet it gives {item['person']} a precise way to judge whether a method is reliable.",
+            f"Inside {item['setting']}, {item['person']} has started to see routine less as repetition and more as a tool for better decisions.",
+        ],
+    )
+    bridge = _pick_variant(
+        item,
+        "B2-bridge",
+        [
+            f"However, {item['problem']}.",
+            f"Although the purpose was to {item['goal']}, {item['problem']}.",
+            f"The intended outcome was to {item['goal']}, but {item['problem']}.",
+            f"That sounds manageable on paper, yet {item['problem']}.",
+        ],
+    )
     return (
-        f"At {item['setting']}, {item['person']} has developed a routine that looks modest from the outside but has become surprisingly meaningful. "
-        f"{item['routine']}. "
-        f"The goal is to {item['goal']}, yet this was not easy at the beginning because {item['problem']}. "
-        f"Rather than treating that difficulty as a fixed condition, {item['change']}. "
-        f"What makes the shift effective is not speed or intensity, but the way it changes attention from moment to moment. "
-        f"{item['detail']}. "
+        f"{opener} "
+        f"{routine}. "
+        f"{bridge} "
+        f"So {item['change']}. "
+        f"That mattered. "
+        f"{detail}, because once the process became more visible, weaker choices were easier to correct. "
         f"As a result, {item['result']}. "
-        f"In a quiet way, the experience suggests that {item['reflection'].lower()}."
+        f"More importantly, the experience suggests that {item['reflection'].lower()}."
     )
 
 
 def build_c1(item: dict[str, Any]) -> str:
+    routine = _clean_fragment(item["routine"])
+    detail = _clean_fragment(item["detail"])
+    opener = _pick_variant(
+        item,
+        "C1",
+        [
+            f"In {item['setting']}, {item['person']} has come to treat routine as a way of thinking rather than a set of repeated motions.",
+            f"{item['setting'].capitalize()} has pushed {item['person']} toward a more reflective method, one in which repetition is judged rather than merely endured.",
+            f"For {item['person']}, work in {item['setting']} has gradually revealed that structure is not the enemy of flexibility but one of its conditions.",
+        ],
+    )
     return (
-        f"In {item['setting']}, {item['person']} has come to understand that routine can be a method of thought rather than merely a repeated behavior. "
-        f"{item['routine']}. "
-        f"The central aim is to {item['goal']}, although earlier attempts failed because {item['problem']}. "
-        f"Instead of interpreting that tension as proof that the effort was misguided, {item['change']}. "
-        f"This shift matters because it transforms the situation from something reactive into something deliberately structured. "
-        f"{item['detail']}. "
+        f"{opener} "
+        f"{routine}. "
+        f"Although the intention was to {item['goal']}, the process remained unstable: {item['problem']}. "
+        f"Instead of reading that tension as proof that the effort was misguided, {item['change']}. "
+        f"The shift is significant because it turns the situation from something reactive into something that can be examined, adjusted, and defended. "
+        f"{detail}. "
         f"Over time, {item['result']}, not through a dramatic breakthrough but through a more intelligent relation to repetition. "
         f"The broader implication is that {item['reflection'].lower()}."
     )
 
 
 def build_academic(item: dict[str, Any]) -> str:
+    routine = _clean_fragment(item["routine"]).lower()
+    detail = _clean_fragment(item["detail"])
+    opener = _pick_variant(
+        item,
+        "Academic",
+        [
+            f"From an analytical perspective, the situation in {item['setting']} shows how repeated practice can reorganize attention, judgment, and performance.",
+            f"The pattern emerging in {item['setting']} is useful because it reveals how ordinary repetition can become a measurable cognitive strategy.",
+            f"Examined closely, the case in {item['setting']} suggests that routine is not merely behavioral; it is also interpretive and organizational.",
+        ],
+    )
     return (
-        f"Seen analytically, the situation at {item['setting']} illustrates how repeated practice can reorganize attention, judgment, and performance. "
-        f"{item['person']} begins from a recognizable pattern: {item['routine'].lower()}. "
-        f"The stated aim is to {item['goal']}, yet the effort initially encounters difficulty because {item['problem']}. "
-        f"The critical intervention occurs when {item['change']}. "
-        f"From that point forward, the process becomes easier to evaluate because the relevant details are no longer hidden inside habit. "
-        f"{item['detail']}. "
+        f"{opener} "
+        f"The starting pattern is recognizable: {routine}. "
+        f"Although the stated objective is to {item['goal']}, the process initially remains unstable: {item['problem']}. "
+        f"The decisive intervention appears when {item['change']}. "
+        f"This matters because once the process becomes inspectable, evaluation is no longer trapped inside habit alone. "
+        f"{detail}. "
         f"Consequently, {item['result']}. "
-        f"Rather than treating the outcome as accidental, it is more useful to read it as evidence that {item['reflection'].lower()}."
+        f"Rather than treating the outcome as accidental, it is more convincing to read it as evidence that {item['reflection'].lower()}."
     )
 
 

@@ -34,6 +34,7 @@ ENV_PATH = ROOT_DIR / ".env"
 DB_PATH = ROOT_DIR / "backend" / "app.db"
 EXTRA_WORD_MAP_PATH = ROOT_DIR / "backend" / "extra_word_map.json"
 LIBRARY_WORD_MAP_PATH = ROOT_DIR / "backend" / "library_word_map.json"
+CEFR_VOCAB_INDEX_PATH = ROOT_DIR / "backend" / "cefr_vocab_index.json"
 SESSION_COOKIE = "ets_session"
 WORD_DETAIL_CACHE: dict[str, dict[str, str]] = {}
 GENERATE_CACHE: dict[str, str] = {}
@@ -50,6 +51,25 @@ LEVEL_CONFIG = {
     "C1": {"min_words": 180, "max_words": 260, "label": "Ä°leri, doÄŸal ve detaylÄ±"},
     "Academic": {"min_words": 190, "max_words": 280, "label": "Akademik ve daha analitik"},
 }
+CEFR_LEVEL_ORDER = {"A1": 1, "A2": 2, "B1": 3, "B2": 4, "C1": 5, "C2": 6, "Academic": 6}
+READING_LEVEL_TARGETS = {
+    "A1": {"target": "A1", "ideal_avg": 7, "max_avg": 9, "advanced_min": 0, "needs_contrast": False, "needs_cause": False},
+    "A2": {"target": "A2", "ideal_avg": 9, "max_avg": 12, "advanced_min": 0, "needs_contrast": False, "needs_cause": True},
+    "B1": {"target": "B1", "ideal_avg": 13, "max_avg": 17, "advanced_min": 0, "needs_contrast": True, "needs_cause": True},
+    "B2": {"target": "B2", "ideal_avg": 17, "max_avg": 22, "advanced_min": 2, "needs_contrast": True, "needs_cause": True},
+    "C1": {"target": "C1", "ideal_avg": 20, "max_avg": 26, "advanced_min": 4, "needs_contrast": True, "needs_cause": True},
+    "Academic": {"target": "C2", "ideal_avg": 23, "max_avg": 30, "advanced_min": 5, "needs_contrast": True, "needs_cause": True},
+}
+GENERIC_OPENING_PATTERNS = (
+    "most people",
+    "many people",
+    "the goal is",
+    "in today's world",
+    "at first",
+    "seen analytically",
+)
+CONTRAST_MARKERS = ("although", "however", "while", "yet", "whereas", "even though")
+CAUSE_MARKERS = ("because", "therefore", "so that", "as a result", "since", "consequently")
 LOCAL_WORD_MAP = {
     "academic": "akademik",
     "airport": "havaalanÄ±",
@@ -635,7 +655,33 @@ IRREGULAR_WORD_MAP = {
     "narrow": "dar",
 }
 WORD_MEANING_OVERRIDES = {
+    "the": "belirli tanımlık",
+    "in": "içinde",
+    "for": "için",
+    "than": "-den / kıyasla",
+    "when": "-dığı zaman",
+    "on": "üzerinde",
+    "not": "değil",
+    "often": "sık sık",
+    "how": "nasıl",
+    "no": "hayır / yok",
+    "by": "tarafından / ile",
+    "down": "aşağı",
+    "during": "sırasında",
+    "about": "hakkında",
+    "because": "çünkü",
+    "however": "ancak",
+    "although": "her ne kadar",
+    "while": "iken",
+    "since": "çünkü",
+    "therefore": "bu nedenle",
+    "consequently": "sonuç olarak",
+    "illustrate": "örneklemek",
+    "model": "model",
     "simplified": "sadeleÅŸtirilmiÅŸ",
+    "illustrates": "örneklemek",
+    "illustrated": "örneklemek",
+    "illustrating": "örneklemek",
     "irritated": "sinirli",
     "misguided": "yanlÄ±ÅŸ yÃ¶nlendirilmiÅŸ",
     "disciplined": "disiplinli",
@@ -661,6 +707,13 @@ if LIBRARY_WORD_MAP_PATH.exists():
         LIBRARY_WORD_MAP = {}
 else:
     LIBRARY_WORD_MAP = {}
+if CEFR_VOCAB_INDEX_PATH.exists():
+    try:
+        CEFR_VOCAB_INDEX: dict[str, dict[str, Any]] = json.loads(CEFR_VOCAB_INDEX_PATH.read_text(encoding="utf-8")).get("items", {})
+    except json.JSONDecodeError:
+        CEFR_VOCAB_INDEX = {}
+else:
+    CEFR_VOCAB_INDEX = {}
 TOPIC_SENTENCE_BANK = {
     "Serbest": [
         "The day starts quietly, but it soon becomes full of small decisions and new plans.",
@@ -1678,12 +1731,18 @@ def pick_library_reading(
             filtered_rows = alternate_rows
     if not filtered_rows:
         filtered_rows = rows
-    scored: list[tuple[int, dict[str, Any]]] = []
+    scored: list[tuple[float, dict[str, Any]]] = []
     for row in filtered_rows:
-        length_score = abs(int(row["word_count"]) - int(length_target))
-        scored.append((length_score, row))
+        quality = LIBRARY_READING_QUALITY_INDEX.get(str(row["title"]), {})
+        length_penalty = abs(int(row["word_count"]) - int(length_target)) * 0.65
+        keyword_bonus = float(quality.get("keyword_hits", 0)) * 8
+        quality_bonus = float(quality.get("score", 0)) * 0.45
+        lexical_bonus = float(quality.get("advanced_hits", 0)) * (3 if level in {"B2", "C1", "Academic"} else 1)
+        repetition_penalty = float(quality.get("repeated_openings", 0)) * 9 + float(quality.get("repeated_shapes", 0)) * 4
+        score = length_penalty + repetition_penalty - keyword_bonus - quality_bonus - lexical_bonus
+        scored.append((score, row))
     scored.sort(key=lambda item: (item[0], item[1]["id"]))
-    candidate_pool = [row for _score, row in scored[: min(24, len(scored))]]
+    candidate_pool = [row for _score, row in scored[: min(18, len(scored))]]
     best = random.choice(candidate_pool or filtered_rows)
     return {
         "id": best["id"],
@@ -1886,7 +1945,11 @@ def is_suspicious_meaning(source_word: str, candidate: str) -> bool:
     source = source_word.strip().lower()
     if not cleaned:
         return True
+    if "?" in cleaned:
+        return True
     if cleaned == source or cleaned.startswith(source + " "):
+        return True
+    if re.search(r"\b(the|and|but|than|because|however|while|since|although)\b", cleaned):
         return True
     compact = re.sub(r"[^a-z]", "", cleaned)
     if compact and compact in {
@@ -1925,65 +1988,39 @@ def infer_turkish_meaning(word: str) -> str:
     lowered = word.lower().strip()
     if lowered in LOCAL_PHRASE_MAP:
         return repair_mojibake(LOCAL_PHRASE_MAP[lowered])
-    direct = lookup_word_map_value(lowered)
-    if direct:
-        return direct
-    if lowered.endswith("ies") and len(lowered) > 4:
-        singular = lowered[:-3] + "y"
-        resolved = lookup_word_map_value(singular)
-        if resolved:
+    for candidate in word_root_candidates(lowered):
+        resolved = lookup_word_map_value(candidate)
+        if resolved and not is_suspicious_meaning(lowered, resolved):
+            if lowered.endswith("ly") and candidate != lowered:
+                return repair_mojibake(f"{resolved} bir şekilde")
             return resolved
-    if lowered.endswith("es") and len(lowered) > 3:
-        singular = lowered[:-2]
-        resolved = lookup_word_map_value(singular)
-        if resolved:
-            return resolved
-    if lowered.endswith("s") and len(lowered) > 3:
-        singular = lowered[:-1]
-        resolved = lookup_word_map_value(singular)
-        if resolved:
-            return resolved
-    if lowered.endswith("ing") and len(lowered) > 4:
-        stem = lowered[:-3]
-        for candidate in [stem, stem + "e", stem[:-1] if len(stem) > 2 and stem[-1] == stem[-2] else ""]:
-            if not candidate:
-                continue
-            resolved = lookup_word_map_value(candidate)
-            if resolved:
-                return resolved
-        return f"{stem} yapmak"
-    if lowered.endswith("ed") and len(lowered) > 3:
-        stem = lowered[:-2]
-        candidate_roots = [stem, stem + "e"]
-        if stem.endswith("i"):
-            candidate_roots.append(stem[:-1] + "y")
-        if len(stem) > 2 and stem[-1] == stem[-2]:
-            candidate_roots.append(stem[:-1])
-        for candidate in candidate_roots:
-            if not candidate:
-                continue
-            resolved = lookup_word_map_value(candidate)
-            if resolved:
-                return resolved
-        return stem
-    if lowered.endswith("ly") and len(lowered) > 4:
-        root = lowered[:-2]
-        if root in LOCAL_WORD_MAP:
-            return repair_mojibake(f"{LOCAL_WORD_MAP[root]} bir ÅŸekilde")
-        if root in EXTRA_WORD_MAP:
-            return repair_mojibake(f"{EXTRA_WORD_MAP[root]} bir ÅŸekilde")
     return lowered
 
 
 def infer_contextual_library_meaning(word: str, sentence: str) -> str:
     lowered_word = word.lower().strip()
+    profile = resolve_cefr_entry(lowered_word)
+    lemma = str(profile.get("lemma") or lowered_word) if profile else lowered_word
     compact_sentence = re.sub(r"\s+", " ", sentence).strip().lower()
-    if lowered_word.startswith("treat") and " as " in compact_sentence:
+    if lemma.startswith("treat") and " as " in compact_sentence:
         return "ele almak"
-    if lowered_word in {"illustrates", "illustrated", "illustrating"}:
+    if lemma == "illustrate":
         return "örnekleyerek göstermek"
-    if lowered_word in {"simplified", "simplifies", "simplifying"}:
+    if lemma == "simplify":
         return "sadeleştirmek"
+    if lemma == "bias":
+        return "önyargı"
+    if lemma == "model":
+        return "model"
+    if lemma == "trust":
+        return "güven"
+    if lemma == "speed":
+        return "hız"
+    if lemma == "exterior":
+        return "dış yüzey"
+    resolved = infer_turkish_meaning(lemma)
+    if resolved != lemma:
+        return resolved
     return infer_turkish_meaning(word)
 
 
@@ -2083,7 +2120,8 @@ def extract_unique_words(text: str) -> list[str]:
 
 def describe_word_form(word: str) -> dict[str, str]:
     lowered = word.lower().strip()
-    root = lowered
+    profile = resolve_cefr_entry(lowered)
+    root = str(profile.get("lemma") or lowered) if profile else lowered
     note = "yalın biçim"
     if lowered.endswith("ies") and len(lowered) > 4:
         root = lowered[:-3] + "y"
@@ -2109,6 +2147,8 @@ def describe_word_form(word: str) -> dict[str, str]:
     elif lowered.endswith("ly") and len(lowered) > 4:
         root = lowered[:-2]
         note = "-ly eki almış; zarf biçiminde kullanılıyor"
+    if profile and profile.get("level"):
+        note = f"{note}; tahmini CEFR seviyesi: {profile['level']}"
     return {"root": root or lowered, "note": note}
 
 
@@ -2142,6 +2182,141 @@ def translation_looks_usable(value: str) -> bool:
     return len(english_hits) <= 1
 
 
+def normalize_target_level(level: str) -> str:
+    return READING_LEVEL_TARGETS.get(level, {}).get("target", level)
+
+
+def cefr_rank(level: str) -> int:
+    return CEFR_LEVEL_ORDER.get(level, 99)
+
+
+def word_root_candidates(word: str) -> list[str]:
+    lowered = word.lower().strip()
+    candidates: list[str] = []
+
+    def add(candidate: str) -> None:
+        cleaned = candidate.strip().lower()
+        if cleaned and cleaned not in candidates:
+            candidates.append(cleaned)
+
+    add(lowered)
+    if lowered.endswith("ies") and len(lowered) > 4:
+        add(lowered[:-3] + "y")
+    if lowered.endswith("es") and len(lowered) > 3:
+        add(lowered[:-2])
+    if lowered.endswith("s") and len(lowered) > 3:
+        add(lowered[:-1])
+    if lowered.endswith("ing") and len(lowered) > 4:
+        stem = lowered[:-3]
+        add(stem)
+        add(stem + "e")
+        if len(stem) > 2 and stem[-1] == stem[-2]:
+            add(stem[:-1])
+    if lowered.endswith("ed") and len(lowered) > 3:
+        stem = lowered[:-2]
+        add(stem)
+        add(stem + "e")
+        if stem.endswith("i"):
+            add(stem[:-1] + "y")
+        if len(stem) > 2 and stem[-1] == stem[-2]:
+            add(stem[:-1])
+    if lowered.endswith("ly") and len(lowered) > 4:
+        add(lowered[:-2])
+    return candidates
+
+
+def resolve_cefr_entry(word: str) -> dict[str, Any] | None:
+    for candidate in word_root_candidates(word):
+        entry = CEFR_VOCAB_INDEX.get(candidate)
+        if entry:
+            return {"lemma": candidate, **entry}
+    return None
+
+
+def sentence_opening_signature(sentence: str) -> str:
+    tokens = re.findall(r"[A-Za-z]+(?:['-][A-Za-z]+)*", sentence.lower())
+    return " ".join(tokens[:3]).strip()
+
+
+def detect_sentence_shape(sentence: str) -> str:
+    lowered = sentence.lower()
+    has_contrast = any(marker in lowered for marker in CONTRAST_MARKERS)
+    has_cause = any(marker in lowered for marker in CAUSE_MARKERS)
+    word_count = len(re.findall(r"[A-Za-z]+(?:['-][A-Za-z]+)*", sentence))
+    if has_contrast and has_cause:
+        return "contrast+cause"
+    if has_contrast:
+        return "contrast"
+    if has_cause:
+        return "cause"
+    if word_count <= 8:
+        return "short"
+    if word_count >= 24:
+        return "long"
+    return "plain"
+
+
+def assess_library_reading_quality(text: str, level: str, keywords: list[str]) -> dict[str, Any]:
+    sentences = [item.strip() for item in re.split(r"(?<=[.!?])\s+", text.strip()) if item.strip()]
+    tokens = extract_unique_words(text)
+    sentence_lengths = [len(re.findall(r"[A-Za-z]+(?:['-][A-Za-z]+)*", sentence)) for sentence in sentences]
+    avg_sentence_length = sum(sentence_lengths) / max(len(sentence_lengths), 1)
+    target_rule = READING_LEVEL_TARGETS.get(level, READING_LEVEL_TARGETS["B1"])
+    target_rank = cefr_rank(normalize_target_level(level))
+
+    advanced_hits = 0
+    known_levels = 0
+    for token in tokens:
+        entry = resolve_cefr_entry(token)
+        if not entry:
+            continue
+        known_levels += 1
+        if cefr_rank(str(entry["level"])) >= target_rank:
+            advanced_hits += 1
+
+    openings = [sentence_opening_signature(sentence) for sentence in sentences if sentence_opening_signature(sentence)]
+    repeated_openings = len(openings) - len(set(openings))
+    shape_types = [detect_sentence_shape(sentence) for sentence in sentences]
+    repeated_shapes = max((shape_types.count(shape) for shape in set(shape_types)), default=0)
+    lowered_text = text.lower()
+    keyword_hits = sum(1 for keyword in keywords if keyword and keyword.lower() in lowered_text)
+    banned_opening_hit = 1 if openings and openings[0].startswith(GENERIC_OPENING_PATTERNS) else 0
+    contrast_hit = any(shape in {"contrast", "contrast+cause"} for shape in shape_types)
+    cause_hit = any(shape in {"cause", "contrast+cause"} for shape in shape_types)
+    long_hit = any(length >= 18 for length in sentence_lengths)
+    short_hit = any(length <= 8 for length in sentence_lengths)
+    generic_phrase_hits = sum(lowered_text.count(pattern) for pattern in GENERIC_OPENING_PATTERNS)
+
+    score = 100
+    score -= abs(avg_sentence_length - target_rule["ideal_avg"]) * 1.8
+    if avg_sentence_length > target_rule["max_avg"]:
+        score -= (avg_sentence_length - target_rule["max_avg"]) * 3
+    score -= repeated_openings * 8
+    score -= max(0, repeated_shapes - 2) * 7
+    score -= generic_phrase_hits * 12
+    score -= banned_opening_hit * 18
+    score += keyword_hits * 6
+    score += 6 if short_hit else -6
+    score += 6 if long_hit or level in {"A1", "A2"} else -6
+    score += 7 if contrast_hit or not target_rule["needs_contrast"] else -8
+    score += 7 if cause_hit or not target_rule["needs_cause"] else -8
+    if known_levels:
+        score += min(12, advanced_hits * 2)
+    if level in {"B2", "C1", "Academic"} and advanced_hits < target_rule["advanced_min"]:
+        score -= (target_rule["advanced_min"] - advanced_hits) * 8
+
+    return {
+        "score": round(score, 2),
+        "avg_sentence_length": round(avg_sentence_length, 2),
+        "advanced_hits": advanced_hits,
+        "keyword_hits": keyword_hits,
+        "repeated_openings": repeated_openings,
+        "repeated_shapes": repeated_shapes,
+        "contrast_hit": contrast_hit,
+        "cause_hit": cause_hit,
+    }
+
+
 def build_library_sentence_index(readings: list[dict[str, Any]]) -> dict[str, list[str]]:
     index: dict[str, list[str]] = {}
     for item in readings:
@@ -2157,6 +2332,14 @@ def build_library_sentence_index(readings: list[dict[str, Any]]) -> dict[str, li
 
 
 LIBRARY_SENTENCE_INDEX = build_library_sentence_index(READING_SEEDS)
+LIBRARY_READING_QUALITY_INDEX = {
+    item["title"]: assess_library_reading_quality(
+        str(item.get("text", "")),
+        str(item.get("level", "B1")),
+        list(item.get("keywords", [])),
+    )
+    for item in READING_SEEDS
+}
 
 
 def gather_library_examples(word: str, current_sentence: str = "") -> list[str]:
@@ -2206,11 +2389,22 @@ def extract_collocations(text: str, word: str, limit: int = 3) -> list[str]:
 
 def build_library_word_detail(text: str, word: str) -> dict[str, str]:
     lowered_word = word.lower()
-    raw_library_meaning = repair_mojibake(str(LIBRARY_WORD_MAP.get(lowered_word, "")))
+    profile = resolve_cefr_entry(lowered_word)
+    lemma = str(profile.get("lemma") or lowered_word) if profile else lowered_word
+    forced_override = WORD_MEANING_OVERRIDES.get(lowered_word) or WORD_MEANING_OVERRIDES.get(lemma)
+    override_meaning = lookup_word_map_value(lowered_word) or lookup_word_map_value(lemma)
+    raw_library_meaning = repair_mojibake(str(LIBRARY_WORD_MAP.get(lowered_word) or LIBRARY_WORD_MAP.get(lemma, "")))
     sentence = find_sentence_for_word(text, word)
-    library_meaning = infer_contextual_library_meaning(word, sentence) if is_suspicious_meaning(word, raw_library_meaning) else raw_library_meaning
+    if forced_override:
+        library_meaning = repair_mojibake(forced_override)
+    elif override_meaning and not is_suspicious_meaning(word, override_meaning):
+        library_meaning = override_meaning
+    elif is_suspicious_meaning(word, raw_library_meaning):
+        library_meaning = infer_contextual_library_meaning(lemma, sentence)
+    else:
+        library_meaning = raw_library_meaning
     if not library_meaning:
-        library_meaning = infer_contextual_library_meaning(word, sentence)
+        library_meaning = infer_contextual_library_meaning(lemma, sentence)
     compact_sentence = re.sub(r"\s+", " ", sentence).strip() if sentence else ""
     translated_sentence = ""
     if compact_sentence and GOOGLE_TRANSLATE_API_KEY:
@@ -2224,11 +2418,13 @@ def build_library_word_detail(text: str, word: str) -> dict[str, str]:
         f'Kök: {form_info["root"]}',
         f'Çekim / biçim: {form_info["note"]}',
     ]
+    if profile and profile.get("level"):
+        context_lines.append(f'Kelime seviyesi: {profile["level"]}')
     if compact_sentence:
         context_lines.append(f"Geçtiği bölüm: {compact_sentence}")
     if translated_sentence:
         context_lines.append(f"Yaklaşık Türkçesi: {translated_sentence}")
-    example_sentences = gather_library_examples(lowered_word, compact_sentence)
+    example_sentences = gather_library_examples(lemma, compact_sentence)
     example_lines: list[str] = []
     for index, example_sentence in enumerate(example_sentences, start=1):
         example_translation = ""
@@ -2246,7 +2442,7 @@ def build_library_word_detail(text: str, word: str) -> dict[str, str]:
     if not example_lines:
         example_lines = [f"1. The word {word} appears in this reading text."]
     return {
-        "turkish": repair_mojibake(library_meaning),
+        "turkish": repair_mojibake(library_meaning or infer_contextual_library_meaning(lemma, sentence)),
         "context": repair_mojibake("\n".join(context_lines)),
         "example": repair_mojibake("\n".join(example_lines)),
         "collocations": extract_collocations(text, word),
