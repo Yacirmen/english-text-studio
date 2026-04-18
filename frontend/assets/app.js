@@ -61,6 +61,11 @@ const state = {
   text: "",
   glossary: {},
   selectedWord: "",
+  selectedKey: "",
+  selectedRefId: "",
+  selectedItemType: "",
+  clickMap: [],
+  contentId: "",
   lastPayload: null,
   contentSource: "library",
   loadingWord: false,
@@ -75,6 +80,7 @@ const state = {
   quizMode: "saved",
   libraryView: null,
   libraryStats: null,
+  libraryReadings: [],
   quizStats: { answered: 0, correct: 0, streak: 0 },
   hasEnteredApp: window.sessionStorage.getItem("ets_guest") === "1",
   viewMode: window.innerWidth < 860 ? "mobile" : "web",
@@ -185,8 +191,15 @@ const libraryModeHintEl = $("#libraryModeHint");
 const libraryControlsEl = $("#libraryControls");
 const libraryLevelEl = $("#libraryLevel");
 const libraryTopicEl = $("#libraryTopic");
+const libraryContentTypeEl = $("#libraryContentType");
 const aiControlsEl = $("#aiControls");
 const libraryCountBadgeEl = $("#libraryCountBadge");
+const readingListPanelEl = $("#readingListPanel");
+const readingListItemsEl = $("#readingListItems");
+const readingListEmptyEl = $("#readingListEmpty");
+const listLevelFilterEl = $("#listLevelFilter");
+const listTopicFilterEl = $("#listTopicFilter");
+const listContentTypeFilterEl = $("#listContentTypeFilter");
 const mobileWordSheetEl = $("#mobileWordSheet");
 const mobileWordBackdropEl = $("#mobileWordBackdrop");
 const closeMobileWordBtn = $("#closeMobileWordBtn");
@@ -280,6 +293,53 @@ function tokenizeText(text) {
   return text.match(/[A-Za-z]+(?:['-][A-Za-z]+)*|\s+|[^A-Za-z\s]/g) || [];
 }
 
+function buildGlossaryKey(word, refId = "", itemType = "") {
+  return refId ? `${itemType || "word"}:${refId}` : String(word || "").toLowerCase();
+}
+
+function getSortedClickEntries() {
+  return [...(state.clickMap || [])]
+    .filter((item) => item?.surface && item?.ref_id && item?.type)
+    .sort((a, b) => String(b.surface).length - String(a.surface).length);
+}
+
+function matchesSurfaceAt(text, position, surface) {
+  const source = String(text || "");
+  const target = String(surface || "");
+  if (!target) return false;
+  if (source.slice(position, position + target.length).toLowerCase() !== target.toLowerCase()) return false;
+  const before = position === 0 ? "" : source[position - 1];
+  const after = position + target.length >= source.length ? "" : source[position + target.length];
+  const startsWord = /[A-Za-z]/.test(target[0] || "");
+  const endsWord = /[A-Za-z]/.test(target[target.length - 1] || "");
+  if (startsWord && before && /[A-Za-z]/.test(before)) return false;
+  if (endsWord && after && /[A-Za-z]/.test(after)) return false;
+  return true;
+}
+
+function renderLibraryText() {
+  const entries = getSortedClickEntries();
+  let html = "";
+  let cursor = 0;
+  while (cursor < state.text.length) {
+    const matched = entries.find((entry) => matchesSurfaceAt(state.text, cursor, entry.surface));
+    if (matched) {
+      const surface = state.text.slice(cursor, cursor + String(matched.surface).length);
+      const active =
+        state.selectedRefId === matched.ref_id && state.selectedItemType === matched.type ? "active" : "";
+      html += `<button class="word ${active}" data-word="${escapeHtml(surface.toLowerCase())}" data-ref-id="${escapeHtml(
+        matched.ref_id
+      )}" data-item-type="${escapeHtml(matched.type)}">${escapeHtml(surface)}</button>`;
+      cursor += String(matched.surface).length;
+      continue;
+    }
+    const char = state.text[cursor];
+    html += char === "\n" ? "<br>" : escapeHtml(char);
+    cursor += 1;
+  }
+  return html;
+}
+
 function renderCollocations(targetEl, collocations = []) {
   if (!targetEl) return;
   if (!collocations.length) {
@@ -306,7 +366,8 @@ function buildReadingQuizQuestion(excludeWord = "") {
   const filtered = excludeWord ? glossaryEntries.filter(([word]) => word !== excludeWord) : glossaryEntries;
   const pool = filtered.length >= 4 ? filtered : glossaryEntries;
   const target = pool[Math.floor(Math.random() * pool.length)];
-  const [word, detail] = target;
+  const [wordKey, detail] = target;
+  const word = String(detail?.surface || wordKey).trim();
   const turkish = String(detail.turkish || "").trim();
   const exampleSource = String(detail.example || "").split("\n").find((line) => line.trim()) || "";
   const plainExample = exampleSource.replace(/^\d+\.\s*/, "").replace(/\s*\([^)]*\)\s*$/, "").trim();
@@ -506,6 +567,15 @@ function renderLibraryStats() {
   libraryCountBadgeEl.textContent = `${Number(state.libraryStats.total || 0)} curated readings inside`;
 }
 
+function buildLevelListFromStats() {
+  const statLevels = Array.isArray(state.libraryStats?.by_level)
+    ? state.libraryStats.by_level.map((item) => item.level).filter(Boolean)
+    : [];
+  const ordered = ["A1", "A2", "B1", "B2", "C1", "C2"].filter((level) => statLevels.includes(level));
+  const extras = statLevels.filter((level) => !ordered.includes(level)).sort((a, b) => a.localeCompare(b));
+  return [...ordered, ...extras];
+}
+
 function buildTopicListFromStats() {
   const statTopics = Array.isArray(state.libraryStats?.by_topic)
     ? state.libraryStats.by_topic.map((item) => item.topic).filter(Boolean)
@@ -513,6 +583,27 @@ function buildTopicListFromStats() {
   const ordered = TOPIC_ORDER.filter((topic) => topic === "Random" || statTopics.includes(topic));
   const extras = statTopics.filter((topic) => !ordered.includes(topic)).sort((a, b) => a.localeCompare(b));
   return ["Random", ...ordered.filter((topic) => topic !== "Random"), ...extras];
+}
+
+function buildContentTypeListFromStats() {
+  const statTypes = Array.isArray(state.libraryStats?.by_content_type)
+    ? state.libraryStats.by_content_type.map((item) => item.content_type).filter(Boolean)
+    : [];
+  return ["All", ...statTypes.sort((a, b) => a.localeCompare(b))];
+}
+
+function populateLibraryLevelOptions() {
+  const levels = buildLevelListFromStats();
+  if (!levels.length) return;
+  const current = libraryLevelEl?.value || levelEl?.value || levels[0];
+  const levelHtml = levels.map((level) => `<option value="${escapeHtml(level)}">${escapeHtml(level)}</option>`).join("");
+  if (libraryLevelEl) libraryLevelEl.innerHTML = levelHtml;
+  const listHtml = [`<option value="All">All levels</option>`, ...levels.map((level) => `<option value="${escapeHtml(level)}">${escapeHtml(level)}</option>`)].join("");
+  if (listLevelFilterEl) listLevelFilterEl.innerHTML = listHtml;
+  const next = levels.includes(current) ? current : levels[0];
+  if (libraryLevelEl) libraryLevelEl.value = next;
+  if (levelEl && LEVEL_CONFIG[next]) levelEl.value = next;
+  if (listLevelFilterEl) listLevelFilterEl.value = next;
 }
 
 function populateTopicOptions() {
@@ -524,8 +615,100 @@ function populateTopicOptions() {
     .join("");
   if (topicEl) topicEl.innerHTML = html;
   if (libraryTopicEl) libraryTopicEl.innerHTML = html;
+  if (listTopicFilterEl) {
+    listTopicFilterEl.innerHTML = [`<option value="All">All topics</option>`, ...topics.map((topic) => `<option value="${escapeHtml(topic)}">${escapeHtml(topic)}</option>`)].join("");
+  }
   const nextTopic = topics.includes(currentTopic) ? currentTopic : "Random";
   syncTopicPickers(nextTopic);
+  if (listTopicFilterEl) listTopicFilterEl.value = nextTopic;
+}
+
+function populateContentTypeOptions() {
+  const contentTypes = buildContentTypeListFromStats();
+  if (!contentTypes.length) return;
+  const html = contentTypes.map((type) => {
+    const label = type === "All" ? "All types" : type;
+    return `<option value="${escapeHtml(type)}">${escapeHtml(label)}</option>`;
+  }).join("");
+  if (libraryContentTypeEl) libraryContentTypeEl.innerHTML = html;
+  if (listContentTypeFilterEl) listContentTypeFilterEl.innerHTML = html;
+  if (libraryContentTypeEl && !contentTypes.includes(libraryContentTypeEl.value || "")) {
+    libraryContentTypeEl.value = "All";
+  }
+  if (listContentTypeFilterEl) {
+    listContentTypeFilterEl.value = libraryContentTypeEl?.value || "All";
+  }
+}
+
+function getLibraryFilters(source = "sidebar") {
+  const levelValue = source === "panel" ? listLevelFilterEl?.value : libraryLevelEl?.value;
+  const topicValue = source === "panel" ? listTopicFilterEl?.value : libraryTopicEl?.value;
+  const typeValue = source === "panel" ? listContentTypeFilterEl?.value : libraryContentTypeEl?.value;
+  return {
+    level: levelValue && levelValue !== "All" ? levelValue : "",
+    topic: topicValue && topicValue !== "All" ? topicValue : "",
+    contentType: typeValue && typeValue !== "All" ? typeValue : "",
+  };
+}
+
+function syncLibraryFilterControls(source = "sidebar") {
+  if (source === "panel") {
+    if (libraryLevelEl && listLevelFilterEl?.value && listLevelFilterEl.value !== "All") libraryLevelEl.value = listLevelFilterEl.value;
+    if (libraryTopicEl && listTopicFilterEl?.value && listTopicFilterEl.value !== "All") libraryTopicEl.value = listTopicFilterEl.value;
+    if (libraryContentTypeEl && listContentTypeFilterEl) libraryContentTypeEl.value = listContentTypeFilterEl.value;
+    if (levelEl && libraryLevelEl?.value && LEVEL_CONFIG[libraryLevelEl.value]) levelEl.value = libraryLevelEl.value;
+    if (topicEl && libraryTopicEl?.value) topicEl.value = libraryTopicEl.value;
+  } else {
+    if (listLevelFilterEl) listLevelFilterEl.value = libraryLevelEl?.value || "All";
+    if (listTopicFilterEl) listTopicFilterEl.value = libraryTopicEl?.value || "All";
+    if (listContentTypeFilterEl) listContentTypeFilterEl.value = libraryContentTypeEl?.value || "All";
+  }
+}
+
+function renderReadingList() {
+  if (!readingListItemsEl || !readingListEmptyEl) return;
+  if (!state.libraryReadings.length) {
+    readingListItemsEl.innerHTML = "";
+    readingListEmptyEl.classList.remove("hidden");
+    return;
+  }
+  readingListEmptyEl.classList.add("hidden");
+  readingListItemsEl.innerHTML = state.libraryReadings
+    .map((item) => `
+      <button class="reading-list-item" type="button" data-reading-id="${escapeHtml(item.id)}">
+        <div class="reading-list-topline">
+          <strong>${escapeHtml(item.title)}</strong>
+          <span>${escapeHtml(item.level)}</span>
+        </div>
+        <div class="reading-list-meta">
+          <span>${escapeHtml(item.topic)}</span>
+          <span>${escapeHtml(item.content_type || "reading")}</span>
+          <span>${Number(item.word_count || 0)} words</span>
+        </div>
+        <p>${escapeHtml(item.preview || "")}</p>
+      </button>
+    `)
+    .join("");
+  readingListItemsEl.querySelectorAll(".reading-list-item").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const readingId = button.dataset.readingId;
+      const filters = getLibraryFilters("panel");
+      await generateExperience(
+        {
+          level: filters.level || libraryLevelEl?.value || levelEl.value,
+          topic: filters.topic || libraryTopicEl?.value || topicEl.value,
+          content_type: filters.contentType || null,
+          content_id: readingId,
+          length_target: Number(lengthEl.value),
+          keywords: [],
+          source: "library",
+          exclude_title: null,
+        },
+        $("#generateBtn")
+      );
+      setLibraryView(null);
+    });
+  });
 }
 
 function renderMeta(level, topic, text) {
@@ -544,7 +727,7 @@ function renderMeta(level, topic, text) {
 }
 
 function renderSelection() {
-  const item = state.glossary[state.selectedWord] || {};
+  const item = state.glossary[state.selectedKey] || {};
   const meaning = item.turkish || "Choose a word";
   const contextHtml = state.loadingWord
     ? "Preparing Turkish context..."
@@ -607,6 +790,9 @@ function renderSavedWords() {
     button.addEventListener("click", async () => {
       if (!state.text) return;
       state.selectedWord = button.dataset.word;
+      state.selectedKey = buildGlossaryKey(button.dataset.word, "", "");
+      state.selectedRefId = "";
+      state.selectedItemType = "";
       state.pendingFlip = true;
       renderSelection();
       renderReadingText();
@@ -661,7 +847,7 @@ function renderQuiz() {
   }
   if (!state.quiz) {
     quizEmptyEl.textContent = state.quizMode === "reading"
-      ? "Open a reading and tap into the glossary first to start a reading quiz."
+      ? "Open a library reading to review words and collocations from that text."
       : state.quizMode === "hard"
         ? "You need at least 4 saved words before hard-word review can begin."
         : "You need at least 4 saved words to start the quiz.";
@@ -721,7 +907,7 @@ function renderQuiz() {
           nextQuizBtn.disabled = true;
           nextQuizBtn.textContent = "Next incoming...";
           window.setTimeout(async () => {
-            await loadQuiz(state.quiz?.word || null);
+            await loadQuiz(state.quiz?.ref_id || null);
             nextQuizBtn.disabled = false;
             nextQuizBtn.textContent = "Next Question";
           }, 3000);
@@ -792,11 +978,15 @@ function setLibraryView(view) {
   libraryOverlayEl.classList.toggle("hidden", !isOpen);
   libraryPanelEl.classList.toggle("hidden", !isOpen);
   document.body.classList.toggle("library-open", isOpen);
+  readingListPanelEl.classList.toggle("hidden", view !== "readings");
   savedWordsPanelEl.classList.toggle("hidden", view !== "saved");
   quizPanelEl.classList.toggle("hidden", view !== "quiz");
   manualHelpPanelEl.classList.toggle("hidden", view !== "manual");
   if (libraryPanelScrollEl) libraryPanelScrollEl.style.transform = "";
-  if (view === "saved") {
+  if (view === "readings") {
+    libraryKickerEl.textContent = "Library";
+    libraryTitleEl.textContent = "Curated reading list";
+  } else if (view === "saved") {
     libraryKickerEl.textContent = "Saved Words";
     libraryTitleEl.textContent = "Your saved words";
   } else if (view === "quiz") {
@@ -856,6 +1046,8 @@ function renderUserPanel() {
             const reading = parsed.data.reading;
             state.text = reading.text;
             state.glossary = reading.glossary || {};
+            state.clickMap = reading.click_map || [];
+            state.contentId = reading.content_id || "";
             state.lastPayload = {
               level: reading.level,
               topic: reading.topic,
@@ -866,6 +1058,7 @@ function renderUserPanel() {
             };
             setProfileMenuOpen(false);
             renderExperience();
+            if (state.quizMode === "reading") await loadQuiz();
           });
         });
       }
@@ -977,14 +1170,37 @@ async function loadLibraryStats() {
   const parsed = await apiFetch("/api/library/stats", { method: "GET", headers: {} });
   if (parsed.ok) {
     state.libraryStats = parsed.data;
+    populateLibraryLevelOptions();
     populateTopicOptions();
+    populateContentTypeOptions();
+    syncLibraryFilterControls("sidebar");
     renderLibraryStats();
   }
 }
 
+async function loadReadingList() {
+  const filters = getLibraryFilters(state.libraryView === "readings" ? "panel" : "sidebar");
+  const query = new URLSearchParams();
+  if (filters.level) query.set("level", filters.level);
+  if (filters.topic) query.set("topic", filters.topic);
+  if (filters.contentType) query.set("content_type", filters.contentType);
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  const parsed = await apiFetch(`/api/library/readings${suffix}`, { method: "GET", headers: {} });
+  state.libraryReadings = parsed.ok ? parsed.data.readings || [] : [];
+  renderReadingList();
+}
+
 async function loadQuiz(excludeWordId = null) {
   if (state.quizMode === "reading") {
-    state.quiz = buildReadingQuizQuestion(excludeWordId || "");
+    if (!state.contentId || (state.lastPayload?.content_source || state.contentSource) !== "library") {
+      state.quiz = null;
+      renderQuiz();
+      return;
+    }
+    const query = new URLSearchParams({ content_id: state.contentId });
+    if (excludeWordId) query.set("exclude_ref_id", excludeWordId);
+    const parsed = await apiFetch(`/api/quiz/from-reading?${query.toString()}`, { method: "GET", headers: {} });
+    state.quiz = parsed.ok ? parsed.data.question : null;
     renderQuiz();
     return;
   }
@@ -1004,26 +1220,34 @@ async function loadQuiz(excludeWordId = null) {
 async function saveWordSelection(word) {
   if (!state.user || !word || !state.text) return;
   try {
+    const glossaryKey = state.selectedKey || buildGlossaryKey(word, state.selectedRefId, state.selectedItemType);
     const parsed = await apiFetch("/api/word-detail", {
       method: "POST",
       body: JSON.stringify({
         text: state.text,
         word,
+        ref_id: state.selectedRefId || null,
+        item_type: state.selectedItemType || null,
+        content_id: state.contentId || null,
         content_source: state.lastPayload?.content_source || state.contentSource,
       }),
     });
     if (!parsed.ok) return;
-    state.glossary[word] = parsed.data;
+    state.glossary[glossaryKey] = { ...parsed.data, surface: word };
     await refreshSession();
-    await loadQuiz(state.quiz?.word || null);
+    await loadQuiz(state.quizMode === "reading" ? state.quiz?.ref_id || null : state.quiz?.word_id || null);
   } catch {
     // Keep the UI responsive even if the save side-effect fails.
   }
 }
 
-async function loadWordDetail(word) {
+async function loadWordDetail(selection) {
+  const word = typeof selection === "string" ? selection : selection?.word;
+  const refId = typeof selection === "string" ? "" : selection?.refId || "";
+  const itemType = typeof selection === "string" ? "" : selection?.itemType || "";
   if (!word) return;
-  if (state.glossary[word]) {
+  const glossaryKey = buildGlossaryKey(word, refId, itemType);
+  if (state.glossary[glossaryKey]) {
     if (state.user && (state.lastPayload?.content_source || state.contentSource) === "library") {
       void saveWordSelection(word);
     }
@@ -1042,29 +1266,33 @@ async function loadWordDetail(word) {
       body: JSON.stringify({
         text: state.text,
         word,
+        ref_id: refId || null,
+        item_type: itemType || null,
+        content_id: state.contentId || null,
         content_source: state.lastPayload?.content_source || state.contentSource,
       }),
     });
     if (!parsed.ok) throw new Error(parsed.data.detail || "Word detail could not be loaded.");
-    state.glossary[word] = parsed.data;
+    state.glossary[glossaryKey] = { ...parsed.data, surface: word };
     if (state.user) {
       await refreshSession();
       await loadQuiz();
     }
   } catch (error) {
-    state.glossary[word] = {
+    state.glossary[glossaryKey] = {
       turkish: "Türkçe anlam alınamadı.",
       context: error.message || "Word detail is not available right now.",
       example: "No example sentence available.",
       collocations: [],
+      surface: word,
     };
   } finally {
     state.loadingWord = false;
     renderSelection();
-    if (state.pendingFlip && state.selectedWord === word && state.glossary[word]) playDesktopFlip(word);
+    if (state.pendingFlip && state.selectedWord === word && state.glossary[glossaryKey]) playDesktopFlip(word);
     if (
       state.selectedWord === word &&
-      state.glossary[word] &&
+      state.glossary[glossaryKey] &&
       isMobilePreview() &&
       state.dismissedMobileWord !== word
     ) {
@@ -1075,30 +1303,39 @@ async function loadWordDetail(word) {
 }
 
 function renderReadingText() {
-  const tokens = tokenizeText(state.text);
-  readingBodyEl.innerHTML = tokens
-    .map((token) => {
-      const isWord = /^[A-Za-z]+(?:['-][A-Za-z]+)*$/.test(token);
-      if (!isWord) return escapeHtml(token).replace(/\n/g, "<br>");
-      const key = token.toLowerCase();
-      const active = key === state.selectedWord ? "active" : "";
-      return `<button class="word ${active}" data-word="${escapeHtml(key)}">${escapeHtml(token)}</button>`;
-    })
-    .join("");
+  if ((state.lastPayload?.content_source || state.contentSource) === "library" && state.clickMap.length) {
+    readingBodyEl.innerHTML = renderLibraryText();
+  } else {
+    const tokens = tokenizeText(state.text);
+    readingBodyEl.innerHTML = tokens
+      .map((token) => {
+        const isWord = /^[A-Za-z]+(?:['-][A-Za-z]+)*$/.test(token);
+        if (!isWord) return escapeHtml(token).replace(/\n/g, "<br>");
+        const key = token.toLowerCase();
+        const active = key === state.selectedWord ? "active" : "";
+        return `<button class="word ${active}" data-word="${escapeHtml(key)}">${escapeHtml(token)}</button>`;
+      })
+      .join("");
+  }
   readingBodyEl.querySelectorAll(".word").forEach((button) => {
     button.addEventListener("click", async () => {
       const nextWord = button.dataset.word;
+      const refId = button.dataset.refId || "";
+      const itemType = button.dataset.itemType || "";
       if (state.selectedWord !== nextWord) {
         selectedMeaningEl.textContent = "Loading...";
         selectedContextEl.textContent = "Preparing Turkish context...";
         selectedExampleEl.textContent = "Preparing example sentence...";
       }
       state.selectedWord = nextWord;
+      state.selectedKey = buildGlossaryKey(nextWord, refId, itemType);
+      state.selectedRefId = refId;
+      state.selectedItemType = itemType;
       state.dismissedMobileWord = "";
       state.pendingFlip = true;
       renderSelection();
       renderReadingText();
-      await loadWordDetail(nextWord);
+      await loadWordDetail({ word: nextWord, refId, itemType });
     });
   });
 }
@@ -1116,12 +1353,13 @@ function renderExperience() {
   }
   renderReadingText();
   state.selectedWord = "";
+  state.selectedKey = "";
+  state.selectedRefId = "";
+  state.selectedItemType = "";
   state.loadingWord = false;
   state.pendingFlip = false;
   state.dismissedMobileWord = "";
-  if (state.quizMode === "reading") {
-    state.quiz = buildReadingQuizQuestion();
-  }
+  if (state.quizMode === "reading") state.quiz = null;
   renderSelection();
   selectedContextEl.textContent = "The reading is ready. Tap a word to open its Turkish context.";
   selectedExampleEl.textContent = "A short example will appear here after you choose a word.";
@@ -1139,11 +1377,14 @@ async function generateExperience(payload, triggerButton) {
     if (!parsed.ok) throw new Error(parsed.data.detail || "Something went wrong.");
     state.text = parsed.data.text;
     state.glossary = parsed.data.glossary || {};
+    state.clickMap = parsed.data.click_map || [];
+    state.contentId = parsed.data.content_id || "";
     state.lastPayload = {
       ...payload,
       title: parsed.data.title || "",
       topic: payload.topic,
       resolved_topic: parsed.data.topic || payload.topic,
+      content_type: parsed.data.content_type || payload.content_type || "",
       content_source: parsed.data.content_source || payload.source,
     };
     manualResultEl.classList.add("hidden");
@@ -1151,6 +1392,9 @@ async function generateExperience(payload, triggerButton) {
       await refreshSession();
     }
     renderExperience();
+    if (state.quizMode === "reading") {
+      await loadQuiz();
+    }
   } catch (error) {
     showError(error.message);
   } finally {
@@ -1165,6 +1409,7 @@ function buildPayload() {
   return {
     level,
     topic,
+    content_type: state.contentSource === "library" ? (libraryContentTypeEl?.value === "All" ? null : libraryContentTypeEl?.value || null) : null,
     length_target: Number(lengthEl.value),
     keywords,
     source: state.contentSource,
@@ -1391,6 +1636,7 @@ regenBtn.addEventListener("click", async () => {
   if (!state.lastPayload) return;
   const payload = {
     ...state.lastPayload,
+    content_id: null,
     exclude_title: state.lastPayload.content_source === "library" ? state.lastPayload.title : null,
   };
   await generateExperience(payload, regenBtn);
@@ -1400,6 +1646,11 @@ clearBtn.addEventListener("click", () => {
   state.text = "";
   state.glossary = {};
   state.selectedWord = "";
+  state.selectedKey = "";
+  state.selectedRefId = "";
+  state.selectedItemType = "";
+  state.clickMap = [];
+  state.contentId = "";
   state.loadingWord = false;
   state.pendingFlip = false;
   state.quiz = null;
@@ -1410,16 +1661,21 @@ clearBtn.addEventListener("click", () => {
   clearError();
 });
 
-nextQuizBtn.addEventListener("click", () => loadQuiz(state.quizMode === "reading" ? state.quiz?.word || null : state.quiz?.word_id || null));
+nextQuizBtn.addEventListener("click", () => loadQuiz(state.quizMode === "reading" ? state.quiz?.ref_id || null : state.quiz?.word_id || null));
 openSavedWordsBtn.addEventListener("click", async () => {
   if (state.user) await fetchSavedWords("recent");
   setLibraryView("saved");
 });
 openQuizBtn.addEventListener("click", async () => {
-  if (!state.quiz && state.user) await loadQuiz();
+  if (!state.quiz && (state.user || state.quizMode === "reading")) await loadQuiz();
   setLibraryView("quiz");
 });
 openManualHelpBtn.addEventListener("click", () => setLibraryView("manual"));
+libraryCountBadgeEl?.addEventListener("click", async () => {
+  syncLibraryFilterControls("sidebar");
+  await loadReadingList();
+  setLibraryView("readings");
+});
 closeMobileWordBtn?.addEventListener("click", closeMobileWordSheet);
 mobileWordHandleBtn?.addEventListener("click", closeMobileWordSheet);
 mobileWordBackdropEl?.addEventListener("click", closeMobileWordSheet);
@@ -1476,11 +1732,35 @@ sourceSwitchEl.querySelectorAll(".source-pill").forEach((button) => {
 libraryLevelEl?.addEventListener("change", () => {
   levelEl.value = libraryLevelEl.value;
   updateLevelUi();
+  syncLibraryFilterControls("sidebar");
+  if (state.libraryView === "readings") void loadReadingList();
 });
 
 libraryTopicEl?.addEventListener("change", () => {
   topicEl.value = libraryTopicEl.value;
   syncTopicPickers(libraryTopicEl.value);
+  syncLibraryFilterControls("sidebar");
+  if (state.libraryView === "readings") void loadReadingList();
+});
+
+libraryContentTypeEl?.addEventListener("change", () => {
+  syncLibraryFilterControls("sidebar");
+  if (state.libraryView === "readings") void loadReadingList();
+});
+
+listLevelFilterEl?.addEventListener("change", async () => {
+  syncLibraryFilterControls("panel");
+  await loadReadingList();
+});
+
+listTopicFilterEl?.addEventListener("change", async () => {
+  syncLibraryFilterControls("panel");
+  await loadReadingList();
+});
+
+listContentTypeFilterEl?.addEventListener("change", async () => {
+  syncLibraryFilterControls("panel");
+  await loadReadingList();
 });
 
 bindPointerGlow();

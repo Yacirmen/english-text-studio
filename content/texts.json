@@ -1,0 +1,235 @@
+{
+  "version": "1.0.0",
+  "items": [
+    {
+      "id": "txt_a1_daily_001",
+      "slug": "the-bus-stop-in-the-morning",
+      "title": "The Bus Stop in the Morning",
+      "level": "A1",
+      "topic": "Daily Life",
+      "subtopic": "Morning Routine",
+      "content_type": "story",
+      "tone": "friendly",
+      "status": "published",
+      "content": "I wake up at seven. I eat breakfast at home. Then I walk to the bus stop with my sister. The bus is late today, but we stay calm and smile.",
+      "click_map": [
+        { "surface": "wake up", "type": "collocation", "ref_id": "col_wake_up_01" },
+        { "surface": "breakfast", "type": "word", "ref_id": "voc_breakfast_n_01" },
+        { "surface": "bus stop", "type": "collocation", "ref_id": "col_bus_stop_01" },
+        { "surface": "late", "type": "word", "ref_id": "voc_late_adj_01" },
+        { "surface": "calm", "type": "word", "ref_id": "voc_calm_adj_01" }
+      ],
+      "target_vocabulary_ids": [
+        "voc_breakfast_n_01",
+        "voc_late_adj_01",
+        "voc_calm_adj_01"
+      ],
+      "target_collocation_ids": [
+        "col_wake_up_01",
+        "col_bus_stop_01"
+      ],
+      "estimated_reading_time_sec": 40,
+      "word_count": 31,
+      "sentence_count": 4,
+      "writing_profile": {
+        "avg_sentence_length": 7.75,
+        "max_sentence_length": 11,
+        "grammar_features": ["present_simple", "then", "but"],
+        "abstraction_level": "very_low",
+        "new_vocab_count": 5
+      },
+      "quality_flags": {
+        "level_confidence": 0.94,
+        "repetition_score": 0.11,
+        "publish_blocked": false,
+        "block_reasons": []
+      },
+      "created_at": "2026-04-18T12:00:00Z",
+      "updated_at": "2026-04-18T12:00:00Z"
+    },
+    {
+      "id": "txt_a2_health_001",
+      "slug": "a-small-walking-change",
+      "title": "A Small Walking Change",
+      "level": "A2",
+      "topic": "Health",
+      "subtopic": "Simple Habits",
+      "content_type": "explanation",
+      "tone": "neutral",
+      "status": "published",
+      "content": "Zeynep started a simple habit after dinner. She takes a short walk around her block, and the change is small, but it helps her feel more energetic. Because she moves a little every evening, she now notices when stress begins to build.",
+      "click_map": [
+        { "surface": "habit", "type": "word", "ref_id": "voc_habit_n_01" },
+        { "surface": "small change", "type": "collocation", "ref_id": "col_small_change_01" },
+        { "surface": "feel more energetic", "type": "collocation", "ref_id": "col_feel_more_energetic_01" },
+        { "surface": "notices", "type": "word", "ref_id": "voc_notice_v_01" },
+        { "surface": "energy", "type": "word", "ref_id": "voc_energy_n_01" }
+      ],
+      "target_vocabulary_ids": [
+        "voc_habit_n_01",
+        "voc_energy_n_01",
+        "voc_notice_v_01"
+      ],
+      "target_collocation_ids": [
+        "col_small_change_01",
+        "col_feel_more_energetic_01"
+      ],
+      "estimated_reading_time_sec": 55,
+      "word_count": 40,
+      "sentence_count": 3,
+      "writing_profile": {
+        "avg_sentence_length": 13.3,
+        "max_sentence_length": 18,
+        "grammar_features": ["present_simple", "because", "contrast"],
+        "abstraction_level": "low",
+        "new_vocab_count": 5
+      },
+      "quality_flags": {
+        "level_confidence": 0.84,
+        "repetition_score": 0.14,
+        "publish_blocked": false,
+        "block_reasons": []
+      },
+      "created_at": "2026-04-18T12:01:00Z",
+      "updated_at": "2026-04-18T12:01:00Z"
+    },
+    {
+      "id": "txt_b1_school_001",
+      "slug": "a-better-group-presentation",
+      "title": "A Better Group Presentation",
+      "level": "B1",
+      "topic": "School",
+      "subtopic": "Group Work",
+      "content_type": "story",
+      "tone": "neutral",
+      "status": "published",
+      "content": "At first, Eren’s group felt unprepared for their class presentation. They wrote a quick outline, shared an idea for a clearer opening, and practiced twice before lunch. As a result, they sounded more confident during the final version and received useful feedback from their teacher.",
+      "click_map": [
+        { "surface": "outline", "type": "word", "ref_id": "voc_outline_n_01" },
+        { "surface": "shared an idea", "type": "collocation", "ref_id": "col_share_an_idea_01" },
+        { "surface": "confident", "type": "word", "ref_id": "voc_confident_adj_01" },
+        { "surface": "received feedback", "type": "collocation", "ref_id": "col_receive_feedback_01" },
+        { "surface": "feedback", "type": "word", "ref_id": "voc_feedback_n_01" }
+      ],
+      "target_vocabulary_ids": [
+        "voc_outline_n_01",
+        "voc_confident_adj_01",
+        "voc_feedback_n_01"
+      ],
+      "target_collocation_ids": [
+        "col_share_an_idea_01",
+        "col_receive_feedback_01"
+      ],
+      "estimated_reading_time_sec": 60,
+      "word_count": 41,
+      "sentence_count": 3,
+      "writing_profile": {
+        "avg_sentence_length": 13.6,
+        "max_sentence_length": 19,
+        "grammar_features": ["past_simple", "as_a_result", "coordination"],
+        "abstraction_level": "medium",
+        "new_vocab_count": 5
+      },
+      "quality_flags": {
+        "level_confidence": 0.86,
+        "repetition_score": 0.15,
+        "publish_blocked": false,
+        "block_reasons": []
+      },
+      "created_at": "2026-04-18T12:02:00Z",
+      "updated_at": "2026-04-18T12:02:00Z"
+    },
+    {
+      "id": "txt_b2_data_001",
+      "slug": "small-decisions-shape-data-trust",
+      "title": "Small Decisions Shape Data Trust",
+      "level": "B2",
+      "topic": "Data Science",
+      "subtopic": "Data Ethics",
+      "content_type": "article",
+      "tone": "neutral",
+      "status": "published",
+      "content": "Trust in a data system does not depend on one dramatic choice. It grows through repeated decisions about what to collect, how to review results, and when to question hidden bias. Although the process may appear technical, public confidence weakens quickly if people feel that important checks were ignored.",
+      "click_map": [
+        { "surface": "trust", "type": "word", "ref_id": "voc_trust_n_01" },
+        { "surface": "depend on", "type": "collocation", "ref_id": "col_depend_on_01" },
+        { "surface": "review", "type": "word", "ref_id": "voc_review_v_01" },
+        { "surface": "hidden bias", "type": "collocation", "ref_id": "col_hidden_bias_01" },
+        { "surface": "bias", "type": "word", "ref_id": "voc_bias_n_01" }
+      ],
+      "target_vocabulary_ids": [
+        "voc_trust_n_01",
+        "voc_review_v_01",
+        "voc_bias_n_01"
+      ],
+      "target_collocation_ids": [
+        "col_depend_on_01",
+        "col_hidden_bias_01"
+      ],
+      "estimated_reading_time_sec": 70,
+      "word_count": 45,
+      "sentence_count": 3,
+      "writing_profile": {
+        "avg_sentence_length": 15.0,
+        "max_sentence_length": 20,
+        "grammar_features": ["subordination", "contrast", "cause_effect"],
+        "abstraction_level": "medium_high",
+        "new_vocab_count": 5
+      },
+      "quality_flags": {
+        "level_confidence": 0.88,
+        "repetition_score": 0.13,
+        "publish_blocked": false,
+        "block_reasons": []
+      },
+      "created_at": "2026-04-18T12:03:00Z",
+      "updated_at": "2026-04-18T12:03:00Z"
+    },
+    {
+      "id": "txt_c1_comm_001",
+      "slug": "why-official-wording-changes-public-trust",
+      "title": "Why Official Wording Changes Public Trust",
+      "level": "C1",
+      "topic": "Communication",
+      "subtopic": "Institutional Language",
+      "content_type": "exam_paragraph",
+      "tone": "exam",
+      "status": "published",
+      "content": "Although official language is usually designed to sound neutral, its wording still guides how readers interpret intent. When a statement remains formally correct but leaves practical consequences unclear, people may understand the message itself while losing confidence in the institution behind it.",
+      "click_map": [
+        { "surface": "official language", "type": "collocation", "ref_id": "col_official_language_01" },
+        { "surface": "wording", "type": "word", "ref_id": "voc_wording_n_01" },
+        { "surface": "interpret", "type": "word", "ref_id": "voc_interpret_v_01" },
+        { "surface": "intent", "type": "word", "ref_id": "voc_intent_n_01" },
+        { "surface": "practical effect", "type": "collocation", "ref_id": "col_practical_effect_01" }
+      ],
+      "target_vocabulary_ids": [
+        "voc_wording_n_01",
+        "voc_interpret_v_01",
+        "voc_intent_n_01"
+      ],
+      "target_collocation_ids": [
+        "col_official_language_01",
+        "col_practical_effect_01"
+      ],
+      "estimated_reading_time_sec": 65,
+      "word_count": 40,
+      "sentence_count": 2,
+      "writing_profile": {
+        "avg_sentence_length": 20.0,
+        "max_sentence_length": 22,
+        "grammar_features": ["concession_clause", "subordination", "abstract_nouns"],
+        "abstraction_level": "high",
+        "new_vocab_count": 5
+      },
+      "quality_flags": {
+        "level_confidence": 0.90,
+        "repetition_score": 0.12,
+        "publish_blocked": false,
+        "block_reasons": []
+      },
+      "created_at": "2026-04-18T12:04:00Z",
+      "updated_at": "2026-04-18T12:04:00Z"
+    }
+  ]
+}
