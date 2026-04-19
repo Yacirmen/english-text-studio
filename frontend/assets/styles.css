@@ -168,7 +168,7 @@ body::before{
 .welcome-toggle{margin-bottom:18px}
 .gate-guest-btn{
   width:100%;
-  margin-top:0;
+  margin-top:6px;
   background:rgba(255,255,255,.08);
   color:#fff;
   border:1px solid rgba(255,255,255,.14);
@@ -827,11 +827,11 @@ body.dark-mode .inline-highlight{
 }
 .auth-flip-scene{
   perspective:1400px;
-  min-height:388px;
+  min-height:430px;
   flex:0 0 auto;
   position:relative;
 }
-.auth-flip-scene-compact{min-height:372px}
+.auth-flip-scene-compact{min-height:410px}
 .auth-flip-card{
   position:relative;
   min-height:inherit;
@@ -2652,8 +2652,8 @@ body.dark-mode .collocation-chip{
     padding:0 10px;
     font-size:.84rem;
   }
-  .auth-flip-scene{min-height:356px}
-  .auth-flip-scene-compact{min-height:344px}
+  .auth-flip-scene{min-height:396px}
+  .auth-flip-scene-compact{min-height:382px}
   .auth-face{padding:16px;border-radius:24px;gap:12px}
   .auth-face.auth-toast-host{padding-top:114px}
   .auth-toast{
