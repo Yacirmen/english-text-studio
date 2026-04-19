@@ -68,11 +68,11 @@ body::before{
   min-height:100dvh;
 }
 .welcome-card{
-  width:min(1120px, 100%);
+  width:min(1160px, 100%);
   display:grid;
-  grid-template-columns:minmax(0,1.1fr) minmax(320px,.75fr);
-  gap:24px;
-  padding:28px;
+  grid-template-columns:minmax(0,1fr) minmax(360px,.82fr);
+  gap:28px;
+  padding:30px;
   border-radius:36px;
   background:
     radial-gradient(circle at top left, rgba(255,216,77,.38), transparent 24%),
@@ -81,28 +81,36 @@ body::before{
   box-shadow:0 24px 64px rgba(24,49,83,.18);
   border:1px solid rgba(255,255,255,.95);
 }
+.welcome-copy{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  min-width:0;
+}
 .welcome-copy h1{
-  margin:14px 0 12px;
-  max-width:11ch;
-  font-size:clamp(2.5rem,5vw,4.4rem);
-  line-height:.94;
-  letter-spacing:-.07em;
+  margin:16px 0 14px;
+  max-width:10ch;
+  font-size:clamp(2.55rem,4.8vw,4.9rem);
+  line-height:.96;
+  letter-spacing:-.065em;
 }
 .welcome-copy p{
-  max-width:56ch;
+  max-width:46ch;
   margin:0;
   color:var(--muted);
-  line-height:1.75;
+  font-size:1.02rem;
+  line-height:1.72;
 }
 .welcome-points{
   display:flex;
   flex-wrap:wrap;
   gap:10px;
-  margin-top:22px;
+  margin-top:20px;
 }
 .welcome-points span{
   display:inline-flex;
   align-items:center;
+  justify-content:center;
   min-height:38px;
   padding:0 14px;
   border-radius:999px;
@@ -111,6 +119,34 @@ body::before{
   font-size:.84rem;
   font-weight:900;
   box-shadow:0 10px 20px rgba(24,49,83,.08);
+}
+.welcome-points-grid span{
+  min-width:max-content;
+}
+.welcome-metrics{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0,1fr));
+  gap:14px;
+  margin-top:20px;
+}
+.welcome-metric-card{
+  padding:18px 18px 16px;
+  border-radius:24px;
+  background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(242,247,255,.78));
+  border:1px solid rgba(164,186,214,.26);
+  box-shadow:0 14px 30px rgba(24,49,83,.08);
+}
+.welcome-metric-card strong{
+  display:block;
+  color:#1d3b61;
+  font-size:1rem;
+  line-height:1.2;
+}
+.welcome-metric-card p{
+  margin-top:8px;
+  max-width:none;
+  font-size:.92rem;
+  line-height:1.6;
 }
 .welcome-auth{
   padding:24px;
@@ -980,14 +1016,15 @@ body.dark-mode .inline-highlight{
 .hero-kicker{
   display:inline-flex;
   align-items:center;
-  min-height:30px;
-  padding:0 12px;
+  min-height:34px;
+  width:max-content;
+  padding:0 14px;
   border-radius:999px;
-  background:#e9f8d8;
-  color:#3d8f08;
-  font-size:.72rem;
+  background:linear-gradient(180deg,#f7ffe8 0%,#dff8b0 100%);
+  color:#819a51;
+  font-size:.78rem;
   font-weight:900;
-  letter-spacing:.04em;
+  letter-spacing:.08em;
   text-transform:uppercase;
 }
 
@@ -2494,6 +2531,14 @@ body.dark-mode .collocation-chip{
   .studio-layout,.experience-grid,.form-row,.setup-summary,.welcome-card{grid-template-columns:1fr}
   .tool-rail,.detail-column{position:static}
   .topbar{border-radius:28px;flex-direction:column;align-items:flex-start}
+  .welcome-copy h1{
+    max-width:12ch;
+    font-size:clamp(2.4rem,5.5vw,4.2rem);
+  }
+  .welcome-copy p{max-width:52ch}
+  .welcome-metrics{
+    grid-template-columns:repeat(2, minmax(0,1fr));
+  }
   .topbar-slogan{
     width:100%;
     margin:0;
@@ -2533,14 +2578,48 @@ body.dark-mode .collocation-chip{
   .welcome-card{
     width:100%;
     margin:0;
-    padding:16px;
+    padding:18px;
     border-radius:26px;
-    gap:14px;
+    gap:16px;
   }
-  .welcome-copy h1{font-size:clamp(2rem,10vw,2.8rem)}
-  .welcome-copy p{font-size:.95rem;line-height:1.62}
-  .welcome-points{gap:8px;margin-top:16px}
-  .welcome-points span{min-height:34px;padding:0 12px;font-size:.76rem}
+  .welcome-copy h1{
+    margin:12px 0 12px;
+    max-width:11ch;
+    font-size:clamp(2.15rem,11vw,3.15rem);
+    line-height:1.01;
+  }
+  .welcome-copy p{
+    max-width:none;
+    font-size:.95rem;
+    line-height:1.62;
+  }
+  .welcome-points{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:8px;
+    margin-top:16px;
+  }
+  .welcome-points span{
+    min-height:36px;
+    justify-content:flex-start;
+    padding:0 14px;
+    font-size:.78rem;
+  }
+  .welcome-metrics{
+    grid-template-columns:1fr;
+    gap:10px;
+    margin-top:14px;
+  }
+  .welcome-metric-card{
+    padding:14px 14px 13px;
+    border-radius:20px;
+  }
+  .welcome-metric-card strong{font-size:.94rem}
+  .welcome-metric-card p{
+    margin-top:6px;
+    font-size:.84rem;
+    line-height:1.5;
+  }
   .welcome-auth{padding:16px;border-radius:22px}
   .welcome-toggle{margin-bottom:14px}
   .auth-toggle{gap:8px}
