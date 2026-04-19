@@ -794,6 +794,47 @@ CURATED_HEADER_PATTERN = re.compile(
     r"^\[(A1|A2|B1|B2|C1|C2)-(\d+)(?: \| Topic: ([^|\]]+) \| Words: (\d+))?\]$",
     re.MULTILINE,
 )
+LIBRARY_TOPIC_ALIASES = {
+    "Academic": "Education",
+    "Arts": "Arts",
+    "Communication": "Communication",
+    "Communication & Language": "Communication",
+    "Complexity & Decision Making": "Psychology",
+    "Culture": "Culture",
+    "Daily Life": "Daily Life",
+    "Decision Making": "Psychology",
+    "Education": "Education",
+    "Environment": "Environment",
+    "Finance": "Finance",
+    "Food": "Food",
+    "General": "Daily Life",
+    "Health": "Health",
+    "Human Behavior": "Psychology",
+    "Innovation & Change": "Technology",
+    "Knowledge & Information": "Media",
+    "Learning": "Education",
+    "Learning & Cognition": "Education",
+    "Learning Strategies": "Education",
+    "Media": "Media",
+    "Media & Information": "Media",
+    "Personal Development": "Psychology",
+    "Productivity": "Work Life",
+    "Productivity & Focus": "Work Life",
+    "Psychology": "Psychology",
+    "Public Services": "Public Services",
+    "Risk & Uncertainty": "Psychology",
+    "Science": "Science",
+    "School": "Education",
+    "Social Life": "Communication",
+    "Social Psychology": "Psychology",
+    "Society & Perception": "Culture",
+    "Technology": "Technology",
+    "Technology & Human Behavior": "Technology",
+    "Travel": "Travel",
+    "Work & Career": "Work Life",
+    "Work & Productivity": "Work Life",
+    "Work Life": "Work Life",
+}
 CURATED_KEYWORD_STOPWORDS = {
     "the",
     "a",
@@ -925,6 +966,13 @@ def derive_curated_topic(level: str, body: str) -> str:
     return "General"
 
 
+def normalize_library_topic(topic: str) -> str:
+    normalized = normalize_topic((topic or "").strip())
+    if normalized in {"", "Random", "Open", "Serbest"}:
+        return "Random"
+    return LIBRARY_TOPIC_ALIASES.get(normalized, normalized)
+
+
 def derive_curated_keywords(body: str, topic: str) -> list[str]:
     words = re.findall(r"[A-Za-z]+(?:'[A-Za-z]+)?", body.lower())
     counts = Counter(word for word in words if len(word) > 2 and word not in CURATED_KEYWORD_STOPWORDS)
@@ -959,6 +1007,7 @@ def parse_curated_readings_file() -> list[dict[str, Any]]:
         body = re.sub(r"\n{2,}", "\n\n", body)
         if not topic:
             topic = derive_curated_topic(level, body)
+        topic = normalize_library_topic(topic)
         title = f"{topic} Reading {entry_number}"
         keywords = derive_curated_keywords(body, topic)
         word_count = len(re.findall(r"[A-Za-z]+(?:'[A-Za-z]+)?", body))
@@ -1765,7 +1814,7 @@ def pick_library_reading(
     length_target: int,
     exclude_title: str | None = None,
 ) -> dict[str, Any] | None:
-    normalized_topic = normalize_topic(topic)
+    normalized_topic = normalize_library_topic(topic)
 
     if (
         level == "B1"
@@ -1820,7 +1869,10 @@ def pick_library_reading(
                 }
     filtered_rows = rows
     if normalized_topic not in {"Open", "Serbest", "Random"}:
-        exact_topic_rows = [row for row in filtered_rows if row["topic"] == normalized_topic]
+        exact_topic_rows = [
+            row for row in filtered_rows
+            if normalize_library_topic(str(row["topic"])) == normalized_topic
+        ]
         if exact_topic_rows:
             filtered_rows = exact_topic_rows
     if exclude_title:
@@ -3323,12 +3375,13 @@ def list_library_readings(level: str | None = None, topic: str | None = None) ->
     if level:
         query += " AND level = ?"
         params.append(level)
-    if topic:
-        query += " AND topic = ?"
-        params.append(normalize_topic(topic))
     query += " ORDER BY level, topic, id"
     rows = db_fetchall(query, tuple(params))
+    if topic:
+        normalized_topic = normalize_library_topic(topic)
+        rows = [row for row in rows if normalize_library_topic(str(row["topic"])) == normalized_topic]
     for row in rows:
+        row["topic"] = normalize_library_topic(str(row["topic"]))
         row["keywords"] = parse_keywords_field(row["keywords"])
     return {"readings": rows}
 
@@ -3360,9 +3413,37 @@ def library_stats() -> dict[str, Any]:
         """,
         source_params,
     )
+    level_topic_rows = db_fetchall(
+        f"""
+        SELECT level, topic, COUNT(*) AS total
+        FROM readings
+        WHERE is_published = 1{source_clause}
+        GROUP BY level, topic
+        ORDER BY level, topic
+        """,
+        source_params,
+    )
+    by_topic: dict[str, int] = {}
+    for row in topic_rows:
+        normalized_topic = normalize_library_topic(str(row["topic"]))
+        if normalized_topic == "Random":
+            continue
+        by_topic[normalized_topic] = by_topic.get(normalized_topic, 0) + int(row["total"])
+    by_level_topic: dict[tuple[str, str], int] = {}
+    for row in level_topic_rows:
+        normalized_topic = normalize_library_topic(str(row["topic"]))
+        if normalized_topic == "Random":
+            continue
+        key = (str(row["level"]), normalized_topic)
+        by_level_topic[key] = by_level_topic.get(key, 0) + int(row["total"])
     return {
         "total": int((total_row or {}).get("total", 0)),
         "by_level": level_rows,
+        "by_topic": [{"topic": topic, "total": total} for topic, total in sorted(by_topic.items())],
+        "by_level_topic": [
+            {"level": level, "topic": topic, "total": total}
+            for (level, topic), total in sorted(by_level_topic.items())
+        ],
     }
 
 

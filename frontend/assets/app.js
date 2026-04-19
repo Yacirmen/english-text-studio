@@ -9,89 +9,42 @@ const LEVEL_CONFIG = {
 
 const TOPIC_KEYWORDS = {
   Random: ["story", "daily", "idea", "change"],
-  Academic: ["research", "analysis", "argument", "evidence"],
   Arts: ["studio", "practice", "composition", "form"],
   Communication: ["message", "feedback", "clarity", "conversation"],
-  "Communication & Language": ["language", "expression", "dialogue", "meaning"],
-  "Computer Science": ["algorithm", "logic", "system", "code"],
-  "Complexity & Decision Making": ["complexity", "decision", "tradeoff", "judgment"],
   Culture: ["ritual", "community", "memory", "tradition"],
   "Daily Life": ["morning", "routine", "balance", "habit"],
-  "Data Science": ["dataset", "model", "pattern", "analysis"],
-  "Decision Making": ["choice", "priority", "judgment", "outcome"],
   Education: ["student", "teacher", "study", "exam"],
   Environment: ["energy", "waste", "climate", "action"],
   Finance: ["budget", "saving", "expense", "plan"],
   Food: ["meal", "kitchen", "nutrition", "recipe"],
   Health: ["exercise", "sleep", "balance", "habit"],
-  "Human Behavior": ["behavior", "habit", "attention", "response"],
-  "Innovation & Change": ["change", "innovation", "adaptation", "growth"],
-  "Knowledge & Information": ["knowledge", "information", "source", "understanding"],
-  Learning: ["language", "practice", "memory", "progress"],
-  "Learning & Cognition": ["learning", "memory", "cognition", "focus"],
-  "Learning Strategies": ["strategy", "revision", "practice", "consistency"],
   Media: ["article", "story", "platform", "audience"],
-  "Media & Information": ["media", "source", "fact", "credibility"],
-  "Personal Development": ["growth", "habit", "confidence", "progress"],
-  Productivity: ["focus", "schedule", "task", "efficiency"],
-  "Productivity & Focus": ["focus", "attention", "distraction", "workflow"],
   Psychology: ["attention", "emotion", "habit", "stress"],
   "Public Services": ["transport", "service", "access", "public"],
-  "Risk & Uncertainty": ["risk", "uncertainty", "judgment", "outcome"],
-  School: ["student", "teacher", "library", "study"],
   Science: ["science", "evidence", "method", "observation"],
-  "Social Life": ["friendship", "community", "support", "trust"],
-  "Social Psychology": ["group", "social", "behavior", "norm"],
-  "Society & Perception": ["society", "perception", "belief", "narrative"],
-  Sport: ["team", "practice", "focus", "goal"],
   Technology: ["smartphone", "internet", "screen", "tools"],
-  "Technology & Human Behavior": ["technology", "habit", "screen", "behavior"],
   Travel: ["travel", "city", "tourism", "journey"],
-  "Work & Career": ["office", "career", "tasks", "colleague"],
-  "Work & Productivity": ["workflow", "productivity", "tasks", "performance"],
   "Work Life": ["meeting", "project", "office", "email"],
 };
 
 const TOPIC_ORDER = [
   "Random",
   "Education",
-  "Learning",
   "Travel",
-  "Work & Career",
+  "Work Life",
   "Technology",
   "Health",
   "Daily Life",
   "Environment",
-  "Social Life",
   "Communication",
   "Food",
   "Public Services",
   "Media",
-  "Productivity",
-  "Academic",
   "Science",
   "Psychology",
   "Finance",
   "Arts",
   "Culture",
-  "Data Science",
-  "Computer Science",
-  "Decision Making",
-  "Learning Strategies",
-  "Media & Information",
-  "Personal Development",
-  "Social Psychology",
-  "Work & Productivity",
-  "Communication & Language",
-  "Complexity & Decision Making",
-  "Human Behavior",
-  "Innovation & Change",
-  "Knowledge & Information",
-  "Learning & Cognition",
-  "Productivity & Focus",
-  "Risk & Uncertainty",
-  "Society & Perception",
-  "Technology & Human Behavior",
 ];
 
 const GUEST_FLAG_KEY = "readlex_guest";
@@ -706,8 +659,12 @@ function renderLibraryStats() {
 }
 
 function buildTopicListFromStats() {
-  const statTopics = Array.isArray(state.libraryStats?.by_topic)
-    ? state.libraryStats.by_topic.map((item) => item.topic).filter(Boolean)
+  const currentLevel = libraryLevelEl?.value || levelEl?.value || "B1";
+  const statTopics = Array.isArray(state.libraryStats?.by_level_topic)
+    ? state.libraryStats.by_level_topic
+        .filter((item) => item.level === currentLevel)
+        .map((item) => item.topic)
+        .filter(Boolean)
     : [];
   const allowedTopics = new Set(TOPIC_ORDER);
   const visibleTopics = statTopics.filter((topic) => allowedTopics.has(topic));
@@ -1948,6 +1905,7 @@ sourceSwitchEl.querySelectorAll(".source-pill").forEach((button) => {
 
 libraryLevelEl?.addEventListener("change", () => {
   levelEl.value = libraryLevelEl.value;
+  populateTopicOptions();
   updateLevelUi();
 });
 
