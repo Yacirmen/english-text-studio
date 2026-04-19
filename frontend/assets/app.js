@@ -73,6 +73,10 @@ const state = {
   viewMode: window.innerWidth < 860 ? "mobile" : "web",
 };
 
+const persistedSelectionKeys = new Set();
+let sessionRefreshTimer = null;
+let sessionRefreshInflight = null;
+
 const $ = (selector) => document.querySelector(selector);
 const welcomeGateEl = $("#welcomeGate");
 const gateAuthCardEl = $("#gateAuthCard");
@@ -1373,12 +1377,45 @@ async function refreshSession() {
   renderUserPanel();
 }
 
+function buildSelectionPersistenceKey(word) {
+  const source = state.lastPayload?.content_source || state.contentSource || "";
+  const title = state.lastPayload?.title || "";
+  return `${source}::${title}::${String(word || "").toLowerCase()}`;
+}
+
+function scheduleSessionRefresh({ includeQuiz = false, excludeWordId = null, delay = 180 } = {}) {
+  if (!state.user) return Promise.resolve();
+  if (sessionRefreshTimer) {
+    window.clearTimeout(sessionRefreshTimer);
+    sessionRefreshTimer = null;
+  }
+  return new Promise((resolve) => {
+    sessionRefreshTimer = window.setTimeout(async () => {
+      sessionRefreshTimer = null;
+      if (!sessionRefreshInflight) {
+        sessionRefreshInflight = (async () => {
+          await refreshSession();
+          if (includeQuiz) {
+            await loadQuiz(excludeWordId);
+          }
+        })().finally(() => {
+          sessionRefreshInflight = null;
+        });
+      }
+      await sessionRefreshInflight;
+      resolve();
+    }, delay);
+  });
+}
+
 async function loadLibraryStats() {
   const parsed = await apiFetch("/api/library/stats", { method: "GET", headers: {} });
   if (parsed.ok) {
     state.libraryStats = parsed.data;
     populateTopicOptions();
     renderLibraryStats();
+  } else if (libraryCountBadgeEl) {
+    libraryCountBadgeEl.textContent = "Library count unavailable";
   }
 }
 
@@ -1403,6 +1440,8 @@ async function loadQuiz(excludeWordId = null) {
 
 async function saveWordSelection(word) {
   if (!state.user || !word || !state.text) return;
+  const persistenceKey = buildSelectionPersistenceKey(word);
+  if (persistedSelectionKeys.has(persistenceKey)) return;
   try {
     const parsed = await apiFetch("/api/word-detail", {
       method: "POST",
@@ -1414,8 +1453,8 @@ async function saveWordSelection(word) {
     });
     if (!parsed.ok) return;
     state.glossary[word] = parsed.data;
-    await refreshSession();
-    await loadQuiz(state.quiz?.word || null);
+    persistedSelectionKeys.add(persistenceKey);
+    await scheduleSessionRefresh({ includeQuiz: true, excludeWordId: state.quiz?.word || null });
   } catch {
     // Keep the UI responsive even if the save side-effect fails.
   }
@@ -1448,8 +1487,8 @@ async function loadWordDetail(word) {
     if (!parsed.ok) throw new Error(parsed.data.detail || "Word detail could not be loaded.");
     state.glossary[word] = parsed.data;
     if (state.user) {
-      await refreshSession();
-      await loadQuiz();
+      persistedSelectionKeys.add(buildSelectionPersistenceKey(word));
+      await scheduleSessionRefresh({ includeQuiz: true });
     }
   } catch (error) {
     state.glossary[word] = {
@@ -1555,6 +1594,7 @@ async function generateExperience(payload, triggerButton) {
     });
     if (!parsed.ok) throw new Error(parsed.data.detail || "Something went wrong.");
     state.text = parsed.data.text;
+    persistedSelectionKeys.clear();
     state.glossary = parsed.data.glossary || {};
     state.lastPayload = {
       ...payload,
