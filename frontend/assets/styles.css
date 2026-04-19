@@ -143,17 +143,49 @@ body::before{
 .topbar-slogan{
   flex:1;
   min-width:0;
-  padding:0 14px;
+  padding:0 18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  min-height:42px;
   text-align:center;
   color:#58708f;
-  font-size:.92rem;
+  white-space:nowrap;
+  overflow:hidden;
+}
+.topbar-slogan-kicker{
+  display:inline-flex;
+  align-items:center;
+  min-height:28px;
+  padding:0 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.18);
+  color:#89a0bc;
+  font-size:.69rem;
+  font-weight:900;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  flex:0 0 auto;
+}
+.topbar-slogan-main{
+  color:#f3f7ff;
+  font-size:1rem;
+  font-weight:900;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  text-shadow:0 6px 18px rgba(10,21,38,.18);
+  flex:0 1 auto;
+}
+.topbar-slogan-accent{
+  color:#9eb5d1;
+  font-size:.8rem;
   font-weight:800;
   letter-spacing:.08em;
   text-transform:uppercase;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
   opacity:.92;
+  flex:0 0 auto;
 }
 .theme-toggle{
   position:relative;
@@ -252,7 +284,18 @@ body.dark-mode .quiz-sentence{
 }
 body.dark-mode .topbar-slogan{
   color:#b7c9df;
-  text-shadow:0 0 18px rgba(255,255,255,.04);
+}
+body.dark-mode .topbar-slogan-kicker{
+  background:rgba(255,255,255,.04);
+  border-color:rgba(184,208,236,.12);
+  color:#8ea8c7;
+}
+body.dark-mode .topbar-slogan-main{
+  color:#f4f8ff;
+  text-shadow:0 10px 24px rgba(0,0,0,.26);
+}
+body.dark-mode .topbar-slogan-accent{
+  color:#b9cce3;
 }
 body.dark-mode .word{
   color:#eaf2ff;
@@ -1959,11 +2002,16 @@ body.dark-mode .collocation-chip{
   .topbar{border-radius:28px;flex-direction:column;align-items:flex-start}
   .topbar-slogan{
     padding:0;
+    justify-content:flex-start;
+    flex-wrap:wrap;
+    row-gap:8px;
     text-align:left;
     white-space:normal;
     line-height:1.25;
-    max-width:320px;
+    max-width:420px;
   }
+  .topbar-slogan-main{font-size:.96rem}
+  .topbar-slogan-accent{font-size:.74rem}
   .top-status{justify-content:flex-start}
   .top-tools{width:100%}
   .profile-menu{left:0;right:auto}
