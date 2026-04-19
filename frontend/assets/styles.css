@@ -2102,7 +2102,46 @@ body.dark-mode .collocation-chip{
 
 @media (max-width: 768px){
   .page-shell{padding:10px 10px 22px}
-  .topbar-slogan{display:none}
+  .topbar-slogan{
+    display:grid;
+    width:100%;
+    margin:0;
+    padding:10px 12px;
+    grid-template-columns:auto minmax(0,1fr);
+    gap:10px 12px;
+    min-height:unset;
+    border-radius:24px;
+  }
+  .topbar-slogan-mark{
+    width:30px;
+    height:30px;
+    box-shadow:
+      0 0 0 5px rgba(255,216,77,.08),
+      0 8px 16px rgba(255,140,66,.18);
+  }
+  .topbar-slogan-spark{
+    width:9px;
+    height:9px;
+  }
+  .topbar-slogan-copy{
+    gap:1px;
+  }
+  .topbar-slogan-kicker{
+    font-size:.58rem;
+    letter-spacing:.18em;
+  }
+  .topbar-slogan-main{
+    font-size:1.02rem;
+    line-height:1.04;
+  }
+  .topbar-slogan-accent{
+    grid-column:2;
+    justify-self:start;
+    min-height:28px;
+    padding:0 10px;
+    font-size:.64rem;
+    letter-spacing:.08em;
+  }
   .welcome-gate{
     align-items:flex-start;
     justify-content:stretch;
