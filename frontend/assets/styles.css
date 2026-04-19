@@ -635,9 +635,6 @@ body.dark-mode .inline-highlight{
   justify-content:space-between;
   gap:12px;
   padding:2px 4px 14px;
-  position:sticky;
-  top:0;
-  z-index:2;
   background:linear-gradient(180deg, rgba(23,48,79,.98), rgba(23,48,79,.96));
 }
 .profile-menu-head strong{
@@ -2827,13 +2824,14 @@ body.dark-mode .collocation-chip{
     display:flex;
     flex-direction:column;
     border-radius:28px 28px 0 0;
-    padding:10px 12px calc(22px + env(safe-area-inset-bottom));
+    padding:8px 12px 12px;
     height:calc(100dvh - max(10px, env(safe-area-inset-top, 0px)));
     max-height:calc(100dvh - max(10px, env(safe-area-inset-top, 0px)));
     min-height:0;
     overflow:hidden;
   }
   .profile-menu-scroll{
+    margin-top:2px;
     padding-bottom:calc(18px + env(safe-area-inset-bottom));
     touch-action:pan-y;
   }
@@ -2842,8 +2840,10 @@ body.dark-mode .collocation-chip{
     backdrop-filter:none;
   }
   .profile-menu-head{
-    padding:4px 2px 12px;
-    margin-bottom:6px;
+    padding:6px 6px 10px;
+    margin-bottom:0;
+    border-radius:20px;
+    background:linear-gradient(180deg, rgba(23,48,79,1), rgba(23,48,79,.995));
   }
   .profile-menu-actions{gap:8px}
   .profile-menu-badge{
