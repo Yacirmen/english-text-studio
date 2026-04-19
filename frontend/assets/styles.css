@@ -2828,18 +2828,27 @@ body.dark-mode .collocation-chip{
     height:calc(100dvh - max(10px, env(safe-area-inset-top, 0px)));
     max-height:calc(100dvh - max(10px, env(safe-area-inset-top, 0px)));
     min-height:0;
-    overflow:hidden;
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior-y:contain;
+    -webkit-overflow-scrolling:touch;
   }
   .profile-menu-scroll{
+    flex:0 0 auto;
     margin-top:2px;
     padding-bottom:calc(18px + env(safe-area-inset-bottom));
-    touch-action:pan-y;
+    min-height:auto;
+    overflow:visible;
+    touch-action:auto;
   }
   .profile-overlay{
     background:rgba(8,18,31,.22);
     backdrop-filter:none;
   }
   .profile-menu-head{
+    position:sticky;
+    top:0;
+    z-index:2;
     padding:6px 6px 10px;
     margin-bottom:0;
     border-radius:20px;
