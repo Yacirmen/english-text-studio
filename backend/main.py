@@ -687,6 +687,79 @@ WORD_MEANING_OVERRIDES = {
     "illustrates": "örneklemek",
     "illustrated": "örneklemek",
     "illustrating": "örneklemek",
+    "fragment": "parça",
+    "fragmented": "parçalanmış",
+    "superficial": "yüzeysel",
+    "adjectives": "sıfatlar",
+    "adverbs": "zarflar",
+    "also": "ayrıca",
+    "analytical": "analitik",
+    "always": "her zaman",
+    "another": "başka bir",
+    "best": "en iyi",
+    "classroom-based": "sınıf temelli",
+    "collocations": "kelime eşleşmeleri",
+    "inspectable": "incelenebilir",
+    "recognizable": "tanınabilir",
+    "measurable": "ölçülebilir",
+    "interpretive": "yoruma dayalı",
+    "reflective": "düşünsel",
+    "accessibility": "erişilebilirlik",
+    "accomplishment": "başarı",
+    "align": "uyum sağlamak",
+    "allocate": "tahsis etmek",
+    "alteration": "değişiklik",
+    "amplify": "güçlendirmek",
+    "broaden": "genişletmek",
+    "cognition": "biliş",
+    "cohesive": "bütünlüklü",
+    "collaborate": "iş birliği yapmak",
+    "communicative": "iletişimsel",
+    "comprehension": "kavrayış",
+    "conformity": "uyum gösterme",
+    "connectivity": "bağlantısallık",
+    "cross-functional": "fonksiyonlar arası",
+    "contextual": "bağlamsal",
+    "contradict": "çelişmek",
+    "conversely": "tersine",
+    "curate": "seçip düzenlemek",
+    "current-affairs": "güncel olaylar",
+    "decision-making": "karar verme",
+    "depletion": "tükenme",
+    "disconnect": "kopukluk",
+    "disadvantages": "dezavantajlar",
+    "discourage": "cesaret kırmak",
+    "disproportionate": "orantısız",
+    "durable": "kalıcı",
+    "evidence-based": "kanıta dayalı",
+    "either": "ya da / herhangi biri",
+    "emphasizes": "vurgular",
+    "encompasses": "kapsar",
+    "energetic": "enerjik",
+    "errands": "ufak işler",
+    "estimations": "tahminler",
+    "factual": "olgusal",
+    "familiarity": "aşinalık",
+    "fast-paced": "hızlı tempolu",
+    "favorite": "favori",
+    "find": "bulmak",
+    "flawed": "kusurlu",
+    "going": "gitmek / ilerlemek",
+    "grandparent": "büyükanne veya büyükbaba",
+    "have": "sahip olmak",
+    "informational": "bilgilendirici",
+    "integrate": "bütünleştirmek",
+    "interpersonal": "kişilerarası",
+    "intrinsic": "içsel",
+    "intuitive": "sezgisel",
+    "misconception": "yanlış kanı",
+    "misinformation": "yanlış bilgi",
+    "overload": "aşırı yüklenme",
+    "polarized": "kutuplaşmış",
+    "resilience": "dayanıklılık",
+    "reinforce": "pekiştirmek",
+    "verification": "doğrulama",
+    "shortcuts": "kısayollar",
     "irritated": "sinirli",
     "misguided": "yanlÄ±ÅŸ yÃ¶nlendirilmiÅŸ",
     "disciplined": "disiplinli",
@@ -2200,6 +2273,8 @@ def lookup_word_map_value(key: str) -> str | None:
         return repair_mojibake(LOCAL_WORD_MAP[lowered])
     if lowered in IRREGULAR_WORD_MAP:
         return repair_mojibake(IRREGULAR_WORD_MAP[lowered])
+    if lowered in LIBRARY_WORD_MAP:
+        return repair_mojibake(LIBRARY_WORD_MAP[lowered])
     if lowered in EXTRA_WORD_MAP:
         return repair_mojibake(EXTRA_WORD_MAP[lowered])
     return None
@@ -2260,8 +2335,12 @@ def choose_local_scenario(topic: str, keywords: list[str]) -> dict[str, Any]:
     }
 
 
+def has_library_mapping(word: str) -> bool:
+    return any(candidate in LIBRARY_WORD_MAP for candidate in word_root_candidates(word))
+
+
 def build_local_word_detail(text: str, word: str) -> dict[str, str]:
-    if word.lower() in LIBRARY_WORD_MAP:
+    if has_library_mapping(word):
         return build_library_word_detail(text, word)
     meaning = infer_turkish_meaning(word)
     sentence = find_sentence_for_word(text, word)
@@ -3318,13 +3397,13 @@ def explain(payload: ExplainRequest) -> dict[str, str]:
 
 
 @app.post("/api/word-detail")
-def word_detail(payload: ExplainRequest, session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE)) -> dict[str, str]:
+def word_detail(payload: ExplainRequest, session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE)) -> dict[str, Any]:
     safe_word = sanitize_word(payload.word)
     if not safe_word:
         raise HTTPException(status_code=400, detail="GeÃ§erli bir kelime gerekli.")
     try:
         if (payload.content_source or "").lower() == "library":
-            detail = build_local_word_detail(payload.text, safe_word)
+            detail = build_library_word_detail(payload.text, safe_word)
         else:
             detail = request_word_detail(payload.text, safe_word)
         user = optional_user(session_token)
