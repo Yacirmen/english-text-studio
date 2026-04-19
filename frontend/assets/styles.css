@@ -490,6 +490,7 @@ body.dark-mode .inline-highlight{
   align-items:center;
   gap:8px;
   flex-wrap:wrap;
+  min-width:0;
 }
 .profile-shell{position:relative}
 .profile-trigger{
@@ -530,8 +531,9 @@ body.dark-mode .inline-highlight{
   width:min(360px, calc(100vw - 24px));
   padding:14px;
   max-height:min(82dvh, 760px);
-  overflow:auto;
-  overscroll-behavior:contain;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior-y:contain;
   border-radius:26px;
   background:linear-gradient(180deg, rgba(23,48,79,.98), rgba(29,58,95,.98));
   color:#fff;
@@ -1582,11 +1584,16 @@ input[type="range"]::-moz-range-thumb{
 .icon-btn{
   width:44px;
   height:44px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
   border:none;
   border-radius:50%;
   background:rgba(255,255,255,.12);
   color:#fff;
   font-size:1.5rem;
+  line-height:1;
   cursor:pointer;
 }
 .error-text{margin:0;color:#ffd4cb;font-weight:800}
@@ -2562,11 +2569,14 @@ body.dark-mode .collocation-chip{
   .top-status{
     width:100%;
     display:grid;
-    grid-template-columns:1fr auto;
-    align-items:start;
-    gap:10px;
+    grid-template-columns:minmax(0,1fr);
+    align-items:stretch;
+    gap:12px;
   }
-  .profile-shell{order:0;justify-self:end}
+  .profile-shell{
+    order:0;
+    justify-self:end;
+  }
   .top-tools{
     width:100%;
     order:1;
@@ -2617,11 +2627,15 @@ body.dark-mode .collocation-chip{
     left:0;
     bottom:0;
     width:auto;
+    display:flex;
+    flex-direction:column;
     border-radius:28px 28px 0 0;
     padding:10px 12px calc(22px + env(safe-area-inset-bottom));
-    max-height:min(88dvh, 760px);
-    overflow:auto;
-    overscroll-behavior:contain;
+    max-height:min(calc(100dvh - 10px), 760px);
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior-y:contain;
+    touch-action:pan-y;
     -webkit-overflow-scrolling:touch;
   }
   .profile-overlay{
@@ -2638,10 +2652,16 @@ body.dark-mode .collocation-chip{
     padding:0 10px;
     font-size:.7rem;
   }
-  .profile-close-btn{display:inline-flex}
+  .profile-close-btn{
+    display:inline-flex;
+    flex:0 0 auto;
+    font-size:1.7rem;
+  }
   .profile-panel{padding:13px;border-radius:18px}
   .profile-tip{padding:13px;border-radius:18px}
   .profile-panel.auth-panel{
+    flex:1 1 auto;
+    min-height:0;
     padding:12px;
     border-radius:20px;
   }
