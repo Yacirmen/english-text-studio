@@ -252,6 +252,7 @@ const pronounceWordBtn = $("#pronounceWordBtn");
 const mobilePronounceWordBtn = $("#mobilePronounceWordBtn");
 let mobileWordCollocationsEl = $("#mobileWordCollocations");
 const authToggleEls = Array.from(document.querySelectorAll("[data-auth-toggle]"));
+let lockedScrollY = 0;
 
 if (!mobileWordCollocationsEl && mobileWordExampleEl) {
   const hostBlock = mobileWordExampleEl.closest(".insight-block")?.parentElement;
@@ -297,6 +298,29 @@ async function apiFetch(url, options = {}) {
     headers: { "Content-Type": "application/json", ...(options.headers || {}) },
   });
   return parseApiResponse(response);
+}
+
+function setBodyScrollLocked(isLocked) {
+  if (isLocked) {
+    lockedScrollY = window.scrollY || window.pageYOffset || 0;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${lockedScrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = "100%";
+    return;
+  }
+
+  if (document.body.style.position !== "fixed") return;
+
+  const restoreY = Math.abs(parseInt(document.body.style.top || "0", 10)) || lockedScrollY || 0;
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.left = "";
+  document.body.style.right = "";
+  document.body.style.width = "";
+  window.scrollTo(0, restoreY);
+  lockedScrollY = 0;
 }
 
 function getToastLayer() {
@@ -1093,7 +1117,9 @@ function setProfileMenuOpen(isOpen) {
   profileMenuEl?.classList.toggle("hidden", !isOpen);
   profileOverlayEl?.classList.toggle("hidden", !isOpen || !isMobilePreview());
   profileTriggerBtn?.setAttribute("aria-expanded", isOpen ? "true" : "false");
-  document.body.classList.toggle("profile-open", isOpen && isMobilePreview());
+  const shouldLockBody = isOpen && isMobilePreview();
+  document.body.classList.toggle("profile-open", shouldLockBody);
+  setBodyScrollLocked(shouldLockBody);
   if (profileMenuEl) profileMenuEl.style.transform = "";
 }
 
