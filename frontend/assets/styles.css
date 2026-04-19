@@ -607,9 +607,7 @@ body.dark-mode .inline-highlight{
   width:min(360px, calc(100vw - 24px));
   padding:14px;
   max-height:min(82dvh, 760px);
-  overflow-x:hidden;
-  overflow-y:auto;
-  overscroll-behavior-y:contain;
+  overflow:hidden;
   border-radius:26px;
   background:linear-gradient(180deg, rgba(23,48,79,.98), rgba(29,58,95,.98));
   color:#fff;
@@ -617,6 +615,14 @@ body.dark-mode .inline-highlight{
   border:1px solid rgba(255,255,255,.08);
 }
 .profile-menu.hidden{display:none}
+.profile-menu-scroll{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+}
 .profile-overlay{
   position:fixed;
   inset:0;
@@ -2825,11 +2831,11 @@ body.dark-mode .collocation-chip{
     height:calc(100dvh - max(10px, env(safe-area-inset-top, 0px)));
     max-height:calc(100dvh - max(10px, env(safe-area-inset-top, 0px)));
     min-height:0;
-    overflow-x:hidden;
-    overflow-y:auto;
-    overscroll-behavior-y:contain;
+    overflow:hidden;
+  }
+  .profile-menu-scroll{
+    padding-bottom:calc(18px + env(safe-area-inset-bottom));
     touch-action:pan-y;
-    -webkit-overflow-scrolling:touch;
   }
   .profile-overlay{
     background:rgba(8,18,31,.22);

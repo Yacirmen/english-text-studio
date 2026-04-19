@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260419profilescrollfix3" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260419profilescrollfix4" />
 </head>
 <body>
   <div id="welcomeGate" class="welcome-gate">
@@ -136,8 +136,9 @@
               </div>
             </div>
 
-            <section class="profile-panel auth-panel">
-              <div id="authGuest" class="stack-md">
+            <div class="profile-menu-scroll">
+              <section class="profile-panel auth-panel">
+                <div id="authGuest" class="stack-md">
                 <div class="section-head compact">
                   <h3>Account</h3>
                   <p>Sign in to save words and unlock personal review.</p>
@@ -184,10 +185,10 @@
                     </section>
                   </div>
                 </div>
-              </div>
+                </div>
 
-              <div id="authUser" class="stack-md hidden">
-                <div class="account-card">
+                <div id="authUser" class="stack-md hidden">
+                  <div class="account-card">
                   <span class="mini-label on-dark">Active account</span>
                   <h4 id="accountName">username</h4>
                   <div class="account-stats">
@@ -222,10 +223,11 @@
                     <p>Your latest library picks stay here for quick return.</p>
                   </div>
                   <div id="readingHistoryList" class="history-list"></div>
+                  </div>
+                  <button id="logoutBtn" class="outline-btn light-outline" type="button">Log Out</button>
                 </div>
-                <button id="logoutBtn" class="outline-btn light-outline" type="button">Log Out</button>
-              </div>
-            </section>
+              </section>
+            </div>
           </div>
         </div>
       </div>
