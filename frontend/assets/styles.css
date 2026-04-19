@@ -856,19 +856,19 @@ body.dark-mode .inline-highlight{
   overflow:visible;
 }
 .auth-face.auth-toast-host{
-  padding-top:84px;
+  padding-top:104px;
 }
 
 .auth-toast{
   position:absolute;
   left:20px;
   right:20px;
-  top:14px;
+  top:12px;
   z-index:6;
   display:flex;
   align-items:center;
   gap:12px;
-  min-height:58px;
+  min-height:60px;
   padding:12px 14px;
   border-radius:20px;
   background:rgba(9,18,28,.92);
@@ -2657,18 +2657,16 @@ body.dark-mode .collocation-chip{
   .auth-flip-scene{min-height:356px}
   .auth-flip-scene-compact{min-height:344px}
   .auth-face{padding:16px;border-radius:24px;gap:12px}
-  .auth-face.auth-toast-host{padding-top:90px}
+  .auth-face.auth-toast-host{padding-top:114px}
   .auth-toast{
     left:16px;
     right:16px;
-    top:12px;
-    min-height:54px;
+    top:10px;
+    min-height:56px;
     padding:11px 12px;
     border-radius:18px;
   }
-  .auth-toast::after{
-    left:24px;
-  }
+  .auth-toast::after{display:none}
   .auth-toast-text{
     font-size:.88rem;
     line-height:1.36;
