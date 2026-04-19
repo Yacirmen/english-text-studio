@@ -316,8 +316,82 @@ function highlightSelectedWord(text, selectedWord) {
   return escapedText.replace(pattern, '<strong class="inline-highlight">$1</strong>').replace(/\n/g, "<br>");
 }
 
+function buildInsightHtml(
+  rawText,
+  selectedWord,
+  { emptyText = "", collapsedLines = 3, maxLines = 18 } = {}
+) {
+  const base = String(rawText || "").trim();
+  if (!base) {
+    return `<span class="helper-note">${escapeHtml(emptyText)}</span>`;
+  }
+
+  const lines = base
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .slice(0, maxLines);
+
+  const highlighted = lines.map((line) => highlightSelectedWord(line, selectedWord));
+  const preview = highlighted.slice(0, collapsedLines);
+  const rest = highlighted.slice(collapsedLines);
+
+  const previewHtml = `<ul class="insight-list">${preview.map((line) => `<li>${line}</li>`).join("")}</ul>`;
+  if (!rest.length) return previewHtml;
+
+  const restHtml = `<ul class="insight-list">${rest.map((line) => `<li>${line}</li>`).join("")}</ul>`;
+  return `
+    <details class="insight-details">
+      <summary>Show more</summary>
+      ${previewHtml}
+      ${restHtml}
+    </details>
+  `.trim();
+}
+
 function tokenizeText(text) {
   return text.match(/[A-Za-z]+(?:['-][A-Za-z]+)*|\s+|[^A-Za-z\s]/g) || [];
+}
+
+const PHRASE_PREFERENCES = new Set([
+  "break up",
+  "give up",
+  "look after",
+  "set up",
+  "run into",
+  "figure out",
+  "take off",
+  "turn out",
+  "calm down",
+  "get along",
+]);
+
+function findAdjacentWordButton(fromEl, direction) {
+  let node = direction === "prev" ? fromEl.previousSibling : fromEl.nextSibling;
+  while (node) {
+    if (node.nodeType === Node.ELEMENT_NODE && node.classList?.contains("word")) return node;
+    node = direction === "prev" ? node.previousSibling : node.nextSibling;
+  }
+  return null;
+}
+
+function resolvePreferredPhrase(buttonEl) {
+  if (!buttonEl?.dataset?.word) return "";
+  const current = buttonEl.dataset.word;
+  const nextBtn = findAdjacentWordButton(buttonEl, "next");
+  const prevBtn = findAdjacentWordButton(buttonEl, "prev");
+  const nextWord = nextBtn?.dataset?.word || "";
+  const prevWord = prevBtn?.dataset?.word || "";
+
+  if (nextWord) {
+    const forward = `${current} ${nextWord}`;
+    if (PHRASE_PREFERENCES.has(forward)) return forward;
+  }
+  if (prevWord) {
+    const backward = `${prevWord} ${current}`;
+    if (PHRASE_PREFERENCES.has(backward)) return backward;
+  }
+  return current;
 }
 
 function renderCollocations(targetEl, collocations = []) {
@@ -589,10 +663,18 @@ function renderSelection() {
   const meaning = item.turkish || "Choose a word";
   const contextHtml = state.loadingWord
     ? "Preparing Turkish context..."
-    : highlightSelectedWord(item.context || "Context appears here after you choose a word.", state.selectedWord);
+    : buildInsightHtml(item.context, state.selectedWord, {
+        emptyText: "Context appears here after you choose a word.",
+        collapsedLines: 3,
+        maxLines: 14,
+      });
   const exampleHtml = state.loadingWord
     ? "Preparing example sentence..."
-    : highlightSelectedWord(item.example || "A short example appears here after you choose a word.", state.selectedWord);
+    : buildInsightHtml(item.example, state.selectedWord, {
+        emptyText: "A short example appears here after you choose a word.",
+        collapsedLines: 2,
+        maxLines: 10,
+      });
 
   selectedWordEl.textContent = state.selectedWord || "Word";
   selectedMeaningEl.textContent = meaning;
@@ -1003,6 +1085,69 @@ function completeAppEntry(asGuest = false) {
   }
   renderWelcomeGate();
 }
+
+async function loadFeaturedPhrasalReadingIfEmpty() {
+  if (state.text || state.lastPayload) return;
+  try {
+    const payload = {
+      level: "B1",
+      topic: "Random",
+      length_target: 150,
+      keywords: [],
+      source: "library",
+      exclude_title: null,
+    };
+    const parsed = await apiFetch("/api/generate", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    if (!parsed.ok) return;
+    if (String(parsed.data.title || "") !== "Phrasal Verbs Demo (B1)") return;
+    state.text = parsed.data.text;
+    state.glossary = parsed.data.glossary || {};
+    state.lastPayload = {
+      ...payload,
+      title: parsed.data.title || "",
+      resolved_topic: parsed.data.topic || payload.topic,
+      content_source: parsed.data.content_source || payload.source,
+    };
+    renderExperience();
+    void fillMissingLibraryWords();
+  } catch {
+    // Silent: the app still works even if the featured reading cannot load.
+  }
+}
+
+async function fillMissingLibraryWords() {
+  if (!state.text) return;
+  if ((state.lastPayload?.content_source || state.contentSource) !== "library") return;
+  try {
+    const parsed = await apiFetch("/api/library/fill-missing", {
+      method: "POST",
+      body: JSON.stringify({ text: state.text, max_words: 220 }),
+    });
+    if (!parsed.ok) return;
+    const sample = parsed.data.sample || {};
+    Object.entries(sample).forEach(([word, turkish]) => {
+      const key = String(word || "").toLowerCase().trim();
+      const value = String(turkish || "").trim();
+      if (!key || !value) return;
+      if (!state.glossary[key]) {
+        state.glossary[key] = {
+          turkish: value,
+          context: "",
+          example: "",
+          collocations: [],
+        };
+      } else if (!state.glossary[key].turkish) {
+        state.glossary[key].turkish = value;
+      }
+    });
+    renderSelection();
+  } catch {
+    // keep silent
+  }
+}
 async function refreshSession() {
   const parsed = await apiFetch("/api/auth/me", { method: "GET", headers: {} });
   if (parsed.ok) {
@@ -1010,6 +1155,11 @@ async function refreshSession() {
     state.stats = parsed.data.stats || { saved_words: 0, mastered_words: 0, saved_today: 0, daily_goal: 5, streak: 0, hard_words: 0 };
     state.recentWords = parsed.data.recent_words || [];
     state.readingHistory = parsed.data.history || [];
+  } else {
+    state.user = null;
+    state.stats = { saved_words: 0, mastered_words: 0, saved_today: 0, daily_goal: 5, streak: 0, hard_words: 0 };
+    state.recentWords = [];
+    state.readingHistory = [];
   }
   renderUserPanel();
 }
@@ -1122,13 +1272,19 @@ function renderReadingText() {
       const isWord = /^[A-Za-z]+(?:['-][A-Za-z]+)*$/.test(token);
       if (!isWord) return escapeHtml(token).replace(/\n/g, "<br>");
       const key = token.toLowerCase();
-      const active = key === state.selectedWord ? "active" : "";
-      return `<button class="word ${active}" data-word="${escapeHtml(key)}">${escapeHtml(token)}</button>`;
+      return `<button class="word" data-word="${escapeHtml(key)}">${escapeHtml(token)}</button>`;
     })
     .join("");
-  readingBodyEl.querySelectorAll(".word").forEach((button) => {
+  const wordButtons = Array.from(readingBodyEl.querySelectorAll(".word"));
+  wordButtons.forEach((button) => {
+    const resolved = resolvePreferredPhrase(button);
+    const isActive = resolved === state.selectedWord || button.dataset.word === state.selectedWord;
+    button.classList.toggle("active", isActive);
+  });
+
+  wordButtons.forEach((button) => {
     button.addEventListener("click", async () => {
-      const nextWord = button.dataset.word;
+      const nextWord = resolvePreferredPhrase(button);
       if (state.selectedWord !== nextWord) {
         selectedMeaningEl.textContent = "Loading...";
         selectedContextEl.textContent = "Preparing Turkish context...";
@@ -1147,6 +1303,17 @@ function renderReadingText() {
 function renderExperience() {
   previewStateEl.classList.add("hidden");
   readingExperienceEl.classList.remove("hidden");
+  if (state.lastPayload?.content_source) {
+    state.contentSource = state.lastPayload.content_source;
+    updateSourceModeUi();
+  }
+  if (state.lastPayload?.level) {
+    syncLevelPickers(state.lastPayload.level);
+    updateSetupSummary();
+  }
+  if (state.lastPayload?.resolved_topic || state.lastPayload?.topic) {
+    syncTopicPickers(state.lastPayload.resolved_topic || state.lastPayload.topic);
+  }
   renderMeta(state.lastPayload.level, state.lastPayload.resolved_topic || state.lastPayload.topic, state.text);
   if (state.lastPayload.title) {
     readingTitleEl.textContent = state.lastPayload.title;
@@ -1192,6 +1359,7 @@ async function generateExperience(payload, triggerButton) {
       await refreshSession();
     }
     renderExperience();
+    void fillMissingLibraryWords();
   } catch (error) {
     showError(error.message);
   } finally {
@@ -1299,6 +1467,9 @@ authForm.addEventListener("submit", async (event) => {
     authPasswordEl.value = "";
     completeAppEntry(false);
     await refreshSession();
+    if (!state.user) {
+      throw new Error("Signed in, but the session could not be established. Check that your browser allows cookies for 127.0.0.1.");
+    }
     await loadQuiz();
   } catch (error) {
     authErrorEl.textContent = error.message;
@@ -1331,6 +1502,9 @@ gateAuthForm?.addEventListener("submit", async (event) => {
     state.stats = parsed.data.stats || { saved_words: 0, mastered_words: 0 };
     completeAppEntry(false);
     await refreshSession();
+    if (!state.user) {
+      throw new Error("Signed in, but the session could not be established. Check that your browser allows cookies for 127.0.0.1.");
+    }
     await loadQuiz();
   } catch (error) {
     gateAuthErrorEl.textContent = error.message;
@@ -1542,5 +1716,6 @@ refreshSession().then(async () => {
   if (state.user) completeAppEntry(false);
   renderWelcomeGate();
   await loadQuiz();
+  await loadFeaturedPhrasalReadingIfEmpty();
 });
 loadLibraryStats();

@@ -41,6 +41,9 @@ CEFR_VOCAB_INDEX_PATH = ROOT_DIR / "backend" / "cefr_vocab_index.json"
 SESSION_COOKIE = "readlex_session"
 WORD_DETAIL_CACHE: dict[str, dict[str, str]] = {}
 GENERATE_CACHE: dict[str, str] = {}
+EXTRA_WORD_MAP: dict[str, str] = {}
+LIBRARY_WORD_MAP: dict[str, str] = {}
+CEFR_VOCAB_INDEX: dict[str, dict[str, Any]] = {}
 QUIZ_DISTRACTOR_BANK = {
     "verb": ["kaydetmek", "yorumlamak", "ta??mak", "dengelemek", "kar??la?t?rmak", "geli?tirmek"],
     "adjective": ["d?zenli", "kar???k", "dar", "geni?", "yo?un", "sakin", "net", "karma??k", "yava?", "h?zl?", "g??l?", "zay?f"],
@@ -124,7 +127,6 @@ LOCAL_WORD_MAP = {
     "task": "gÃ¶rev",
     "teacher": "Ã¶ÄŸretmen",
     "team": "ekip",
-    "theory": "kuram",
     "ticket": "bilet",
     "travel": "seyahat etmek",
     "work": "iÅŸ",
@@ -247,418 +249,91 @@ LOCAL_WORD_MAP.update(
         "reflect": "yansÄ±tmak",
         "regular": "dÃ¼zenli",
         "relationship": "iliÅŸki",
-        "resource": "kaynak",
-        "review": "gÃ¶zden geÃ§irmek",
-        "role": "rol",
-        "science": "bilim",
-        "schedule": "program",
-        "section": "bÃ¶lÃ¼m",
-        "seem": "gÃ¶rÃ¼nmek",
-        "sense": "his",
-        "service": "hizmet",
-        "share": "paylaÅŸmak",
-        "shift": "deÄŸiÅŸim",
-        "skill": "beceri",
-        "social": "sosyal",
-        "solution": "Ã§Ã¶zÃ¼m",
-        "source": "kaynak",
-        "space": "alan",
-        "specific": "belirli",
-        "sport": "spor",
-        "standard": "standart",
-        "strategy": "strateji",
-        "stress": "stres",
-        "subject": "konu",
-        "success": "baÅŸarÄ±",
-        "support": "destek",
-        "system": "sistem",
-        "together": "birlikte",
-        "topic": "konu",
-        "understand": "anlamak",
-        "update": "gÃ¼ncelleme",
-        "useful": "yararlÄ±",
-        "usual": "alÄ±ÅŸÄ±lmÄ±ÅŸ",
-        "value": "deÄŸer",
-        "visual": "gÃ¶rsel",
-        "voice": "ses",
-        "week": "hafta",
-        "weekend": "hafta sonu",
-        "welcome": "hoÅŸ karÅŸÄ±lamak",
-        "workflow": "iÅŸ akÄ±ÅŸÄ±",
-        "world": "dÃ¼nya",
-        "write": "yazmak",
-    }
-)
-LOCAL_WORD_MAP.update(
-    {
-        "i": "ben",
-        "we": "biz",
-        "you": "sen",
-        "he": "o",
-        "she": "o",
-        "they": "onlar",
-        "it": "o",
-        "my": "benim",
-        "our": "bizim",
-        "your": "senin",
-        "his": "onun",
-        "her": "onun",
-        "their": "onların",
-        "me": "beni",
-        "us": "bizi",
-        "them": "onları",
-        "this": "bu",
-        "that": "şu",
-        "these": "bunlar",
-        "those": "şunlar",
-        "with": "ile",
-        "without": "olmadan",
-        "before": "önce",
-        "after": "sonra",
-        "during": "sırasında",
-        "between": "arasında",
-        "under": "altında",
-        "over": "üzerinde",
-        "into": "içine",
-        "across": "boyunca",
-        "through": "içinden",
-        "around": "etrafında",
-        "inside": "içinde",
-        "outside": "dışında",
-        "near": "yakınında",
-        "behind": "arkasında",
-        "front": "ön",
-        "beforehand": "önceden",
-        "sit": "oturmak",
-        "sits": "oturur",
-        "write": "yazmak",
-        "writes": "yazar",
-        "begin": "başlamak",
-        "begins": "başlar",
-        "notebook": "not defteri",
-        "ability": "yetenek",
-        "accept": "kabul etmek",
-        "access": "erişim",
-        "account": "hesap",
-        "achievable": "ulaşılabilir",
-        "across": "boyunca",
-        "action": "eylem",
-        "additional": "ek",
-        "administration": "yönetim",
-        "adult": "yetişkin",
-        "advance": "ilerleme",
-        "advantage": "avantaj",
-        "agency": "kurum",
-        "agenda": "gündem",
-        "alarm": "alarm",
-        "alternative": "alternatif",
-        "ambition": "hırs",
-        "annual": "yıllık",
-        "application": "uygulama",
-        "appointment": "randevu",
-        "area": "alan",
-        "arrange": "düzenlemek",
-        "arrival": "varış",
-        "assignment": "ödev",
-        "assistant": "asistan",
-        "attempt": "girişim",
-        "audience": "izleyici",
-        "author": "yazar",
-        "average": "ortalama",
-        "aware": "farkında",
-        "background": "arka plan",
-        "basic": "temel",
-        "behavior": "davranış",
-        "believe": "inanmak",
-        "belong": "ait olmak",
-        "brief": "kısa",
-        "budget": "bütçe",
-        "building": "bina",
-        "business": "iş dünyası",
-        "campaign": "kampanya",
-        "cancel": "iptal etmek",
-        "candidate": "aday",
-        "capacity": "kapasite",
-        "category": "kategori",
-        "celebrate": "kutlamak",
-        "central": "merkezi",
-        "certain": "belirli",
-        "chair": "sandalye",
-        "chapter": "bölüm",
-        "character": "karakter",
-        "chart": "grafik",
-        "client": "müşteri",
-        "close": "yakın",
-        "collect": "toplamak",
-        "comment": "yorum",
-        "commercial": "ticari",
-        "commitment": "bağlılık",
-        "compare": "karşılaştırmak",
-        "complete": "tamamlamak",
-        "complex": "karmaşık",
-        "conclusion": "sonuç bölümü",
-        "condition": "durum",
-        "confirm": "doğrulamak",
-        "connect": "bağlamak",
-        "connection": "bağlantı",
-        "consideration": "değerlendirme",
-        "consistent": "tutarlı",
-        "construct": "oluşturmak",
-        "contact": "iletişim kurmak",
-        "content": "içerik",
+        "month": "ay",
+        "routine": "rutin",
+        "realistic": "gerçekçi",
+        "evening": "akşam",
+        "story": "hikâye",
+        "phrase": "ifade / kalıp",
         "context": "bağlam",
-        "contract": "sözleşme",
-        "contribute": "katkı sağlamak",
-        "contribution": "katkı",
-        "convenient": "uygun",
-        "cooperate": "iş birliği yapmak",
-        "core": "temel",
-        "course": "kurs",
-        "creative": "yaratıcı",
-        "critical": "kritik",
-        "customer": "müşteri",
-        "daily": "günlük",
-        "debate": "tartışma",
-        "define": "tanımlamak",
-        "degree": "derece",
-        "department": "departman",
-        "depend": "bağlı olmak",
-        "describe": "tanımlamak",
-        "develop": "geliştirmek",
-        "development": "gelişim",
-        "device": "cihaz",
-        "direct": "doğrudan",
-        "director": "yönetmen",
-        "documented": "belgelenmiş",
-        "domestic": "yerel",
-        "draft": "taslak",
-        "duration": "süre",
-        "economic": "ekonomik",
-        "editor": "editör",
-        "elderly": "yaşlı",
-        "element": "öğe",
-        "emergency": "acil durum",
-        "emphasis": "vurgu",
-        "employee": "çalışan",
-        "employer": "işveren",
-        "encourage": "cesaretlendirmek",
-        "ensure": "garanti etmek",
-        "entire": "tamamı",
-        "entry": "giriş",
-        "essential": "temel",
-        "estate": "mülk",
-        "estimate": "tahmin",
-        "evaluate": "değerlendirmek",
-        "event": "etkinlik",
-        "eventually": "sonunda",
-        "exact": "tam",
-        "exchange": "değişim",
-        "executive": "yönetici",
-        "exist": "var olmak",
+        "notice": "fark etmek",
+        "carefully": "dikkatlice",
+        "together": "birlikte",
+        "stressed": "stresli",
+        "rush": "acele etmek",
+        "rushing": "acele etme",
+        "weekend": "hafta sonu",
+        "video": "video",
+        "plane": "uçak",
+        "planes": "uçaklar",
         "expect": "beklemek",
-        "expense": "gider",
-        "expert": "uzman",
-        "exposure": "maruz kalma",
-        "external": "harici",
-        "facility": "tesis",
-        "factor": "etken",
-        "failure": "başarısızlık",
-        "familiar": "tanıdık",
-        "file": "dosya",
-        "finance": "finans",
-        "finding": "bulgu",
-        "firm": "şirket",
-        "flight": "uçuş",
-        "formal": "resmi",
-        "framework": "çerçeve",
-        "frequent": "sık",
-        "function": "işlev",
-        "fund": "fon",
-        "further": "daha ileri",
-        "generate": "üretmek",
-        "global": "küresel",
-        "guidance": "rehberlik",
-        "handle": "ele almak",
-        "housing": "barınma",
-        "identify": "belirlemek",
-        "impact": "etki",
-        "impression": "izlenim",
-        "impressive": "etkileyici",
-        "improvement": "iyileşme",
-        "income": "gelir",
-        "industry": "sektör",
-        "influence": "etkilemek",
-        "initial": "ilk",
-        "instance": "örnek durum",
-        "instruction": "talimat",
-        "instrument": "araç",
-        "intention": "niyet",
-        "interaction": "etkileşim",
-        "internal": "iç",
-        "issue": "mesele",
-        "item": "öğe",
-        "journal": "dergi",
-        "judge": "yargılamak",
-        "key": "anahtar",
-        "landscape": "manzara",
-        "language": "dil",
-        "largely": "büyük ölçüde",
-        "leading": "öncü",
-        "legal": "yasal",
-        "lesson": "ders",
-        "limited": "sınırlı",
-        "location": "konum",
-        "logic": "mantık",
-        "mainly": "çoğunlukla",
-        "maintain": "sürdürmek",
-        "major": "büyük",
-        "manual": "manuel",
-        "margin": "marj",
-        "master": "ustalaşmak",
-        "match": "eşleşmek",
-        "meanwhile": "bu arada",
-        "media": "medya",
-        "medical": "tıbbi",
-        "memory": "hafıza",
-        "message": "mesaj",
-        "movement": "hareket",
-        "nearly": "neredeyse",
-        "negative": "olumsuz",
-        "normal": "normal",
-        "objective": "amaç",
-        "obvious": "açık",
-        "occasion": "fırsat",
-        "operate": "işletmek",
-        "operation": "operasyon",
-        "option": "seçenek",
-        "ordinary": "sıradan",
-        "original": "orijinal",
-        "overall": "genel olarak",
-        "participant": "katılımcı",
-        "particular": "belirli",
-        "passage": "parça metin",
-        "payment": "ödeme",
-        "peaceful": "huzurlu",
-        "period": "dönem",
-        "perspective": "bakış açısı",
-        "persuade": "ikna etmek",
-        "platform": "platform",
-        "policy": "politika",
-        "population": "nüfus",
-        "position": "pozisyon",
-        "potential": "potansiyel",
-        "practical": "pratik",
-        "predict": "tahmin etmek",
-        "prefer": "tercih etmek",
-        "primary": "birincil",
-        "principle": "ilke",
-        "professional": "profesyonel",
-        "progress": "ilerleme",
-        "property": "özellik",
-        "proposal": "öneri",
-        "protect": "korumak",
-        "public": "kamusal",
-        "publish": "yayınlamak",
-        "quality": "kalite",
-        "range": "aralık",
-        "rapid": "hızlı",
-        "reader": "okur",
-        "reference": "referans",
-        "region": "bölge",
-        "relevant": "ilgili",
-        "rely": "güvenmek",
-        "remove": "kaldırmak",
-        "replace": "değiştirmek",
-        "report": "rapor",
-        "represent": "temsil etmek",
-        "require": "gerektirmek",
-        "response": "yanıt",
-        "responsibility": "sorumluluk",
-        "responsible": "sorumlu",
-        "retain": "korumak",
-        "return": "geri dönmek",
-        "route": "rota",
-        "safety": "güvenlik",
-        "sample": "örnek",
-        "screen": "ekran",
-        "search": "arama",
-        "secure": "güvenli",
-        "select": "seçmek",
-        "senior": "kıdemli",
-        "separate": "ayrı",
-        "series": "dizi",
-        "settle": "yerleşmek",
-        "significant": "önemli",
-        "similar": "benzer",
-        "society": "toplum",
-        "software": "yazılım",
-        "solve": "çözmek",
-        "speaker": "konuşmacı",
-        "special": "özel",
-        "staff": "personel",
-        "statement": "ifade",
-        "store": "saklamak",
-        "structure": "yapı",
-        "style": "stil",
-        "sudden": "ani",
-        "supply": "sağlamak",
-        "surface": "yüzey",
-        "survey": "anket",
-        "target": "hedef",
-        "technical": "teknik",
-        "technology": "teknoloji",
-        "temporary": "geçici",
-        "text": "metin",
-        "theme": "tema",
-        "therefore": "bu nedenle",
-        "tool": "araç",
-        "training": "eğitim",
-        "transport": "ulaşım",
-        "trend": "eğilim",
-        "use": "kullanmak",
-        "version": "sürüm",
-        "view": "görüş",
-        "village": "köy",
-        "warning": "uyarı",
-        "waste": "israf etmek",
-        "window": "pencere",
-        "worker": "çalışan",
-        "youth": "gençlik",
+        "expected": "beklenen",
+        "recognize": "tanımak / fark etmek",
+        "common": "yaygın",
+        "pattern": "örüntü",
+        "patterns": "örüntüler",
+        "faster": "daha hızlı",
     }
 )
+
 LOCAL_PHRASE_MAP = {
-    "work life": "iÅŸ hayatÄ±",
-    "daily life": "gÃ¼nlÃ¼k hayat",
-    "saved words": "kayÄ±tlÄ± kelimeler",
-    "quick review": "hÄ±zlÄ± tekrar",
-    "word history": "kelime geÃ§miÅŸi",
-    "reading stage": "okuma alanÄ±",
-    "reading setup": "okuma ayarlarÄ±",
+    "work life": "iş hayatı",
+    "daily life": "günlük hayat",
+    "saved words": "kaydedilmiş kelimeler",
+    "quick review": "hızlı tekrar",
+    "word history": "kelime geçmişi",
+    "reading stage": "okuma alanı",
+    "reading setup": "okuma ayarları",
+    "break up": "ayrılmak",
+    "give up": "vazgeçmek",
+    "look after": "ilgilenmek / bakmak",
+    "set up": "kurmak",
+    "run into": "karşılaşmak",
+    "figure out": "çözmek / anlamak",
+    "take off": "havalanmak",
+    "turn out": "sonuçlanmak / ortaya çıkmak",
+    "calm down": "sakinleşmek",
+    "get along": "iyi geçinmek",
 }
+
+FEATURED_PHRASAL_READING: dict[str, Any] = {
+    "title": "Phrasal Verbs Demo (B1)",
+    "level": "B1",
+    "topic": "Random",
+    "keywords": [
+        "break up",
+        "give up",
+        "look after",
+        "set up",
+        "run into",
+        "figure out",
+        "take off",
+        "turn out",
+        "calm down",
+        "get along",
+    ],
+    "text": (
+        "Last month, my friend Ece decided to start a simple routine for learning English. "
+        "She kept it realistic: fifteen minutes each evening, no pressure, but no excuses. "
+        "In the first week, she almost wanted to give up, because some verbs behaved differently when they worked with a small word. "
+        "For example, she saw 'break up' in a sentence and realized it is a phrase with its own meaning. "
+        "The next day, she ran into 'give up' again and noticed the pattern: one extra word can change the whole idea. "
+        "So she began to look after these phrases like real vocabulary: she wrote them down and practiced them in short sentences. "
+        "When she felt stressed, she would calm down, read the sentence again, and try to figure out the meaning from context. "
+        "At the weekend, she watched a short video and heard a pilot say 'take off', which helped her remember the phrase. "
+        "After two weeks, the routine turned out to work well, and she could get along with B1 texts more easily."
+    ),
+}
+
+if not any(str(item.get("title") or "") == FEATURED_PHRASAL_READING["title"] for item in READING_SEEDS):
+    READING_SEEDS.insert(0, FEATURED_PHRASAL_READING)
+
 IRREGULAR_WORD_MAP = {
-    "felt": "hissetmek",
-    "made": "yapmak",
-    "meant": "anlamÄ±na gelmek",
-    "found": "bulmak",
-    "thought": "dÃ¼ÅŸÃ¼nmek",
-    "brought": "getirmek",
-    "caught": "yakalamak",
-    "built": "inÅŸa etmek",
-    "left": "ayrÄ±lmak",
-    "spent": "harcamak",
-    "kept": "sÃ¼rdÃ¼rmek",
-    "grew": "bÃ¼yÃ¼mek",
-    "known": "bilinmek",
-    "shown": "gÃ¶stermek",
-    "taken": "almak",
-    "written": "yazmak",
-    "chosen": "seÃ§mek",
-    "spoken": "konuÅŸmak",
-    "driven": "sÃ¼rmek",
-    "cluttered": "karÄ±ÅŸÄ±k",
-    "interpreted": "yorumlanmÄ±ÅŸ",
+    "cluttered": "karışık",
+    "interpreted": "yorumlanmı",
     "narrow": "dar",
 }
+
 WORD_MEANING_OVERRIDES = {
     "the": "belirli tanımlık",
     "in": "içinde",
@@ -667,6 +342,16 @@ WORD_MEANING_OVERRIDES = {
     "when": "-dığı zaman",
     "on": "üzerinde",
     "not": "değil",
+    "start": "başlamak",
+    "started": "başlamak",
+    "decide": "karar vermek",
+    "decided": "karar vermek",
+    "almost": "neredeyse",
+    "excuse": "bahane",
+    "excuses": "bahaneler",
+    "sentence": "cümle",
+    "sentences": "cümleler",
+    "pilot": "pilot",
     "often": "sık sık",
     "how": "nasıl",
     "no": "hayır / yok",
@@ -683,7 +368,7 @@ WORD_MEANING_OVERRIDES = {
     "consequently": "sonuç olarak",
     "illustrate": "örneklemek",
     "model": "model",
-    "simplified": "sadeleÅŸtirilmiÅŸ",
+    "simplified": "sadeleştirmiş",
     "illustrates": "örneklemek",
     "illustrated": "örneklemek",
     "illustrating": "örneklemek",
@@ -853,82 +538,15 @@ WORD_MEANING_OVERRIDES = {
     "verification": "doğrulama",
     "shortcuts": "kısayollar",
     "irritated": "sinirli",
-    "misguided": "yanlÄ±ÅŸ yÃ¶nlendirilmiÅŸ",
+    "misguided": "yanlış yönlendirilmiş",
     "disciplined": "disiplinli",
-    "blurred": "bulanÄ±k",
+    "blurred": "bulanık",
     "unsupported": "desteklenmeyen",
     "wanted": "istenen",
     "needed": "gerekli",
-    "looked": "gÃ¶rÃ¼ndÃ¼",
-    "unfocused": "odaksÄ±z",
-    "unresolved": "Ã§Ã¶zÃ¼lmemiÅŸ",
-}
-if EXTRA_WORD_MAP_PATH.exists():
-    try:
-        EXTRA_WORD_MAP: dict[str, str] = json.loads(EXTRA_WORD_MAP_PATH.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        EXTRA_WORD_MAP = {}
-else:
-    EXTRA_WORD_MAP = {}
-if LIBRARY_WORD_MAP_PATH.exists():
-    try:
-        LIBRARY_WORD_MAP: dict[str, str] = json.loads(LIBRARY_WORD_MAP_PATH.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        LIBRARY_WORD_MAP = {}
-else:
-    LIBRARY_WORD_MAP = {}
-if CEFR_VOCAB_INDEX_PATH.exists():
-    try:
-        CEFR_VOCAB_INDEX: dict[str, dict[str, Any]] = json.loads(CEFR_VOCAB_INDEX_PATH.read_text(encoding="utf-8")).get("items", {})
-    except json.JSONDecodeError:
-        CEFR_VOCAB_INDEX = {}
-else:
-    CEFR_VOCAB_INDEX = {}
-TOPIC_SENTENCE_BANK = {
-    "Serbest": [
-        "The day starts quietly, but it soon becomes full of small decisions and new plans.",
-        "There is always a balance between routine, personal goals, and unexpected moments.",
-        "People often move through the day by solving simple problems and adjusting their plans.",
-        "By the evening, even an ordinary day can feel meaningful when it includes progress and connection.",
-    ],
-    "GÃ¼nlÃ¼k Hayat": [
-        "Most days begin with simple habits like breakfast, getting ready, and checking the time.",
-        "Daily life feels smoother when familiar routines create a sense of comfort and rhythm.",
-        "Small moments, such as talking to someone or taking a short walk, can change the mood of the day.",
-        "Even when nothing dramatic happens, ordinary life can still feel full and satisfying.",
-    ],
-    "Okul": [
-        "School life often mixes responsibility, curiosity, and the pressure to stay organized.",
-        "Students move between lessons, assignments, and conversations with classmates throughout the day.",
-        "A good class can make difficult ideas feel more manageable and interesting.",
-        "By the end of the day, school is not only about grades but also about growth and routine.",
-    ],
-    "Seyahat": [
-        "Travel usually brings a mix of excitement, planning, and small surprises.",
-        "Moving through a new place makes people notice different sounds, habits, and rhythms.",
-        "Even a short trip can create strong memories through simple details and unexpected encounters.",
-        "The best part of travel is often the feeling of discovery that stays with you afterwards.",
-    ],
-    "Ä°ÅŸ HayatÄ±": [
-        "Work life is often shaped by planning, communication, and the need to stay flexible.",
-        "A normal day can include meetings, messages, and moments that require quick decisions.",
-        "Professional life becomes easier when people know how to organize their time and energy.",
-        "Even busy schedules feel more manageable when there is a clear goal and steady teamwork.",
-    ],
-    "Akademik": [
-        "Academic work often begins with a question, a method, and a clear reason for exploring the topic.",
-        "A careful reading process helps students connect evidence, ideas, and interpretation.",
-        "Strong academic writing balances clarity with detail, so each sentence supports the central claim.",
-        "In the end, the value of academic practice comes from thoughtful analysis and precise communication.",
-    ],
-}
-TOPIC_SCENARIOS = {
-    "Serbest": ["a personal routine", "a small decision", "an ordinary day with meaningful details"],
-    "GÃ¼nlÃ¼k Hayat": ["a simple day at home", "a walk through the neighborhood", "a relaxed plan with a friend"],
-    "Okul": ["preparing for class", "finishing an assignment", "talking with classmates after a lesson"],
-    "Seyahat": ["arriving in a new city", "preparing for a short trip", "moving through an airport or station"],
-    "Ä°ÅŸ HayatÄ±": ["handling a busy workday", "preparing for an important meeting", "balancing deadlines and communication"],
-    "Akademik": ["preparing a research summary", "analyzing an article for class", "connecting evidence to an academic argument"],
+    "looked": "göründü",
+    "unfocused": "odaksız",
+    "unresolved": "çözülmemiş",
 }
 
 
@@ -987,6 +605,11 @@ class ExplainRequest(BaseModel):
     content_source: str | None = None
 
 
+class FillMissingRequest(BaseModel):
+    text: str
+    max_words: int = Field(default=180, ge=10, le=400)
+
+
 class AuthRequest(BaseModel):
     username: str = Field(min_length=3, max_length=32)
     password: str = Field(min_length=6, max_length=72)
@@ -1016,6 +639,28 @@ def build_openai_compatible_client(base_url: str, api_key: str) -> OpenAI:
 
 def _pg_query(query: str) -> str:
     return query.replace("?", "%s")
+
+
+def load_json_map(path: Path) -> dict[str, str]:
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8", errors="replace") or "{}")
+    except Exception:
+        return {}
+    if isinstance(data, dict):
+        return {str(k).strip().lower(): str(v).strip() for k, v in data.items() if str(k).strip() and str(v).strip()}
+    return {}
+
+
+def save_json_map(path: Path, data: dict[str, str]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    cleaned = {str(k).strip().lower(): str(v).strip() for k, v in data.items() if str(k).strip() and str(v).strip()}
+    path.write_text(json.dumps(cleaned, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+EXTRA_WORD_MAP.update(load_json_map(EXTRA_WORD_MAP_PATH))
+LIBRARY_WORD_MAP.update(load_json_map(LIBRARY_WORD_MAP_PATH))
 
 
 def _row_to_dict(row: Any) -> dict[str, Any] | None:
@@ -1647,7 +1292,7 @@ def user_payload(row: dict[str, Any] | None) -> dict[str, Any] | None:
 
 def require_user(session_token: str | None) -> dict[str, Any]:
     if not session_token:
-        raise HTTPException(status_code=401, detail="Ã–nce giriÅŸ yapmalÄ±sÄ±n.")
+        raise HTTPException(status_code=401, detail="Önce giriş yapmalısın.")
     row = db_fetchone(
         """
         SELECT users.id, users.username, users.created_at, users.is_active
@@ -1879,7 +1524,7 @@ def detail_is_saveable(word: str, detail: dict[str, str]) -> bool:
     if not turkish:
         return False
     lowered = turkish.lower()
-    if "alÄ±namadÄ±" in lowered or "bulunamadÄ±" in lowered:
+    if "alınamadı" in lowered or "bulunamadı" in lowered:
         return False
     if lowered == word.strip().lower():
         return False
@@ -2094,6 +1739,25 @@ def pick_library_reading(
     exclude_title: str | None = None,
 ) -> dict[str, Any] | None:
     normalized_topic = normalize_topic(topic)
+
+    if (
+        level == "B1"
+        and normalized_topic in {"Open", "Serbest", "Random"}
+        and not keywords
+        and not exclude_title
+        and isinstance(FEATURED_PHRASAL_READING, dict)
+        and str(FEATURED_PHRASAL_READING.get("title") or "")
+    ):
+        return {
+            "id": 0,
+            "title": str(FEATURED_PHRASAL_READING["title"]),
+            "text": str(FEATURED_PHRASAL_READING["text"]),
+            "level": "B1",
+            "topic": str(FEATURED_PHRASAL_READING.get("topic") or "Random"),
+            "keywords": list(FEATURED_PHRASAL_READING.get("keywords") or []),
+            "word_count": len(str(FEATURED_PHRASAL_READING["text"]).split()),
+            "source": "featured",
+        }
     source_clause, source_params = library_source_filter()
     rows = db_fetchall(
         f"""
@@ -2106,6 +1770,27 @@ def pick_library_reading(
     )
     if not rows:
         return None
+
+    if (
+        level == "B1"
+        and normalized_topic in {"Open", "Serbest", "Random"}
+        and not keywords
+        and not exclude_title
+    ):
+        featured_title = str(FEATURED_PHRASAL_READING.get("title") or "")
+        if featured_title:
+            featured_row = next((row for row in rows if str(row.get("title") or "") == featured_title), None)
+            if featured_row:
+                return {
+                    "id": featured_row["id"],
+                    "title": featured_row["title"],
+                    "text": featured_row["text"],
+                    "level": featured_row["level"],
+                    "topic": featured_row["topic"],
+                    "keywords": parse_keywords_field(featured_row["keywords"]),
+                    "word_count": featured_row["word_count"],
+                    "source": featured_row["source"],
+                }
     filtered_rows = rows
     if normalized_topic not in {"Open", "Serbest", "Random"}:
         exact_topic_rows = [row for row in filtered_rows if row["topic"] == normalized_topic]
@@ -2390,8 +2075,92 @@ def infer_contextual_library_meaning(word: str, sentence: str) -> str:
     profile = resolve_cefr_entry(lowered_word)
     lemma = str(profile.get("lemma") or lowered_word) if profile else lowered_word
     compact_sentence = re.sub(r"\s+", " ", sentence).strip().lower()
+    tokens = re.findall(r"[a-z]+(?:['-][a-z]+)*", compact_sentence)
+    sentence_has_number = bool(re.search(r"\b\d+\b", compact_sentence))
     if lemma.startswith("treat") and " as " in compact_sentence:
         return "ele almak"
+    if lemma == "since":
+        if compact_sentence.startswith("since ") and any(marker in compact_sentence for marker in ("because", "as", "so", "it was", "it is")):
+            return "çünkü"
+        if " since then" in compact_sentence or " since " in compact_sentence:
+            return "beri"
+        return "beri"
+    if lemma == "right":
+        if "right now" in compact_sentence:
+            return "hemen şimdi"
+        if "right away" in compact_sentence:
+            return "hemen"
+        if "right to" in compact_sentence:
+            return "hak"
+        if "turn right" in compact_sentence or "on the right" in compact_sentence:
+            return "sağ"
+        return "doğru"
+    if lemma == "still":
+        if "still" in tokens and "yet" in tokens:
+            return "henüz"
+        return "hala"
+    if lemma == "even":
+        return "hatta"
+    if lemma == "over":
+        if "over there" in compact_sentence:
+            return "şurada"
+        if "all over" in compact_sentence:
+            return "her yerde"
+        if "over the" in compact_sentence and any(unit in compact_sentence for unit in ("day", "week", "month", "year", "years", "hours", "minutes")):
+            return "boyunca"
+        if sentence_has_number and "over" in tokens:
+            return "üzerinde"
+        if "over" in tokens and any(prep in tokens for prep in ("the", "a", "an")):
+            return "üstünde"
+        return "üzerinden"
+    if lemma == "like":
+        if "would like" in compact_sentence or "i'd like" in compact_sentence or "we'd like" in compact_sentence:
+            return "istemek"
+        return "gibi"
+    if lemma == "as":
+        if " as well" in compact_sentence:
+            return "de"
+        if "as soon as" in compact_sentence:
+            return "... olur olmaz"
+        if "as if" in compact_sentence:
+            return "sanki"
+        if " as " in compact_sentence:
+            return "olarak"
+        return "olarak"
+    if lemma == "case":
+        if "in case" in compact_sentence:
+            return "olur da"
+        if "case of" in compact_sentence:
+            return "vakası"
+        return "durum"
+    if lemma == "issue":
+        if any(token in tokens for token in ("problem", "problems", "challenge", "challenges")):
+            return "sorun"
+        if any(token in tokens for token in ("magazine", "journal", "edition")):
+            return "sayı"
+        return "konu"
+    if lemma == "mean":
+        if "mean to" in compact_sentence or "meant to" in compact_sentence:
+            return "niyet etmek"
+        return "anlamına gelmek"
+    if lemma == "run":
+        if "run into" in compact_sentence:
+            return "karşılaşmak"
+        if "run out" in compact_sentence:
+            return "tükenmek"
+        if "run a" in compact_sentence or "run an" in compact_sentence or "run the" in compact_sentence:
+            return "işletmek"
+        return "koşmak"
+    if lemma == "set":
+        if "set up" in compact_sentence:
+            return "kurmak"
+        if "set off" in compact_sentence:
+            return "yola çıkmak"
+        if "set out" in compact_sentence:
+            return "yola koyulmak"
+        if "set" in tokens and "goal" in tokens:
+            return "belirlemek"
+        return "ayarlamak"
     if lemma == "illustrate":
         return "örnekleyerek göstermek"
     if lemma == "simplify":
@@ -2424,13 +2193,29 @@ def is_library_name(word: str) -> bool:
 def translate_library_word_with_fallback(word: str, lemma: str) -> str:
     candidates = [word.strip(), lemma.strip()]
     for candidate in candidates:
-        if not candidate or not GOOGLE_TRANSLATE_API_KEY:
+        if not candidate:
             continue
         try:
-            translated = repair_mojibake(translate_text_google(candidate, target_language="tr", source_language="en"))
+            if GOOGLE_TRANSLATE_API_KEY:
+                translated = repair_mojibake(translate_text_google(candidate, target_language="tr", source_language="en"))
+            else:
+                translated = repair_mojibake(
+                    request_model(
+                        f'Translate this English word or short phrase into Turkish: "{candidate}"\nReturn only the Turkish translation.',
+                        "You are a translation engine. Return only the Turkish translation. No punctuation, no extra text.",
+                        temperature=0.0,
+                        max_output_tokens=24,
+                    )
+                )
         except Exception:
             continue
+        translated = translated.strip().strip("\"").strip("'")
         if translated and not should_use_local_meaning(candidate, translated) and translation_looks_usable(translated):
+            LIBRARY_WORD_MAP[candidate.strip().lower()] = translated
+            try:
+                save_json_map(LIBRARY_WORD_MAP_PATH, LIBRARY_WORD_MAP)
+            except Exception:
+                pass
             return translated
     return ""
 
@@ -2492,12 +2277,12 @@ def build_local_word_detail(text: str, word: str) -> dict[str, str]:
         return build_library_word_detail(text, word)
     meaning = infer_turkish_meaning(word)
     sentence = find_sentence_for_word(text, word)
-    context = repair_mojibake(f'"{word}" burada bÃ¼yÃ¼k olasÄ±lÄ±kla "{meaning}" anlamÄ±nda kullanÄ±lÄ±yor.')
+    context = repair_mojibake(f'"{word}" burada büyük olasılıkla "{meaning}" anlamında kullanılıyor.')
     example = f"The word {word} appears in this reading text."
     if sentence:
         compact_sentence = re.sub(r"\s+", " ", sentence).strip()
         context = repair_mojibake(
-            f'Bu metinde "{word}" kelimesi "{meaning}" fikrini veriyor. GeÃ§tiÄŸi bÃ¶lÃ¼m: {compact_sentence}'
+            f'Bu metinde "{word}" kelimesi "{meaning}" fikrini veriyor. Geçtiği bölüm: {compact_sentence}'
         )
         example = compact_sentence
     return {
@@ -2526,7 +2311,7 @@ def html_unescape(value: str) -> str:
 
 def translate_text_google(text: str, *, target_language: str = "tr", source_language: str | None = None) -> str:
     if not GOOGLE_TRANSLATE_API_KEY:
-        raise HTTPException(status_code=500, detail="GOOGLE_TRANSLATE_API_KEY bulunamadÄ±.")
+        raise HTTPException(status_code=500, detail="GOOGLE_TRANSLATE_API_KEY bulunamadı.")
     payload: dict[str, Any] = {
         "q": text,
         "target": target_language,
@@ -2549,6 +2334,13 @@ def translate_text_google(text: str, *, target_language: str = "tr", source_lang
 
 def find_sentence_for_word(text: str, word: str) -> str:
     candidates = re.split(r"(?<=[.!?])\s+", text.strip())
+    needle = re.sub(r"\s+", " ", word.strip())
+    if " " in needle:
+        lowered = needle.lower()
+        for sentence in candidates:
+            if lowered in sentence.lower():
+                return sentence.strip()
+        return ""
     for sentence in candidates:
         if re.search(rf"\b{re.escape(word)}\b", sentence, flags=re.IGNORECASE):
             return sentence.strip()
@@ -2640,12 +2432,13 @@ def cefr_rank(level: str) -> int:
 
 def word_root_candidates(word: str) -> list[str]:
     lowered = word.lower().strip()
-    candidates: list[str] = []
 
     def add(candidate: str) -> None:
         cleaned = candidate.strip().lower()
         if cleaned and cleaned not in candidates:
             candidates.append(cleaned)
+
+    candidates: list[str] = []
 
     add(lowered)
     if lowered.endswith("ies") and len(lowered) > 4:
@@ -2837,6 +2630,20 @@ def extract_collocations(text: str, word: str, limit: int = 3) -> list[str]:
 
 def build_library_word_detail(text: str, word: str) -> dict[str, str]:
     lowered_word = word.lower()
+    if " " in lowered_word:
+        sentence = find_sentence_for_word(text, word)
+        library_meaning = infer_turkish_meaning(lowered_word)
+        compact_sentence = re.sub(r"\s+", " ", sentence).strip() if sentence else ""
+        context_lines = [f'Bu metindeki anlamı: "{library_meaning}"']
+        if compact_sentence:
+            context_lines.append(f"Geçtiği cümle: {compact_sentence}")
+        example_lines = [f"1. {compact_sentence}" if compact_sentence else f"1. The phrase {word} appears in this reading text."]
+        return {
+            "turkish": repair_mojibake(library_meaning),
+            "context": repair_mojibake("\n".join(context_lines)),
+            "example": repair_mojibake("\n".join(example_lines)),
+            "collocations": extract_collocations(text, word),
+        }
     profile = resolve_cefr_entry(lowered_word)
     lemma = str(profile.get("lemma") or lowered_word) if profile else lowered_word
     forced_override = WORD_MEANING_OVERRIDES.get(lowered_word) or WORD_MEANING_OVERRIDES.get(lemma)
@@ -2862,32 +2669,26 @@ def build_library_word_detail(text: str, word: str) -> dict[str, str]:
         except Exception:
             translated_sentence = ""
     form_info = describe_word_form(lowered_word)
-    context_lines = [
-        f'Bu metindeki karşılığı: "{library_meaning}"',
-        f'Kök: {form_info["root"]}',
-        f'Çekim / biçim: {form_info["note"]}',
-    ]
+    context_lines = [f'Bu metindeki anlamı: "{library_meaning}"']
+    context_lines.append(f'Kök: {form_info["root"]} · {form_info["note"]}')
     if profile and profile.get("level"):
         context_lines.append(f'Kelime seviyesi: {profile["level"]}')
     if compact_sentence:
-        context_lines.append(f"Geçtiği bölüm: {compact_sentence}")
-    if translated_sentence:
-        context_lines.append(f"Yaklaşık Türkçesi: {translated_sentence}")
-    example_sentences = gather_library_examples(lemma, compact_sentence)
+        context_lines.append(f"Geçtiği cümle: {compact_sentence}")
+    if translated_sentence and translation_looks_usable(translated_sentence):
+        context_lines.append(f"TR: {translated_sentence}")
+
+    example_sentences = gather_library_examples(lemma, compact_sentence)[:2]
     example_lines: list[str] = []
     for index, example_sentence in enumerate(example_sentences, start=1):
-        example_translation = ""
+        example_lines.append(f"{index}. {example_sentence}")
         if GOOGLE_TRANSLATE_API_KEY:
             try:
                 example_translation = translate_text_google(example_sentence, target_language="tr", source_language="en")
             except Exception:
                 example_translation = ""
-        if not example_translation:
-            example_translation = translate_sentence_locally(example_sentence)
-        if translation_looks_usable(example_translation):
-            example_lines.append(f"{index}. {example_sentence} ({example_translation})")
-        else:
-            example_lines.append(f"{index}. {example_sentence}")
+            if example_translation and translation_looks_usable(example_translation):
+                example_lines.append(f"TR: {example_translation}")
     if not example_lines:
         example_lines = [f"1. The word {word} appears in this reading text."]
     return {
@@ -2902,6 +2703,10 @@ def build_library_glossary(text: str) -> dict[str, dict[str, str]]:
     glossary: dict[str, dict[str, str]] = {}
     for word in extract_unique_words(text):
         glossary[word] = build_library_word_detail(text, word)
+    lowered = text.lower()
+    for phrase in LOCAL_PHRASE_MAP:
+        if " " in phrase and phrase in lowered and phrase not in glossary:
+            glossary[phrase] = build_library_word_detail(text, phrase)
     return glossary
 
 
@@ -3530,7 +3335,6 @@ def library_stats() -> dict[str, Any]:
     return {
         "total": int((total_row or {}).get("total", 0)),
         "by_level": level_rows,
-        "by_topic": topic_rows,
     }
 
 
@@ -3538,18 +3342,54 @@ def library_stats() -> dict[str, Any]:
 def explain(payload: ExplainRequest) -> dict[str, str]:
     safe_word = sanitize_word(payload.word)
     if not safe_word:
-        raise HTTPException(status_code=400, detail="GeÃ§erli bir kelime gerekli.")
+        raise HTTPException(status_code=400, detail="Geçerli bir kelime gerekli.")
     try:
         return {"explanation": request_manual_explanation(payload.text, safe_word)}
     except Exception as exc:
         raise normalize_api_error(exc)
 
 
+@app.post("/api/library/fill-missing")
+def fill_missing_library_words(payload: FillMissingRequest) -> dict[str, Any]:
+    text = str(payload.text or "")
+    if not text.strip():
+        raise HTTPException(status_code=400, detail="Geçerli bir metin gerekli.")
+    max_words = int(payload.max_words or 180)
+    tokens = extract_unique_words(text)[:max_words]
+    filled = 0
+    skipped = 0
+    new_entries: dict[str, str] = {}
+    for token in tokens:
+        if not token or len(token) <= 2:
+            skipped += 1
+            continue
+        if token in WORD_MEANING_OVERRIDES or token in LOCAL_WORD_MAP or token in IRREGULAR_WORD_MAP:
+            skipped += 1
+            continue
+        if any(candidate in LIBRARY_WORD_MAP or candidate in EXTRA_WORD_MAP for candidate in word_root_candidates(token)):
+            skipped += 1
+            continue
+        translated = translate_library_word_with_fallback(token, token)
+        if translated and not should_use_local_meaning(token, translated):
+            filled += 1
+            new_entries[token] = translated
+            if len(new_entries) >= 24:
+                break
+        else:
+            skipped += 1
+    return {
+        "ok": True,
+        "filled": filled,
+        "skipped": skipped,
+        "sample": new_entries,
+    }
+
+
 @app.post("/api/word-detail")
 def word_detail(payload: ExplainRequest, session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE)) -> dict[str, Any]:
     safe_word = sanitize_word(payload.word)
     if not safe_word:
-        raise HTTPException(status_code=400, detail="GeÃ§erli bir kelime gerekli.")
+        raise HTTPException(status_code=400, detail="Geçerli bir kelime gerekli.")
     try:
         if (payload.content_source or "").lower() == "library":
             detail = build_library_word_detail(payload.text, safe_word)
@@ -3562,3 +3402,8 @@ def word_detail(payload: ExplainRequest, session_token: str | None = Cookie(defa
     except Exception as exc:
         raise normalize_api_error(exc)
 
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run("backend.main:app", host="127.0.0.1", port=8045)

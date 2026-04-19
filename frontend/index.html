@@ -135,9 +135,27 @@
                     </div>
                   </div>
                 </div>
+                <div class="profile-panel">
+                  <div class="profile-progress-topline">
+                    <span class="mini-label on-dark">Daily goal</span>
+                    <span id="streakBadge" class="profile-menu-badge">Streak 0</span>
+                  </div>
+                  <strong id="dailyGoalText" class="profile-goal-text">0 / 5 today</strong>
+                  <div class="goal-bar">
+                    <span id="goalBarFill"></span>
+                  </div>
+                  <p id="hardWordsText" class="helper-note on-dark">0 hard words ready for review.</p>
+                </div>
                 <div class="profile-tip">
                   <span class="mini-label on-dark">Session</span>
                   <p id="profileTipText">Tap saved words or quiz from the toolbar to continue where you left off.</p>
+                </div>
+                <div class="profile-panel">
+                  <div class="section-head compact">
+                    <h3>Recent readings</h3>
+                    <p>Your latest library picks stay here for quick return.</p>
+                  </div>
+                  <div id="readingHistoryList" class="history-list"></div>
                 </div>
                 <button id="logoutBtn" class="outline-btn light-outline" type="button">Log Out</button>
               </div>
@@ -293,11 +311,11 @@
             <div class="insight-card">
               <div class="insight-block">
                 <span class="mini-label">Context in Turkish</span>
-                <p id="selectedContext">Context appears here after you choose a word.</p>
+                <div id="selectedContext" class="insight-content">Context appears here after you choose a word.</div>
               </div>
               <div class="insight-block">
                 <span class="mini-label">Simple Example</span>
-                <p id="selectedExample">A short example appears here after you choose a word.</p>
+                <div id="selectedExample" class="insight-content">A short example appears here after you choose a word.</div>
               </div>
             </div>
           </aside>
@@ -306,7 +324,7 @@
     </main>
 
     <footer class="site-footer">
-      <small>© 2026 Yasir Öztürk. All rights reserved.</small>
+      <small> 2026 Yasir Öztürk. All rights reserved.</small>
     </footer>
   </div>
 
@@ -332,11 +350,11 @@
         <div class="insight-card mobile-insight-card">
           <div class="insight-block">
             <span class="mini-label">Context in Turkish</span>
-            <p id="mobileWordContext">Context appears here after you choose a word.</p>
+            <div id="mobileWordContext" class="insight-content">Context appears here after you choose a word.</div>
           </div>
           <div class="insight-block">
             <span class="mini-label">Simple Example</span>
-            <p id="mobileWordExample">A short example appears here after you choose a word.</p>
+            <div id="mobileWordExample" class="insight-content">A short example appears here after you choose a word.</div>
           </div>
         </div>
       </div>
@@ -399,6 +417,6 @@
     </section>
   </aside>
 
-  <script src="/assets/app.js?v=20260418af"></script>
+  <script src="/assets/app.js?v=20260419phrasal3"></script>
 </body>
 </html>
