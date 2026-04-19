@@ -219,11 +219,13 @@ const quizTypeBadgeEl = $("#quizTypeBadge");
 const quizModeSavedBtn = $("#quizModeSavedBtn");
 const quizModeHardBtn = $("#quizModeHardBtn");
 const quizModeReadingBtn = $("#quizModeReadingBtn");
+const openProgressBtn = $("#openProgressBtn");
 const openSavedWordsBtn = $("#openSavedWordsBtn");
 const openQuizBtn = $("#openQuizBtn");
 const openManualHelpBtn = $("#openManualHelpBtn");
 const libraryOverlayEl = $("#libraryOverlay");
 const libraryPanelEl = $("#libraryPanel");
+const progressPanelEl = $("#progressPanel");
 const savedWordsPanelEl = $("#savedWordsPanel");
 const quizPanelEl = $("#quizPanel");
 const manualHelpPanelEl = $("#manualHelpPanel");
@@ -998,11 +1000,15 @@ function setLibraryView(view) {
   libraryOverlayEl.classList.toggle("hidden", !isOpen);
   libraryPanelEl.classList.toggle("hidden", !isOpen);
   document.body.classList.toggle("library-open", isOpen);
+  progressPanelEl.classList.toggle("hidden", view !== "progress");
   savedWordsPanelEl.classList.toggle("hidden", view !== "saved");
   quizPanelEl.classList.toggle("hidden", view !== "quiz");
   manualHelpPanelEl.classList.toggle("hidden", view !== "manual");
   if (libraryPanelScrollEl) libraryPanelScrollEl.style.transform = "";
-  if (view === "saved") {
+  if (view === "progress") {
+    libraryKickerEl.textContent = "Progress";
+    libraryTitleEl.textContent = "Your streak and history";
+  } else if (view === "saved") {
     libraryKickerEl.textContent = "Saved Words";
     libraryTitleEl.textContent = "Your saved words";
   } else if (view === "quiz") {
@@ -1875,6 +1881,9 @@ clearBtn.addEventListener("click", () => {
 });
 
 nextQuizBtn.addEventListener("click", () => loadQuiz(state.quizMode === "reading" ? state.quiz?.word || null : state.quiz?.word_id || null));
+openProgressBtn?.addEventListener("click", () => {
+  setLibraryView("progress");
+});
 openSavedWordsBtn.addEventListener("click", async () => {
   if (state.user) await fetchSavedWords("recent");
   setLibraryView("saved");

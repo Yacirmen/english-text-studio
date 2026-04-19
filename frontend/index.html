@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260419profileheadfix1" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260419progresspanel1" />
 </head>
 <body>
   <div id="welcomeGate" class="welcome-gate">
@@ -113,6 +113,7 @@
       </div>
       <div class="top-status">
         <div class="top-tools">
+          <button id="openProgressBtn" class="toolbar-btn toolbar-btn-blue toolbar-btn-compact" type="button">Progress</button>
           <button id="openSavedWordsBtn" class="toolbar-btn toolbar-btn-green toolbar-btn-compact" type="button">Saved</button>
           <button id="openQuizBtn" class="toolbar-btn toolbar-btn-blue toolbar-btn-compact" type="button">Quiz</button>
           <button id="openManualHelpBtn" class="toolbar-btn toolbar-btn-cream toolbar-btn-compact" type="button">Translate</button>
@@ -202,28 +203,6 @@
                     </div>
                   </div>
                 </div>
-                <div class="profile-panel">
-                  <div class="profile-progress-topline">
-                    <span class="mini-label on-dark">Daily goal</span>
-                    <span id="streakBadge" class="profile-menu-badge">Streak 0</span>
-                  </div>
-                  <strong id="dailyGoalText" class="profile-goal-text">0 / 5 today</strong>
-                  <div class="goal-bar">
-                    <span id="goalBarFill"></span>
-                  </div>
-                  <p id="hardWordsText" class="helper-note on-dark">0 hard words ready for review.</p>
-                </div>
-                <div class="profile-tip">
-                  <span class="mini-label on-dark">Session</span>
-                  <p id="profileTipText">Tap saved words or quiz from the toolbar to continue where you left off.</p>
-                </div>
-                <div class="profile-panel">
-                  <div class="section-head compact">
-                    <h3>Recent readings</h3>
-                    <p>Your latest library picks stay here for quick return.</p>
-                  </div>
-                  <div id="readingHistoryList" class="history-list"></div>
-                  </div>
                   <button id="logoutBtn" class="outline-btn light-outline" type="button">Log Out</button>
                 </div>
               </section>
@@ -442,6 +421,32 @@
       <button id="closeLibraryBtn" class="icon-btn" type="button" aria-label="Close panel">×</button>
     </div>
 
+    <section id="progressPanel" class="library-section hidden">
+      <p class="library-copy">Track your streak, daily goal, and recent reading trail here.</p>
+      <div class="profile-panel">
+        <div class="profile-progress-topline">
+          <span class="mini-label on-dark">Daily goal</span>
+          <span id="streakBadge" class="profile-menu-badge">Streak 0</span>
+        </div>
+        <strong id="dailyGoalText" class="profile-goal-text">0 / 5 today</strong>
+        <div class="goal-bar">
+          <span id="goalBarFill"></span>
+        </div>
+        <p id="hardWordsText" class="helper-note on-dark">0 hard words ready for review.</p>
+      </div>
+      <div class="profile-tip">
+        <span class="mini-label on-dark">Session</span>
+        <p id="profileTipText">Tap saved words or quiz from the toolbar to continue where you left off.</p>
+      </div>
+      <div class="profile-panel">
+        <div class="section-head compact">
+          <h3>Recent readings</h3>
+          <p>Your latest library picks stay here for quick return.</p>
+        </div>
+        <div id="readingHistoryList" class="history-list"></div>
+      </div>
+    </section>
+
     <section id="savedWordsPanel" class="library-section hidden">
       <p class="library-copy">Saved words build up here. Tap one to jump back into the reading flow.</p>
       <div id="savedWordsActions" class="saved-words-actions hidden">
@@ -485,6 +490,6 @@
     </section>
   </aside>
 
-  <script src="/assets/app.js?v=20260419profilescrollfix3"></script>
+  <script src="/assets/app.js?v=20260419progresspanel1"></script>
 </body>
 </html>
