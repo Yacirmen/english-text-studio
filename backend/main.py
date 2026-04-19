@@ -689,6 +689,98 @@ WORD_MEANING_OVERRIDES = {
     "illustrating": "örneklemek",
     "fragment": "parça",
     "fragmented": "parçalanmış",
+    "may": "-ebilir / olabilir",
+    "did": "yaptı",
+    "do": "yapmak",
+    "there": "orada",
+    "up": "yukarı / kadar",
+    "go": "gitmek",
+    "keep": "sürdürmek",
+    "risk": "risk",
+    "platform": "platform",
+    "video": "video",
+    "stress": "stres",
+    "festival": "festival",
+    "program": "program",
+    "many": "birçok",
+    "need": "ihtiyaç duymak",
+    "park": "park",
+    "well": "iyi",
+    "take": "almak",
+    "know": "bilmek",
+    "other": "diğer",
+    "such": "böyle / gibi",
+    "internet": "internet",
+    "should": "-meli / -malı",
+    "off": "kapalı / kapatmak",
+    "all": "hepsi / tüm",
+    "second": "ikinci",
+    "modern": "modern",
+    "might": "olabilir",
+    "must": "zorunda / mutlaka",
+    "bad": "kötü",
+    "quite": "oldukça",
+    "tv": "televizyon",
+    "mini-computers": "mini bilgisayarlar",
+    "responsibly": "sorumlu bir şekilde",
+    "globalized": "küreselleşmiş",
+    "loneliness": "yalnızlık",
+    "thirty-minute": "otuz dakikalık",
+    "sports": "sporlar",
+    "sport": "spor",
+    "careless": "dikkatsiz",
+    "litter": "çöp atmak / çöp",
+    "overcrowding": "aşırı kalabalık",
+    "toefl": "TOEFL sınavı",
+    "ielts": "IELTS sınavı",
+    "old-fashioned": "eski moda",
+    "self-discipline": "öz disiplin",
+    "high": "yüksek",
+    "multitasking": "çoklu görev yapma",
+    "prioritize": "önceliklendirmek",
+    "face-to-face": "yüz yüze",
+    "weaken": "zayıflatmak",
+    "well-being": "iyi oluş hali",
+    "unused": "kullanılmayan",
+    "persistence": "sebat",
+    "real-life": "gerçek hayat",
+    "open-minded": "açık fikirli",
+    "teamwork": "takım çalışması",
+    "misunderstand": "yanlış anlamak",
+    "non-verbal": "sözsüz",
+    "high-quality": "yüksek kaliteli",
+    "undergone": "geçirmiş",
+    "unreliable": "güvenilmez",
+    "mindful": "bilinçli / farkında",
+    "overwhelm": "bunaltmak",
+    "reconsider": "yeniden değerlendirmek",
+    "industrialization": "sanayileşme",
+    "short-term": "kısa vadeli",
+    "overriding": "baskın / belirleyici",
+    "maximize": "en üst düzeye çıkarmak",
+    "inaccurate": "hatalı / doğru olmayan",
+    "one-time": "tek seferlik",
+    "self-awareness": "öz farkındalık",
+    "unknowingly": "farkında olmadan",
+    "misjudgments": "yanlış yargılar",
+    "subtly": "ince bir şekilde",
+    "real-world": "gerçek dünya",
+    "reshape": "yeniden şekillendirmek",
+    "stimuli": "uyaranlar",
+    "far": "uzak / çok",
+    "restructuring": "yeniden yapılandırma",
+    "hinder": "engellemek",
+    "prioritizing": "önceliklendirme",
+    "quantitative": "nicel",
+    "within": "içinde",
+    "perceive": "algılamak",
+    "low": "düşük",
+    "misinterpreted": "yanlış yorumlanmış",
+    "underestimate": "hafife almak",
+    "overestimate": "fazla tahmin etmek",
+    "misunderstood": "yanlış anlaşılmış",
+    "instability": "istikrarsızlık",
+    "inefficiency": "verimsizlik",
     "superficial": "yüzeysel",
     "adjectives": "sıfatlar",
     "adverbs": "zarflar",
@@ -2320,6 +2412,62 @@ def infer_contextual_library_meaning(word: str, sentence: str) -> str:
     return infer_turkish_meaning(word)
 
 
+def is_library_name(word: str) -> bool:
+    cleaned = re.sub(r"[^A-Za-z]", "", word).strip().lower()
+    return cleaned in {
+        "aylin", "deniz", "eren", "selin", "bora", "mina", "kerem", "lina",
+        "arda", "derya", "kaan", "elif", "yusuf", "asya", "can", "melis",
+        "emma", "tom", "lucy", "anna", "david", "sarah", "ali",
+    }
+
+
+def translate_library_word_with_fallback(word: str, lemma: str) -> str:
+    candidates = [word.strip(), lemma.strip()]
+    for candidate in candidates:
+        if not candidate or not GOOGLE_TRANSLATE_API_KEY:
+            continue
+        try:
+            translated = repair_mojibake(translate_text_google(candidate, target_language="tr", source_language="en"))
+        except Exception:
+            continue
+        if translated and not should_use_local_meaning(candidate, translated) and translation_looks_usable(translated):
+            return translated
+    return ""
+
+
+def force_library_meaning(word: str, lemma: str, current: str) -> str:
+    cleaned_current = repair_mojibake(current).strip()
+    if cleaned_current and not should_use_local_meaning(word, cleaned_current):
+        return cleaned_current
+
+    translated = translate_library_word_with_fallback(word, lemma)
+    if translated:
+        return translated
+
+    if is_library_name(word):
+        return "özel isim"
+
+    if word.isupper() and len(word) >= 2:
+        return "kısaltma / özel ad"
+
+    if "-" in word:
+        pieces = [piece for piece in re.split(r"[-/]", word.lower()) if piece]
+        translated_pieces: list[str] = []
+        for piece in pieces:
+            piece_meaning = infer_turkish_meaning(piece)
+            if not piece_meaning or piece_meaning == piece:
+                piece_meaning = translate_library_word_with_fallback(piece, piece)
+            if piece_meaning and piece_meaning != piece:
+                translated_pieces.append(piece_meaning)
+        if translated_pieces:
+            return " ".join(translated_pieces)
+
+    if len(word) <= 2:
+        return "bağlama göre işlevsel kelime"
+
+    return "bağlama göre kullanılan ifade"
+
+
 def choose_local_scenario(topic: str, keywords: list[str]) -> dict[str, Any]:
     topic_key = topic if topic in TOPIC_SCENARIOS else "Serbest"
     scenario_seed = TOPIC_SCENARIOS[topic_key][len(keywords) % len(TOPIC_SCENARIOS[topic_key])]
@@ -2705,6 +2853,7 @@ def build_library_word_detail(text: str, word: str) -> dict[str, str]:
         library_meaning = raw_library_meaning
     if not library_meaning:
         library_meaning = infer_contextual_library_meaning(lemma, sentence)
+    library_meaning = force_library_meaning(word, lemma, library_meaning)
     compact_sentence = re.sub(r"\s+", " ", sentence).strip() if sentence else ""
     translated_sentence = ""
     if compact_sentence and GOOGLE_TRANSLATE_API_KEY:
