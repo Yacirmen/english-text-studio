@@ -299,6 +299,50 @@ async function apiFetch(url, options = {}) {
   return parseApiResponse(response);
 }
 
+function getToastLayer() {
+  let layer = document.querySelector(".toast-layer");
+  if (layer) return layer;
+  layer = document.createElement("div");
+  layer.className = "toast-layer";
+  document.body.appendChild(layer);
+  return layer;
+}
+
+function clearToasts(scope = "global") {
+  const selector = scope === "global" ? '.site-toast[data-scope="global"]' : `.site-toast[data-scope="${scope}"]`;
+  document.querySelectorAll(selector).forEach((toast) => toast.remove());
+}
+
+function showToast(message, { variant = "error", scope = "global", duration = 4200 } = {}) {
+  const textValue = String(message || "").trim();
+  if (!textValue) return;
+  const layer = getToastLayer();
+  const selector = scope === "global" ? '.site-toast[data-scope="global"]' : `.site-toast[data-scope="${scope}"]`;
+  const existing = layer.querySelector(selector);
+  if (existing) existing.remove();
+
+  const toast = document.createElement("div");
+  toast.className = `site-toast site-toast-${variant}`;
+  toast.dataset.scope = scope;
+  toast.setAttribute("role", "status");
+  toast.setAttribute("aria-live", "polite");
+
+  const text = document.createElement("div");
+  text.className = "site-toast-text";
+  text.textContent = textValue;
+
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "site-toast-close";
+  closeBtn.type = "button";
+  closeBtn.setAttribute("aria-label", "Close");
+  closeBtn.textContent = "x";
+  closeBtn.addEventListener("click", () => toast.remove());
+
+  toast.append(text, closeBtn);
+  layer.appendChild(toast);
+  window.setTimeout(() => toast.remove(), duration);
+}
+
 function parseKeywords(raw) {
   const seen = new Set();
   return raw
@@ -494,13 +538,15 @@ function setLoading(button, loadingText, isLoading) {
 }
 
 function showError(message) {
-  generateErrorEl.textContent = message;
-  generateErrorEl.classList.remove("hidden");
+  generateErrorEl.textContent = "";
+  generateErrorEl.classList.add("hidden");
+  showToast(message, { variant: "error", scope: "generate" });
 }
 
 function clearError() {
   generateErrorEl.textContent = "";
   generateErrorEl.classList.add("hidden");
+  clearToasts("generate");
 }
 
 function updateSetupSummary() {
@@ -873,8 +919,8 @@ function renderQuiz() {
           }),
         });
       if (!parsed.ok) {
-        quizFeedbackEl.textContent = parsed.data.detail || "Quiz answer could not be saved.";
-        quizFeedbackEl.classList.remove("hidden");
+        quizFeedbackEl.classList.add("hidden");
+        showToast(parsed.data.detail || "Quiz answer could not be saved.", { variant: "error", scope: "quiz" });
         return;
       }
       state.quizStats.answered += 1;
@@ -1566,8 +1612,8 @@ generateForm.addEventListener("submit", async (event) => {
 manualForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!state.text) {
-    manualResultEl.textContent = "Open a reading first.";
-    manualResultEl.classList.remove("hidden");
+    manualResultEl.classList.add("hidden");
+    showToast("Open a reading first.", { variant: "info", scope: "manual" });
     return;
   }
   const word = manualWordEl.value.trim();
@@ -1603,8 +1649,8 @@ manualForm.addEventListener("submit", async (event) => {
     `;
     manualResultEl.classList.remove("hidden");
   } catch (error) {
-    manualResultEl.textContent = error.message;
-    manualResultEl.classList.remove("hidden");
+    manualResultEl.classList.add("hidden");
+    showToast(error.message, { variant: "error", scope: "manual" });
   } finally {
     setLoading($("#manualBtn"), "", false);
   }
