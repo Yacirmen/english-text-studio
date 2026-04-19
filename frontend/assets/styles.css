@@ -2102,45 +2102,48 @@ body.dark-mode .collocation-chip{
 
 @media (max-width: 768px){
   .page-shell{padding:10px 10px 22px}
+  .topbar{
+    gap:10px;
+    align-items:stretch;
+  }
+  .topbar-left{
+    width:100%;
+    justify-content:flex-start;
+  }
   .topbar-slogan{
     display:grid;
     width:100%;
     margin:0;
-    padding:10px 12px;
+    padding:8px 10px;
     grid-template-columns:auto minmax(0,1fr);
-    gap:10px 12px;
+    gap:8px 10px;
     min-height:unset;
-    border-radius:24px;
+    border-radius:20px;
   }
   .topbar-slogan-mark{
-    width:30px;
-    height:30px;
+    width:28px;
+    height:28px;
     box-shadow:
-      0 0 0 5px rgba(255,216,77,.08),
-      0 8px 16px rgba(255,140,66,.18);
+      0 0 0 4px rgba(255,216,77,.08),
+      0 7px 14px rgba(255,140,66,.18);
   }
   .topbar-slogan-spark{
-    width:9px;
-    height:9px;
+    width:8px;
+    height:8px;
   }
   .topbar-slogan-copy{
     gap:1px;
   }
   .topbar-slogan-kicker{
-    font-size:.58rem;
-    letter-spacing:.18em;
+    font-size:.54rem;
+    letter-spacing:.16em;
   }
   .topbar-slogan-main{
-    font-size:1.02rem;
-    line-height:1.04;
+    font-size:.92rem;
+    line-height:1.05;
   }
   .topbar-slogan-accent{
-    grid-column:2;
-    justify-self:start;
-    min-height:28px;
-    padding:0 10px;
-    font-size:.64rem;
-    letter-spacing:.08em;
+    display:none;
   }
   .welcome-gate{
     align-items:flex-start;
@@ -2156,15 +2159,26 @@ body.dark-mode .collocation-chip{
   }
   .welcome-auth{padding:18px;border-radius:22px}
   .topbar{padding:12px 14px}
-  .top-status{width:100%;justify-content:space-between;align-items:center}
-  .profile-shell{order:1}
-  .top-tools{width:100%;order:2}
-  .toolbar-btn-compact{flex:1 1 calc(33.333% - 6px);min-width:88px}
+  .top-status{
+    width:100%;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:nowrap;
+    gap:8px;
+  }
+  .profile-shell{order:2;flex:0 0 auto}
+  .top-tools{
+    width:auto;
+    order:1;
+    flex:1 1 auto;
+    flex-wrap:nowrap;
+    min-width:0;
+  }
+  .toolbar-btn-compact{flex:1 1 0;min-width:0}
   .mobile-word-panel{width:100%}
   .tool-rail{gap:14px}
   .rail-panel,.reading-column,.insight-card,.library-panel{border-radius:22px}
   .reading-stage{gap:12px}
-  .toolbar-btn-compact{flex:1 1 calc(33.333% - 6px);min-width:88px}
   .preview-state{min-height:120px;padding:20px;border-radius:22px}
   .reading-body{min-height:280px;padding:20px;font-size:1.03rem;line-height:1.9}
   .action-row{grid-template-columns:1fr;gap:12px}
