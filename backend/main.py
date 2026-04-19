@@ -52,6 +52,7 @@ LEVEL_CONFIG = {
     "B1": {"min_words": 120, "max_words": 170, "label": "DoÄŸal ve akÄ±cÄ±"},
     "B2": {"min_words": 150, "max_words": 220, "label": "Daha zengin ama rahat okunur"},
     "C1": {"min_words": 180, "max_words": 260, "label": "Ä°leri, doÄŸal ve detaylÄ±"},
+    "C2": {"min_words": 190, "max_words": 280, "label": "Ã‡ok ileri ve incelikli"},
     "Academic": {"min_words": 190, "max_words": 280, "label": "Akademik ve daha analitik"},
 }
 CEFR_LEVEL_ORDER = {"A1": 1, "A2": 2, "B1": 3, "B2": 4, "C1": 5, "C2": 6, "Academic": 6}
@@ -61,6 +62,7 @@ READING_LEVEL_TARGETS = {
     "B1": {"target": "B1", "ideal_avg": 13, "max_avg": 17, "advanced_min": 0, "needs_contrast": True, "needs_cause": True},
     "B2": {"target": "B2", "ideal_avg": 17, "max_avg": 22, "advanced_min": 2, "needs_contrast": True, "needs_cause": True},
     "C1": {"target": "C1", "ideal_avg": 20, "max_avg": 26, "advanced_min": 4, "needs_contrast": True, "needs_cause": True},
+    "C2": {"target": "C2", "ideal_avg": 23, "max_avg": 30, "advanced_min": 5, "needs_contrast": True, "needs_cause": True},
     "Academic": {"target": "C2", "ideal_avg": 23, "max_avg": 30, "advanced_min": 5, "needs_contrast": True, "needs_cause": True},
 }
 GENERIC_OPENING_PATTERNS = (
@@ -1956,7 +1958,7 @@ def pick_library_reading(
         length_penalty = abs(int(row["word_count"]) - int(length_target)) * 0.65
         keyword_bonus = float(quality.get("keyword_hits", 0)) * 8
         quality_bonus = float(quality.get("score", 0)) * 0.45
-        lexical_bonus = float(quality.get("advanced_hits", 0)) * (3 if level in {"B2", "C1", "Academic"} else 1)
+        lexical_bonus = float(quality.get("advanced_hits", 0)) * (3 if level in {"B2", "C1", "C2", "Academic"} else 1)
         repetition_penalty = float(quality.get("repeated_openings", 0)) * 9 + float(quality.get("repeated_shapes", 0)) * 4
         score = length_penalty + repetition_penalty - keyword_bonus - quality_bonus - lexical_bonus
         scored.append((score, row))
@@ -2521,7 +2523,7 @@ def assess_library_reading_quality(text: str, level: str, keywords: list[str]) -
     score += 7 if cause_hit or not target_rule["needs_cause"] else -8
     if known_levels:
         score += min(12, advanced_hits * 2)
-    if level in {"B2", "C1", "Academic"} and advanced_hits < target_rule["advanced_min"]:
+    if level in {"B2", "C1", "C2", "Academic"} and advanced_hits < target_rule["advanced_min"]:
         score -= (target_rule["advanced_min"] - advanced_hits) * 8
 
     return {
@@ -2708,6 +2710,10 @@ def build_local_reading(level: str, topic: str, keywords: list[str], length_targ
         "C1": [
             "As the situation grows more complex, the text highlights subtle motivations, decisions, and consequences.",
             "This makes the reading feel more layered while still staying coherent and accessible.",
+        ],
+        "C2": [
+            "From a highly advanced perspective, the paragraph also draws attention to nuance, interpretation, and conceptual precision.",
+            "The tone remains layered and analytical, so the reader can follow both the example and the broader argument behind it.",
         ],
         "Academic": [
             "From an academic perspective, the paragraph also draws attention to evidence, structure, and interpretation.",

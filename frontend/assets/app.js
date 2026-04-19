@@ -4,17 +4,15 @@ const LEVEL_CONFIG = {
   B1: { min: 120, max: 170, hint: "Natural and comfortably paced" },
   B2: { min: 150, max: 220, hint: "Richer but still easy to read" },
   C1: { min: 180, max: 260, hint: "Advanced, natural, and detailed" },
-  Academic: { min: 190, max: 280, hint: "Analytical and academic" },
+  C2: { min: 190, max: 280, hint: "Highly advanced and nuanced" },
 };
 
 const TOPIC_KEYWORDS = {
   Random: ["story", "daily", "idea", "change"],
-  Open: ["morning", "project", "travel", "friend"],
   "Daily Life": ["morning", "coffee", "routine", "friend"],
   School: ["student", "teacher", "library", "study"],
   Travel: ["travel", "city", "hotel", "ticket"],
   "Work Life": ["meeting", "project", "office", "email"],
-  Academic: ["research", "analysis", "evidence", "study"],
   Science: ["science", "evidence", "method", "observation"],
   Health: ["health", "routine", "balance", "habit"],
   Sport: ["team", "practice", "focus", "goal"],
@@ -34,7 +32,6 @@ const TOPIC_KEYWORDS = {
 
 const TOPIC_ORDER = [
   "Random",
-  "Open",
   "Daily Life",
   "School",
   "Travel",
@@ -42,7 +39,6 @@ const TOPIC_ORDER = [
   "Science",
   "Health",
   "Sport",
-  "Academic",
   "Data Science",
   "Computer Science",
   "Technology",
