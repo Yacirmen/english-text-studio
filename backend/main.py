@@ -6,6 +6,7 @@ import re
 import secrets
 import smtplib
 import sqlite3
+from collections import Counter
 from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
 from pathlib import Path
@@ -32,6 +33,8 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = ROOT_DIR / "frontend"
 ENV_PATH = ROOT_DIR / ".env"
 DB_PATH = ROOT_DIR / "backend" / "app.db"
+CURATED_LIBRARY_SOURCE = "desktop_curated"
+CURATED_READINGS_PATH = ROOT_DIR / "backend" / "curated_readings.txt"
 EXTRA_WORD_MAP_PATH = ROOT_DIR / "backend" / "extra_word_map.json"
 LIBRARY_WORD_MAP_PATH = ROOT_DIR / "backend" / "library_word_map.json"
 CEFR_VOCAB_INDEX_PATH = ROOT_DIR / "backend" / "cefr_vocab_index.json"
@@ -954,6 +957,216 @@ def seed_readings() -> None:
         db_insert(insert_query, payload)
 
 
+CURATED_HEADER_PATTERN = re.compile(
+    r"^\[(A1|A2|B1|B2|C1|C2)-(\d+)(?: \| Topic: ([^|\]]+) \| Words: (\d+))?\]$",
+    re.MULTILINE,
+)
+CURATED_KEYWORD_STOPWORDS = {
+    "the",
+    "a",
+    "an",
+    "and",
+    "or",
+    "but",
+    "if",
+    "in",
+    "on",
+    "at",
+    "to",
+    "for",
+    "of",
+    "with",
+    "from",
+    "by",
+    "as",
+    "is",
+    "are",
+    "was",
+    "were",
+    "be",
+    "been",
+    "being",
+    "it",
+    "this",
+    "that",
+    "these",
+    "those",
+    "he",
+    "she",
+    "they",
+    "we",
+    "you",
+    "i",
+    "his",
+    "her",
+    "their",
+    "our",
+    "my",
+    "your",
+    "me",
+    "him",
+    "them",
+    "us",
+    "have",
+    "has",
+    "had",
+    "do",
+    "does",
+    "did",
+    "can",
+    "could",
+    "will",
+    "would",
+    "should",
+    "may",
+    "might",
+    "must",
+    "not",
+    "no",
+    "yes",
+    "very",
+    "more",
+    "most",
+    "many",
+    "much",
+    "one",
+    "two",
+    "also",
+    "than",
+    "then",
+    "there",
+    "here",
+    "about",
+    "into",
+    "over",
+    "under",
+    "after",
+    "before",
+    "during",
+    "while",
+    "when",
+    "where",
+    "which",
+    "who",
+    "whom",
+    "whose",
+    "because",
+    "however",
+    "although",
+    "instead",
+    "each",
+    "every",
+    "some",
+    "any",
+    "all",
+    "other",
+    "another",
+    "today",
+    "yesterday",
+    "last",
+    "next",
+    "now",
+    "really",
+    "often",
+    "sometimes",
+    "usually",
+}
+
+
+def derive_curated_topic(level: str, body: str) -> str:
+    lowered = body.lower()
+    rules = [
+        ("Education", ["school", "student", "study", "teacher", "homework", "english", "learn", "learning"]),
+        ("Work & Career", ["office", "work", "meeting", "project", "colleague", "employees", "job", "tasks"]),
+        ("Technology", ["phone", "smartphone", "internet", "social media", "technology", "computer", "devices", "screens"]),
+        ("Travel", ["travel", "trip", "holiday", "hotel", "beach", "city", "village", "countries", "airport"]),
+        ("Health", ["healthy", "exercise", "sleep", "diet", "food", "mental health", "rest"]),
+        ("Environment", ["environment", "pollution", "climate", "waste", "recycle", "energy", "plastic"]),
+        ("Communication", ["communicat", "listen", "listening", "message", "conversation", "body language", "tone of voice"]),
+        ("Social Life", ["friends", "friendship", "party", "family", "together", "relationships"]),
+        ("Daily Life", ["morning", "breakfast", "dinner", "house", "park", "supermarket", "routine", "day"]),
+    ]
+    for topic_name, needles in rules:
+        if any(needle in lowered for needle in needles):
+            return topic_name
+    return "General"
+
+
+def derive_curated_keywords(body: str, topic: str) -> list[str]:
+    words = re.findall(r"[A-Za-z]+(?:'[A-Za-z]+)?", body.lower())
+    counts = Counter(word for word in words if len(word) > 2 and word not in CURATED_KEYWORD_STOPWORDS)
+    keywords: list[str] = []
+    for piece in re.split(r"[^A-Za-z]+", topic.lower()):
+        cleaned = piece.strip()
+        if cleaned and cleaned not in CURATED_KEYWORD_STOPWORDS and cleaned not in keywords:
+            keywords.append(cleaned)
+    for word, _count in counts.most_common(6):
+        if word not in keywords:
+            keywords.append(word)
+        if len(keywords) >= 6:
+            break
+    return keywords[:6] or ["reading"]
+
+
+def parse_curated_readings_file() -> list[dict[str, Any]]:
+    if not CURATED_READINGS_PATH.exists():
+        return []
+    text = CURATED_READINGS_PATH.read_text(encoding="utf-8", errors="replace").replace("\r\n", "\n")
+    headers = list(CURATED_HEADER_PATTERN.finditer(text))
+    items: list[dict[str, Any]] = []
+    for index, match in enumerate(headers):
+        level = match.group(1)
+        entry_number = int(match.group(2))
+        topic = (match.group(3) or "").strip()
+        start = match.end()
+        end = headers[index + 1].start() if index + 1 < len(headers) else len(text)
+        body = text[start:end].strip()
+        if not body:
+            continue
+        body = re.sub(r"\n{2,}", "\n\n", body)
+        if not topic:
+            topic = derive_curated_topic(level, body)
+        title = f"{topic} Reading {entry_number}"
+        keywords = derive_curated_keywords(body, topic)
+        word_count = len(re.findall(r"[A-Za-z]+(?:'[A-Za-z]+)?", body))
+        items.append(
+            {
+                "title": title,
+                "text": body,
+                "level": level,
+                "topic": topic,
+                "keywords": keywords,
+                "word_count": word_count,
+            }
+        )
+    return items
+
+
+def import_curated_readings() -> None:
+    items = parse_curated_readings_file()
+    if not items:
+        return
+    db_execute("DELETE FROM readings WHERE source = ?", (CURATED_LIBRARY_SOURCE,))
+    insert_query = (
+        "INSERT INTO readings (title, text, level, topic, keywords, word_count, source, is_published) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+    )
+    if USE_POSTGRES:
+        insert_query += " RETURNING id"
+    for item in items:
+        payload = (
+            item["title"],
+            item["text"],
+            item["level"],
+            item["topic"],
+            json.dumps(item["keywords"], ensure_ascii=False),
+            int(item["word_count"]),
+            CURATED_LIBRARY_SOURCE,
+            1,
+        )
+        db_insert(insert_query, payload)
+
+
 def ensure_learning_tables() -> None:
     table_statements = [
         """
@@ -1147,6 +1360,7 @@ init_db()
 ensure_auth_columns()
 ensure_learning_tables()
 seed_readings()
+import_curated_readings()
 
 
 def hash_password(password: str) -> str:
@@ -1701,6 +1915,16 @@ def parse_keywords_field(value: str) -> list[str]:
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
+def library_source_filter() -> tuple[str, tuple[Any, ...]]:
+    curated_row = db_fetchone(
+        "SELECT COUNT(*) AS total FROM readings WHERE is_published = 1 AND source = ?",
+        (CURATED_LIBRARY_SOURCE,),
+    )
+    if int((curated_row or {}).get("total", 0) or 0) > 0:
+        return " AND source = ?", (CURATED_LIBRARY_SOURCE,)
+    return "", ()
+
+
 def pick_library_reading(
     level: str,
     topic: str,
@@ -1709,14 +1933,15 @@ def pick_library_reading(
     exclude_title: str | None = None,
 ) -> dict[str, Any] | None:
     normalized_topic = normalize_topic(topic)
+    source_clause, source_params = library_source_filter()
     rows = db_fetchall(
-        """
+        f"""
         SELECT id, title, text, level, topic, keywords, word_count, source
         FROM readings
-        WHERE is_published = 1 AND level = ?
+        WHERE is_published = 1 AND level = ?{source_clause}
         ORDER BY id
         """,
-        (level,),
+        (level, *source_params),
     )
     if not rows:
         return None
@@ -3025,12 +3250,15 @@ def generate(payload: GenerateRequest, session_token: str | None = Cookie(defaul
 
 @app.get("/api/library/readings")
 def list_library_readings(level: str | None = None, topic: str | None = None) -> dict[str, Any]:
+    source_clause, source_params = library_source_filter()
     query = """
         SELECT id, title, level, topic, keywords, word_count, source
         FROM readings
         WHERE is_published = 1
     """
-    params: list[Any] = []
+    params: list[Any] = list(source_params)
+    if source_clause:
+        query += source_clause
     if level:
         query += " AND level = ?"
         params.append(level)
@@ -3046,24 +3274,30 @@ def list_library_readings(level: str | None = None, topic: str | None = None) ->
 
 @app.get("/api/library/stats")
 def library_stats() -> dict[str, Any]:
-    total_row = db_fetchone("SELECT COUNT(*) AS total FROM readings WHERE is_published = 1")
+    source_clause, source_params = library_source_filter()
+    total_row = db_fetchone(
+        f"SELECT COUNT(*) AS total FROM readings WHERE is_published = 1{source_clause}",
+        source_params,
+    )
     level_rows = db_fetchall(
-        """
+        f"""
         SELECT level, COUNT(*) AS total
         FROM readings
-        WHERE is_published = 1
+        WHERE is_published = 1{source_clause}
         GROUP BY level
         ORDER BY level
-        """
+        """,
+        source_params,
     )
     topic_rows = db_fetchall(
-        """
+        f"""
         SELECT topic, COUNT(*) AS total
         FROM readings
-        WHERE is_published = 1
+        WHERE is_published = 1{source_clause}
         GROUP BY topic
         ORDER BY topic
-        """
+        """,
+        source_params,
     )
     return {
         "total": int((total_row or {}).get("total", 0)),
