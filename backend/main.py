@@ -1415,10 +1415,16 @@ def get_reading_history(user_id: int, limit: int = 4) -> list[dict[str, Any]]:
         SELECT id, title, level, topic, content_source, viewed_at
         FROM reading_history
         WHERE user_id = ?
+          AND id IN (
+              SELECT MAX(id)
+              FROM reading_history
+              WHERE user_id = ?
+              GROUP BY title, text, level, topic, content_source
+          )
         ORDER BY viewed_at DESC, id DESC
         LIMIT ?
         """,
-        (user_id, limit),
+        (user_id, user_id, limit),
     )
 
 

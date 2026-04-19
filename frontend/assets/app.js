@@ -949,6 +949,24 @@ function renderUserPanel() {
   authGuestEl.classList.toggle("hidden", loggedIn);
   authUserEl.classList.toggle("hidden", !loggedIn);
   if (loggedIn) {
+    const uniqueReadingHistory = state.readingHistory.filter((item, index, items) => {
+      const key = [
+        String(item.title || "").trim().toLowerCase(),
+        String(item.level || "").trim().toLowerCase(),
+        String(item.topic || "").trim().toLowerCase(),
+        String(item.content_source || "").trim().toLowerCase(),
+      ].join("|");
+      return index === items.findIndex((candidate) => {
+        const candidateKey = [
+          String(candidate.title || "").trim().toLowerCase(),
+          String(candidate.level || "").trim().toLowerCase(),
+          String(candidate.topic || "").trim().toLowerCase(),
+          String(candidate.content_source || "").trim().toLowerCase(),
+        ].join("|");
+        return candidateKey === key;
+      });
+    });
+
     accountNameEl.textContent = state.user.username;
     savedWordsCountEl.textContent = state.stats.saved_words || 0;
     masteredWordsCountEl.textContent = state.stats.mastered_words || 0;
@@ -974,10 +992,10 @@ function renderUserPanel() {
       hardWordsTextEl.textContent = `${state.stats.hard_words || 0} hard words ready for review.`;
     }
     if (readingHistoryListEl) {
-      if (!state.readingHistory.length) {
+      if (!uniqueReadingHistory.length) {
         readingHistoryListEl.innerHTML = `<p class="history-empty">Your recent readings will appear here.</p>`;
       } else {
-        readingHistoryListEl.innerHTML = state.readingHistory
+        readingHistoryListEl.innerHTML = uniqueReadingHistory
           .map((item) => `
             <button class="history-item" type="button" data-history-id="${item.id}">
               <strong>${escapeHtml(item.title)}</strong>
