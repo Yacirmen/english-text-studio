@@ -1916,13 +1916,7 @@ def parse_keywords_field(value: str) -> list[str]:
 
 
 def library_source_filter() -> tuple[str, tuple[Any, ...]]:
-    curated_row = db_fetchone(
-        "SELECT COUNT(*) AS total FROM readings WHERE is_published = 1 AND source = ?",
-        (CURATED_LIBRARY_SOURCE,),
-    )
-    if int((curated_row or {}).get("total", 0) or 0) > 0:
-        return " AND source = ?", (CURATED_LIBRARY_SOURCE,)
-    return "", ()
+    return " AND source = ?", (CURATED_LIBRARY_SOURCE,)
 
 
 def pick_library_reading(

@@ -140,6 +140,21 @@ body::before{
   box-shadow:0 10px 24px rgba(24,49,83,.08);
 }
 .brand-lockup{display:flex;align-items:center}
+.topbar-slogan{
+  flex:1;
+  min-width:0;
+  padding:0 14px;
+  text-align:center;
+  color:#58708f;
+  font-size:.92rem;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  opacity:.92;
+}
 .theme-toggle{
   position:relative;
   display:inline-flex;
@@ -234,6 +249,10 @@ body.dark-mode .reading-title,
 body.dark-mode .topbar,
 body.dark-mode .quiz-sentence{
   color:var(--ink);
+}
+body.dark-mode .topbar-slogan{
+  color:#b7c9df;
+  text-shadow:0 0 18px rgba(255,255,255,.04);
 }
 body.dark-mode .word{
   color:#eaf2ff;
@@ -1938,6 +1957,13 @@ body.dark-mode .collocation-chip{
   .studio-layout,.experience-grid,.form-row,.setup-summary,.welcome-card{grid-template-columns:1fr}
   .tool-rail,.detail-column{position:static}
   .topbar{border-radius:28px;flex-direction:column;align-items:flex-start}
+  .topbar-slogan{
+    padding:0;
+    text-align:left;
+    white-space:normal;
+    line-height:1.25;
+    max-width:320px;
+  }
   .top-status{justify-content:flex-start}
   .top-tools{width:100%}
   .profile-menu{left:0;right:auto}
@@ -1953,6 +1979,7 @@ body.dark-mode .collocation-chip{
 
 @media (max-width: 768px){
   .page-shell{padding:10px 10px 22px}
+  .topbar-slogan{display:none}
   .welcome-gate{
     align-items:flex-start;
     justify-content:stretch;
