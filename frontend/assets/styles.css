@@ -97,11 +97,11 @@ body::before{
 .welcome-headline{
   display:flex;
   flex-direction:column;
-  gap:4px;
-  margin:14px 0 12px;
-  max-width:9ch;
-  font-size:clamp(2.15rem,4vw,3.95rem);
-  line-height:.92;
+  gap:2px;
+  margin:12px 0 10px;
+  max-width:8.5ch;
+  font-size:clamp(2rem,3.6vw,3.35rem);
+  line-height:.96;
   letter-spacing:-.06em;
 }
 .welcome-headline span{
@@ -112,82 +112,48 @@ body::before{
   text-shadow:0 10px 24px rgba(28,176,246,.16);
 }
 .welcome-copy p{
-  max-width:40ch;
+  max-width:34ch;
   margin:0;
   color:var(--muted);
-  font-size:.96rem;
-  line-height:1.68;
+  font-size:.93rem;
+  line-height:1.58;
 }
 .welcome-points{
   display:flex;
   flex-wrap:wrap;
   gap:8px;
-  margin-top:18px;
+  margin-top:14px;
 }
 .welcome-points span{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  min-height:34px;
-  padding:0 12px;
+  min-height:32px;
+  padding:0 11px;
   border-radius:999px;
   background:rgba(255,255,255,.88);
   color:#3e5470;
-  font-size:.76rem;
+  font-size:.72rem;
   font-weight:900;
   box-shadow:0 10px 20px rgba(24,49,83,.08);
 }
-.welcome-points-grid span{
-  min-width:max-content;
-}
-.welcome-metrics{
-  display:grid;
-  grid-template-columns:repeat(2, minmax(0,1fr));
-  gap:12px;
-  margin-top:16px;
-}
-.welcome-metric-card{
-  padding:14px 14px 13px;
-  border-radius:20px;
-  background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(242,247,255,.78));
-  border:1px solid rgba(164,186,214,.26);
-  box-shadow:0 14px 30px rgba(24,49,83,.08);
-}
-.welcome-metric-card strong{
-  display:block;
-  color:#1d3b61;
-  font-size:.92rem;
-  line-height:1.2;
-}
-.welcome-metric-card p{
-  margin-top:6px;
-  max-width:none;
-  font-size:.82rem;
-  line-height:1.55;
-}
 .welcome-side-note{
-  display:grid;
-  gap:6px;
-  margin-top:16px;
-  padding:14px 16px;
-  border-radius:20px;
+  display:flex;
+  align-items:center;
+  margin-top:14px;
+  padding:12px 14px;
+  border-radius:18px;
   background:linear-gradient(135deg, rgba(255,255,255,.74), rgba(226,240,255,.66));
   border:1px solid rgba(175,198,225,.34);
 }
 .welcome-side-note span{
   color:#23466f;
-  font-size:.74rem;
+  font-size:.72rem;
   font-weight:900;
   letter-spacing:.1em;
   text-transform:uppercase;
 }
-.welcome-side-note p{
-  margin:0;
-  max-width:none;
-  color:#4c647f;
-  font-size:.86rem;
-  line-height:1.5;
-}
+.welcome-side-note-compact{max-width:320px}
 .welcome-auth{
   padding:20px;
   border-radius:26px;
@@ -2652,54 +2618,33 @@ body.dark-mode .collocation-chip{
   }
   .welcome-headline{
     margin:8px 0 10px;
-    max-width:9ch;
+    max-width:10ch;
     gap:2px;
-    font-size:clamp(1.72rem,8.2vw,2.45rem);
+    font-size:clamp(1.7rem,7.4vw,2.28rem);
     line-height:.97;
   }
   .welcome-copy p{
     max-width:none;
-    font-size:.88rem;
-    line-height:1.56;
+    font-size:.84rem;
+    line-height:1.5;
   }
   .welcome-points{
-    display:grid;
-    grid-template-columns:repeat(2, minmax(0,1fr));
-    gap:8px;
-    margin-top:14px;
-  }
-  .welcome-points span{
-    min-height:34px;
-    justify-content:center;
-    padding:0 10px;
-    font-size:.72rem;
-  }
-  .welcome-metrics{
-    grid-template-columns:1fr;
     gap:8px;
     margin-top:12px;
   }
-  .welcome-metric-card{
-    padding:12px 12px 11px;
-    border-radius:18px;
-  }
-  .welcome-metric-card strong{font-size:.86rem}
-  .welcome-metric-card p{
-    margin-top:5px;
-    font-size:.78rem;
-    line-height:1.45;
+  .welcome-points span{
+    min-height:32px;
+    justify-content:center;
+    padding:0 10px;
+    font-size:.7rem;
   }
   .welcome-side-note{
     margin-top:12px;
-    padding:12px 13px;
+    padding:11px 12px;
     border-radius:18px;
   }
   .welcome-side-note span{
     font-size:.68rem;
-  }
-  .welcome-side-note p{
-    font-size:.78rem;
-    line-height:1.42;
   }
   .welcome-auth{padding:14px;border-radius:20px}
   .welcome-toggle{margin-bottom:14px}
