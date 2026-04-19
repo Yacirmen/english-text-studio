@@ -303,22 +303,22 @@ async function apiFetch(url, options = {}) {
 function setBodyScrollLocked(isLocked) {
   if (isLocked) {
     lockedScrollY = window.scrollY || window.pageYOffset || 0;
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${lockedScrollY}px`;
-    document.body.style.left = "0";
-    document.body.style.right = "0";
-    document.body.style.width = "100%";
+    pageShell?.classList.add("scroll-locked");
+    if (pageShell) {
+      pageShell.style.top = `-${lockedScrollY}px`;
+      pageShell.style.left = "0";
+      pageShell.style.right = "0";
+    }
     return;
   }
 
-  if (document.body.style.position !== "fixed") return;
+  if (!pageShell?.classList.contains("scroll-locked")) return;
 
-  const restoreY = Math.abs(parseInt(document.body.style.top || "0", 10)) || lockedScrollY || 0;
-  document.body.style.position = "";
-  document.body.style.top = "";
-  document.body.style.left = "";
-  document.body.style.right = "";
-  document.body.style.width = "";
+  const restoreY = Math.abs(parseInt(pageShell.style.top || "0", 10)) || lockedScrollY || 0;
+  pageShell.classList.remove("scroll-locked");
+  pageShell.style.top = "";
+  pageShell.style.left = "";
+  pageShell.style.right = "";
   window.scrollTo(0, restoreY);
   lockedScrollY = 0;
 }

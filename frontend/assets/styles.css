@@ -47,6 +47,12 @@ body::before{
   gap:12px;
 }
 .page-shell{position:relative;z-index:1;max-width:1460px;margin:0 auto;padding:18px 18px 28px}
+.page-shell.scroll-locked{
+  position:fixed;
+  inset:0;
+  overflow:hidden;
+  width:100%;
+}
 .gate-open{overflow:auto}
 .gate-open .page-shell{
   pointer-events:none;
