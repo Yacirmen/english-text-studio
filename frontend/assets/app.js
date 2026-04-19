@@ -1138,13 +1138,19 @@ function updateAccountStatsOnly() {
 }
 
 function clearAuthToasts() {
-  document.querySelectorAll(".auth-toast").forEach((toast) => toast.remove());
+  document.querySelectorAll(".auth-toast").forEach((toast) => {
+    toast.parentElement?.classList?.remove("auth-toast-host");
+    toast.remove();
+  });
 }
 
 function showAuthToast(message, anchorEl) {
   const host = anchorEl?.closest?.(".auth-face") || anchorEl?.closest?.(".welcome-auth") || document.body;
   const existing = host.querySelector(".auth-toast");
-  if (existing) existing.remove();
+  if (existing) {
+    host.classList.remove("auth-toast-host");
+    existing.remove();
+  }
 
   const toast = document.createElement("div");
   toast.className = "auth-toast";
@@ -1160,12 +1166,17 @@ function showAuthToast(message, anchorEl) {
   closeBtn.type = "button";
   closeBtn.setAttribute("aria-label", "Close");
   closeBtn.textContent = "x";
-  closeBtn.addEventListener("click", () => toast.remove());
+  closeBtn.addEventListener("click", () => {
+    host.classList.remove("auth-toast-host");
+    toast.remove();
+  });
 
   toast.append(text, closeBtn);
+  host.classList.add("auth-toast-host");
   host.appendChild(toast);
 
   window.setTimeout(() => {
+    host.classList.remove("auth-toast-host");
     toast.remove();
   }, 5000);
 }
