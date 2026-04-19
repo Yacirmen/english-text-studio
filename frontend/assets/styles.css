@@ -68,12 +68,12 @@ body::before{
   min-height:100dvh;
 }
 .welcome-card{
-  width:min(1160px, 100%);
+  width:min(1080px, 100%);
   display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(360px,.82fr);
-  gap:28px;
-  padding:30px;
-  border-radius:36px;
+  grid-template-columns:minmax(0,1fr) minmax(330px,.78fr);
+  gap:22px;
+  padding:24px;
+  border-radius:34px;
   background:
     radial-gradient(circle at top left, rgba(255,216,77,.38), transparent 24%),
     radial-gradient(circle at bottom right, rgba(28,176,246,.16), transparent 26%),
@@ -86,37 +86,48 @@ body::before{
   flex-direction:column;
   justify-content:center;
   min-width:0;
+  padding:6px 4px 6px 2px;
 }
-.welcome-copy h1{
-  margin:16px 0 14px;
-  max-width:10ch;
-  font-size:clamp(2.55rem,4.8vw,4.9rem);
-  line-height:.96;
-  letter-spacing:-.065em;
+.welcome-headline{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  margin:14px 0 12px;
+  max-width:9ch;
+  font-size:clamp(2.15rem,4vw,3.95rem);
+  line-height:.92;
+  letter-spacing:-.06em;
+}
+.welcome-headline span{
+  display:block;
+}
+.welcome-headline-accent{
+  color:#204e82;
+  text-shadow:0 10px 24px rgba(28,176,246,.16);
 }
 .welcome-copy p{
-  max-width:46ch;
+  max-width:40ch;
   margin:0;
   color:var(--muted);
-  font-size:1.02rem;
-  line-height:1.72;
+  font-size:.96rem;
+  line-height:1.68;
 }
 .welcome-points{
   display:flex;
   flex-wrap:wrap;
-  gap:10px;
-  margin-top:20px;
+  gap:8px;
+  margin-top:18px;
 }
 .welcome-points span{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  min-height:38px;
-  padding:0 14px;
+  min-height:34px;
+  padding:0 12px;
   border-radius:999px;
   background:rgba(255,255,255,.88);
   color:#3e5470;
-  font-size:.84rem;
+  font-size:.76rem;
   font-weight:900;
   box-shadow:0 10px 20px rgba(24,49,83,.08);
 }
@@ -126,12 +137,12 @@ body::before{
 .welcome-metrics{
   display:grid;
   grid-template-columns:repeat(2, minmax(0,1fr));
-  gap:14px;
-  margin-top:20px;
+  gap:12px;
+  margin-top:16px;
 }
 .welcome-metric-card{
-  padding:18px 18px 16px;
-  border-radius:24px;
+  padding:14px 14px 13px;
+  border-radius:20px;
   background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(242,247,255,.78));
   border:1px solid rgba(164,186,214,.26);
   box-shadow:0 14px 30px rgba(24,49,83,.08);
@@ -139,18 +150,41 @@ body::before{
 .welcome-metric-card strong{
   display:block;
   color:#1d3b61;
-  font-size:1rem;
+  font-size:.92rem;
   line-height:1.2;
 }
 .welcome-metric-card p{
-  margin-top:8px;
+  margin-top:6px;
   max-width:none;
-  font-size:.92rem;
-  line-height:1.6;
+  font-size:.82rem;
+  line-height:1.55;
+}
+.welcome-side-note{
+  display:grid;
+  gap:6px;
+  margin-top:16px;
+  padding:14px 16px;
+  border-radius:20px;
+  background:linear-gradient(135deg, rgba(255,255,255,.74), rgba(226,240,255,.66));
+  border:1px solid rgba(175,198,225,.34);
+}
+.welcome-side-note span{
+  color:#23466f;
+  font-size:.74rem;
+  font-weight:900;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+}
+.welcome-side-note p{
+  margin:0;
+  max-width:none;
+  color:#4c647f;
+  font-size:.86rem;
+  line-height:1.5;
 }
 .welcome-auth{
-  padding:24px;
-  border-radius:28px;
+  padding:20px;
+  border-radius:26px;
   background:linear-gradient(180deg, rgba(23,48,79,.96), rgba(29,58,95,.96));
   color:#fff;
   box-shadow:0 18px 42px rgba(24,49,83,.18);
@@ -818,11 +852,11 @@ body.dark-mode .inline-highlight{
 }
 .auth-flip-scene{
   perspective:1400px;
-  min-height:416px;
+  min-height:388px;
   flex:0 0 auto;
   position:relative;
 }
-.auth-flip-scene-compact{min-height:392px}
+.auth-flip-scene-compact{min-height:372px}
 .auth-flip-card{
   position:relative;
   min-height:inherit;
@@ -2554,9 +2588,9 @@ body.dark-mode .collocation-chip{
   .studio-layout,.experience-grid,.form-row,.setup-summary,.welcome-card{grid-template-columns:1fr}
   .tool-rail,.detail-column{position:static}
   .topbar{border-radius:28px;flex-direction:column;align-items:flex-start}
-  .welcome-copy h1{
-    max-width:12ch;
-    font-size:clamp(2.4rem,5.5vw,4.2rem);
+  .welcome-headline{
+    max-width:10ch;
+    font-size:clamp(2rem,5vw,3.4rem);
   }
   .welcome-copy p{max-width:52ch}
   .welcome-metrics{
@@ -2601,49 +2635,65 @@ body.dark-mode .collocation-chip{
   .welcome-card{
     width:100%;
     margin:0;
-    padding:18px;
-    border-radius:26px;
-    gap:16px;
+    padding:16px;
+    border-radius:24px;
+    gap:14px;
   }
-  .welcome-copy h1{
-    margin:12px 0 12px;
-    max-width:11ch;
-    font-size:clamp(2.15rem,11vw,3.15rem);
-    line-height:1.01;
+  .welcome-copy{
+    padding:2px 2px 0;
+  }
+  .welcome-headline{
+    margin:8px 0 10px;
+    max-width:9ch;
+    gap:2px;
+    font-size:clamp(1.72rem,8.2vw,2.45rem);
+    line-height:.97;
   }
   .welcome-copy p{
     max-width:none;
-    font-size:.95rem;
-    line-height:1.62;
+    font-size:.88rem;
+    line-height:1.56;
   }
   .welcome-points{
     display:grid;
-    grid-template-columns:1fr;
+    grid-template-columns:repeat(2, minmax(0,1fr));
     gap:8px;
-    margin-top:16px;
+    margin-top:14px;
   }
   .welcome-points span{
-    min-height:36px;
-    justify-content:flex-start;
-    padding:0 14px;
-    font-size:.78rem;
+    min-height:34px;
+    justify-content:center;
+    padding:0 10px;
+    font-size:.72rem;
   }
   .welcome-metrics{
     grid-template-columns:1fr;
-    gap:10px;
-    margin-top:14px;
+    gap:8px;
+    margin-top:12px;
   }
   .welcome-metric-card{
-    padding:14px 14px 13px;
-    border-radius:20px;
+    padding:12px 12px 11px;
+    border-radius:18px;
   }
-  .welcome-metric-card strong{font-size:.94rem}
+  .welcome-metric-card strong{font-size:.86rem}
   .welcome-metric-card p{
-    margin-top:6px;
-    font-size:.84rem;
-    line-height:1.5;
+    margin-top:5px;
+    font-size:.78rem;
+    line-height:1.45;
   }
-  .welcome-auth{padding:16px;border-radius:22px}
+  .welcome-side-note{
+    margin-top:12px;
+    padding:12px 13px;
+    border-radius:18px;
+  }
+  .welcome-side-note span{
+    font-size:.68rem;
+  }
+  .welcome-side-note p{
+    font-size:.78rem;
+    line-height:1.42;
+  }
+  .welcome-auth{padding:14px;border-radius:20px}
   .welcome-toggle{margin-bottom:14px}
   .auth-toggle{gap:8px}
   .auth-tab{
@@ -2651,8 +2701,8 @@ body.dark-mode .collocation-chip{
     padding:0 10px;
     font-size:.84rem;
   }
-  .auth-flip-scene{min-height:416px}
-  .auth-flip-scene-compact{min-height:392px}
+  .auth-flip-scene{min-height:356px}
+  .auth-flip-scene-compact{min-height:344px}
   .auth-face{padding:16px;border-radius:24px;gap:12px}
   .auth-face.auth-toast-host{padding-top:90px}
   .auth-toast{
