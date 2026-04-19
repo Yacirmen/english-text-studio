@@ -1073,6 +1073,39 @@ function updateAccountStatsOnly() {
   masteredWordsCountEl.textContent = state.stats.mastered_words || 0;
 }
 
+function clearAuthToasts() {
+  document.querySelectorAll(".auth-toast").forEach((toast) => toast.remove());
+}
+
+function showAuthToast(message, anchorEl) {
+  const host = anchorEl?.closest?.(".auth-face") || anchorEl?.closest?.(".welcome-auth") || document.body;
+  const existing = host.querySelector(".auth-toast");
+  if (existing) existing.remove();
+
+  const toast = document.createElement("div");
+  toast.className = "auth-toast";
+  toast.setAttribute("role", "status");
+  toast.setAttribute("aria-live", "polite");
+
+  const text = document.createElement("div");
+  text.className = "auth-toast-text";
+  text.textContent = String(message || "");
+
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "auth-toast-close";
+  closeBtn.type = "button";
+  closeBtn.setAttribute("aria-label", "Close");
+  closeBtn.textContent = "x";
+  closeBtn.addEventListener("click", () => toast.remove());
+
+  toast.append(text, closeBtn);
+  host.appendChild(toast);
+
+  window.setTimeout(() => {
+    toast.remove();
+  }, 5000);
+}
+
 function hideAuthErrors() {
   [authLoginErrorEl, authRegisterErrorEl, gateLoginErrorEl, gateRegisterErrorEl].forEach((el) => el?.classList.add("hidden"));
 }
@@ -1093,7 +1126,38 @@ async function submitAuthForm({
   mirrorUsernameEls = [],
   mirrorPasswordEls = [],
 }) {
-  errorEl?.classList.add("hidden");
+  const formatAuthError = (detail) => {
+    if (!detail) return "Authentication failed.";
+    if (typeof detail === "string") return detail;
+    if (Array.isArray(detail)) {
+      const parts = detail
+        .map((item) => {
+          if (!item) return "";
+          if (typeof item === "string") return item;
+          if (typeof item !== "object") return String(item);
+          const msg = typeof item.msg === "string" ? item.msg : "";
+          const loc = Array.isArray(item.loc) ? item.loc : [];
+          const field = loc.length ? String(loc[loc.length - 1]) : "";
+          if (field && msg) return `${field}: ${msg}`;
+          return msg || String(item.message || item.error || item.title || "") || "";
+        })
+        .filter(Boolean);
+      return parts.join("\n") || "Authentication failed.";
+    }
+    if (typeof detail === "object") {
+      if (Array.isArray(detail.detail)) return formatAuthError(detail.detail);
+      if (typeof detail.message === "string") return detail.message;
+      if (typeof detail.error === "string") return detail.error;
+      if (typeof detail.title === "string") return detail.title;
+      if (typeof detail.msg === "string") return detail.msg;
+    }
+    return "Authentication failed.";
+  };
+
+  if (errorEl) {
+    errorEl.textContent = "";
+    errorEl.classList.add("hidden");
+  }
   setLoading(submitBtn, endpoint.includes("/login") ? "Logging in..." : "Creating account...", true);
   try {
     const payload = {
@@ -1104,7 +1168,7 @@ async function submitAuthForm({
       method: "POST",
       body: JSON.stringify(payload),
     });
-    if (!parsed.ok) throw new Error(parsed.data.detail || "Authentication failed.");
+    if (!parsed.ok) throw new Error(formatAuthError(parsed?.data?.detail));
     [...mirrorUsernameEls, usernameEl].forEach((el) => {
       if (el) el.value = payload.username;
     });
@@ -1121,8 +1185,15 @@ async function submitAuthForm({
     await loadQuiz();
   } catch (error) {
     if (errorEl) {
-      errorEl.textContent = error.message;
-      errorEl.classList.remove("hidden");
+      const message =
+        typeof error === "string"
+          ? error
+          : error && typeof error === "object" && typeof error.message === "string"
+            ? error.message
+            : "Authentication failed.";
+      errorEl.textContent = message;
+      errorEl.classList.add("hidden");
+      showAuthToast(message, errorEl);
     }
   } finally {
     setLoading(submitBtn, "", false);
@@ -1141,6 +1212,7 @@ function renderAuthMode() {
     el.dataset.mode = isLogin ? "login" : "register";
   });
   hideAuthErrors();
+  clearAuthToasts();
 }
 
 function renderWelcomeGate() {
