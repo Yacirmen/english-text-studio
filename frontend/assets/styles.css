@@ -855,9 +855,7 @@ body.dark-mode .inline-highlight{
   border:1px solid rgba(255,255,255,.12);
   overflow:visible;
 }
-.auth-face.auth-toast-host{
-  padding-top:104px;
-}
+.auth-face.auth-toast-host{padding-top:20px}
 
 .auth-toast{
   position:absolute;
@@ -2655,7 +2653,7 @@ body.dark-mode .collocation-chip{
   .auth-flip-scene{min-height:396px}
   .auth-flip-scene-compact{min-height:382px}
   .auth-face{padding:16px;border-radius:24px;gap:12px}
-  .auth-face.auth-toast-host{padding-top:114px}
+  .auth-face.auth-toast-host{padding-top:16px}
   .auth-toast{
     left:16px;
     right:16px;
