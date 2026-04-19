@@ -2079,7 +2079,6 @@ body.library-open{
 body.profile-open{
   width:100%;
   overscroll-behavior:none;
-  touch-action:none;
 }
 .mobile-mode .studio-layout{
   grid-template-columns:minmax(0, 420px);
@@ -2817,8 +2816,8 @@ body.dark-mode .collocation-chip{
     flex-direction:column;
     border-radius:28px 28px 0 0;
     padding:10px 12px calc(22px + env(safe-area-inset-bottom));
-    height:auto;
-    max-height:none;
+    height:calc(100dvh - max(10px, env(safe-area-inset-top, 0px)));
+    max-height:calc(100dvh - max(10px, env(safe-area-inset-top, 0px)));
     min-height:0;
     overflow-x:hidden;
     overflow-y:auto;
