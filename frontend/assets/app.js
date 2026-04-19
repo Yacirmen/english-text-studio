@@ -93,7 +93,6 @@ const gateRegisterSubmitBtn = $("#gateRegisterSubmitBtn");
 const gateShowLoginBtn = $("#gateShowLoginBtn");
 const gateShowRegisterBtn = $("#gateShowRegisterBtn");
 const continueGuestBtn = $("#continueGuestBtn");
-const pageShell = $(".page-shell");
 const themeToggleBtn = $("#themeToggleBtn");
 const profileTriggerBtn = $("#profileTriggerBtn");
 const profileTriggerInitialsEl = $("#profileTriggerInitials");
@@ -211,7 +210,6 @@ const pronounceWordBtn = $("#pronounceWordBtn");
 const mobilePronounceWordBtn = $("#mobilePronounceWordBtn");
 let mobileWordCollocationsEl = $("#mobileWordCollocations");
 const authToggleEls = Array.from(document.querySelectorAll("[data-auth-toggle]"));
-let lockedScrollY = 0;
 
 if (!mobileWordCollocationsEl && mobileWordExampleEl) {
   const hostBlock = mobileWordExampleEl.closest(".insight-block")?.parentElement;
@@ -257,29 +255,6 @@ async function apiFetch(url, options = {}) {
     headers: { "Content-Type": "application/json", ...(options.headers || {}) },
   });
   return parseApiResponse(response);
-}
-
-function setBodyScrollLocked(isLocked) {
-  if (isLocked) {
-    lockedScrollY = window.scrollY || window.pageYOffset || 0;
-    pageShell?.classList.add("scroll-locked");
-    if (pageShell) {
-      pageShell.style.top = `-${lockedScrollY}px`;
-      pageShell.style.left = "0";
-      pageShell.style.right = "0";
-    }
-    return;
-  }
-
-  if (!pageShell?.classList.contains("scroll-locked")) return;
-
-  const restoreY = Math.abs(parseInt(pageShell.style.top || "0", 10)) || lockedScrollY || 0;
-  pageShell.classList.remove("scroll-locked");
-  pageShell.style.top = "";
-  pageShell.style.left = "";
-  pageShell.style.right = "";
-  window.scrollTo(0, restoreY);
-  lockedScrollY = 0;
 }
 
 function getToastLayer() {
@@ -958,6 +933,9 @@ function renderQuiz() {
 function setLibraryView(view) {
   state.libraryView = view;
   const isOpen = Boolean(view);
+  if (isOpen) {
+    setProfileMenuOpen(false);
+  }
   libraryOverlayEl.classList.toggle("hidden", !isOpen);
   libraryPanelEl.classList.toggle("hidden", !isOpen);
   document.body.classList.toggle("library-open", isOpen);
@@ -1081,12 +1059,13 @@ function renderUserPanel() {
 }
 
 function setProfileMenuOpen(isOpen) {
+  if (isOpen) {
+    setLibraryView(null);
+  }
   profileMenuEl?.classList.toggle("hidden", !isOpen);
   profileOverlayEl?.classList.toggle("hidden", !isOpen || !isMobilePreview());
   profileTriggerBtn?.setAttribute("aria-expanded", isOpen ? "true" : "false");
-  const shouldLockBody = isOpen && isMobilePreview();
-  document.body.classList.toggle("profile-open", shouldLockBody);
-  setBodyScrollLocked(shouldLockBody);
+  document.body.classList.toggle("profile-open", isOpen);
   if (profileMenuEl) profileMenuEl.style.transform = "";
 }
 
