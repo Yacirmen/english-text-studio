@@ -1,4 +1,4 @@
-# English Text Studio
+# ReadLex
 
 Interactive English reading practice app with:
 

@@ -1,12 +1,12 @@
 databases:
-  - name: english-text-studio-db
+  - name: readlex-db
     plan: free
-    databaseName: english_text_studio
-    user: english_text_studio
+    databaseName: readlex
+    user: readlex
 
 services:
   - type: web
-    name: english-text-studio-staging
+    name: readlex-staging
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt
@@ -18,7 +18,7 @@ services:
         value: Qwen/Qwen2.5-72B-Instruct
       - key: DATABASE_URL
         fromDatabase:
-          name: english-text-studio-db
+          name: readlex-db
           property: connectionString
       - key: APP_BASE_URL
         value: https://english-text-studio-staging.onrender.com

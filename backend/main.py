@@ -38,7 +38,7 @@ CURATED_READINGS_PATH = ROOT_DIR / "backend" / "curated_readings.txt"
 EXTRA_WORD_MAP_PATH = ROOT_DIR / "backend" / "extra_word_map.json"
 LIBRARY_WORD_MAP_PATH = ROOT_DIR / "backend" / "library_word_map.json"
 CEFR_VOCAB_INDEX_PATH = ROOT_DIR / "backend" / "cefr_vocab_index.json"
-SESSION_COOKIE = "ets_session"
+SESSION_COOKIE = "readlex_session"
 WORD_DETAIL_CACHE: dict[str, dict[str, str]] = {}
 GENERATE_CACHE: dict[str, str] = {}
 QUIZ_DISTRACTOR_BANK = {
@@ -1521,16 +1521,16 @@ def create_verification_token(user_id: int, email: str) -> str:
 
 def send_verification_email(email: str, token: str) -> None:
     verify_url = f"{APP_BASE_URL}/api/auth/verify-email?token={token}"
-    subject = "Verify your English Text Studio account"
+    subject = "Verify your ReadLex account"
     text_body = (
-        "Welcome to English Text Studio.\n\n"
+        "Welcome to ReadLex.\n\n"
         f"Verify your email by opening this link:\n{verify_url}\n\n"
         "This link expires in 24 hours."
     )
     html_body = f"""
     <html>
       <body style="font-family: Arial, sans-serif; color: #183153;">
-        <h2>Verify your English Text Studio account</h2>
+        <h2>Verify your ReadLex account</h2>
         <p>Thanks for signing up. Click the button below to activate your account.</p>
         <p><a href="{verify_url}" style="display:inline-block;padding:12px 18px;border-radius:999px;background:#58cc02;color:#0f2c49;text-decoration:none;font-weight:700;">Verify Email</a></p>
         <p style="color:#6f8098;">If the button does not work, use this link:</p>
@@ -3009,7 +3009,7 @@ def normalize_api_error(exc: Exception) -> HTTPException:
     return HTTPException(status_code=500, detail=raw)
 
 
-app = FastAPI(title="English Text Studio")
+app = FastAPI(title="ReadLex")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -3129,7 +3129,7 @@ def verify_email(token: str) -> str:
     <html><body style="font-family:Arial,sans-serif;padding:40px;color:#183153;">
     <h2>Email verified successfully.</h2>
     <p>{row["email"]} is now active.</p>
-    <p><a href="{APP_BASE_URL}" style="display:inline-block;padding:12px 18px;border-radius:999px;background:#58cc02;color:#0f2c49;text-decoration:none;font-weight:700;">Open English Text Studio</a></p>
+    <p><a href="{APP_BASE_URL}" style="display:inline-block;padding:12px 18px;border-radius:999px;background:#58cc02;color:#0f2c49;text-decoration:none;font-weight:700;">Open ReadLex</a></p>
     </body></html>
     """
 

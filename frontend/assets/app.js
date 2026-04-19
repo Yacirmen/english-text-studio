@@ -53,6 +53,9 @@ const TOPIC_ORDER = [
   "Media",
 ];
 
+const GUEST_FLAG_KEY = "readlex_guest";
+const THEME_STORAGE_KEY = "readlex_theme";
+
 const state = {
   text: "",
   glossary: {},
@@ -72,7 +75,7 @@ const state = {
   libraryView: null,
   libraryStats: null,
   quizStats: { answered: 0, correct: 0, streak: 0 },
-  hasEnteredApp: window.sessionStorage.getItem("ets_guest") === "1",
+  hasEnteredApp: window.sessionStorage.getItem(GUEST_FLAG_KEY) === "1",
   viewMode: window.innerWidth < 860 ? "mobile" : "web",
 };
 
@@ -216,7 +219,7 @@ function applyTheme(mode) {
   const isDark = mode === "dark";
   document.body.classList.toggle("dark-mode", isDark);
   themeToggleBtn?.setAttribute("aria-pressed", String(isDark));
-  window.localStorage.setItem("ets_theme", isDark ? "dark" : "light");
+  window.localStorage.setItem(THEME_STORAGE_KEY, isDark ? "dark" : "light");
 }
 
 function toggleTheme() {
@@ -952,9 +955,9 @@ function renderWelcomeGate() {
 function completeAppEntry(asGuest = false) {
   state.hasEnteredApp = true;
   if (asGuest) {
-    window.sessionStorage.setItem("ets_guest", "1");
+    window.sessionStorage.setItem(GUEST_FLAG_KEY, "1");
   } else {
-    window.sessionStorage.removeItem("ets_guest");
+    window.sessionStorage.removeItem(GUEST_FLAG_KEY);
   }
   renderWelcomeGate();
 }
@@ -1348,7 +1351,7 @@ logoutBtn.addEventListener("click", async () => {
   state.readingHistory = [];
   state.quiz = null;
   state.hasEnteredApp = false;
-  window.sessionStorage.removeItem("ets_guest");
+  window.sessionStorage.removeItem(GUEST_FLAG_KEY);
   renderUserPanel();
   renderWelcomeGate();
   setProfileMenuOpen(false);
@@ -1487,7 +1490,8 @@ renderAuthMode();
 renderUserPanel();
 setLibraryView(null);
 updateSourceModeUi();
-applyTheme(window.localStorage.getItem("ets_theme") === "dark" ? "dark" : "light");
+const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+applyTheme(savedTheme === "dark" ? "dark" : "light");
 syncViewModeFromViewport();
 renderKeywordChips();
 renderWelcomeGate();
