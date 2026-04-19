@@ -294,6 +294,27 @@ LOCAL_PHRASE_MAP = {
     "turn out": "sonuçlanmak / ortaya çıkmak",
     "calm down": "sakinleşmek",
     "get along": "iyi geçinmek",
+    "classroom-based": "sınıf temelli",
+    "decision-making": "karar verme",
+    "e-posta": "e-posta",
+    "evidence-based": "kanıta dayalı",
+    "face-to-face": "yüz yüze",
+    "fast-paced": "hızlı tempolu",
+    "high-quality": "yüksek kaliteli",
+    "home-cooked": "ev yapımı",
+    "mini-computers": "mini bilgisayarlar",
+    "non-verbal": "sözsüz",
+    "old-fashioned": "eski moda",
+    "one-time": "tek seferlik",
+    "open-minded": "açık fikirli",
+    "real-life": "gerçek hayat",
+    "real-world": "gerçek dünya",
+    "self-awareness": "öz farkındalık",
+    "self-discipline": "öz disiplin",
+    "short-term": "kısa vadeli",
+    "thirty-minute": "otuz dakikalık",
+    "two-hour": "iki saatlik",
+    "well-being": "iyi oluş",
 }
 
 FEATURED_PHRASAL_READING: dict[str, Any] = {
@@ -2076,6 +2097,11 @@ def infer_turkish_meaning(word: str) -> str:
     return lowered
 
 
+def is_compound_expression(word: str) -> bool:
+    lowered = word.lower().strip()
+    return " " in lowered or "-" in lowered
+
+
 def infer_contextual_library_meaning(word: str, sentence: str) -> str:
     lowered_word = word.lower().strip()
     profile = resolve_cefr_entry(lowered_word)
@@ -2235,23 +2261,17 @@ def force_library_meaning(word: str, lemma: str, current: str) -> str:
     if translated:
         return translated
 
+    inferred = infer_turkish_meaning(word)
+    if word.lower().strip() in LOCAL_PHRASE_MAP and inferred:
+        return inferred
+    if inferred and inferred != word.lower().strip() and not should_use_local_meaning(word, inferred):
+        return inferred
+
     if is_library_name(word):
         return "özel isim"
 
     if word.isupper() and len(word) >= 2:
         return "kısaltma / özel ad"
-
-    if "-" in word:
-        pieces = [piece for piece in re.split(r"[-/]", word.lower()) if piece]
-        translated_pieces: list[str] = []
-        for piece in pieces:
-            piece_meaning = infer_turkish_meaning(piece)
-            if not piece_meaning or piece_meaning == piece:
-                piece_meaning = translate_library_word_with_fallback(piece, piece)
-            if piece_meaning and piece_meaning != piece:
-                translated_pieces.append(piece_meaning)
-        if translated_pieces:
-            return " ".join(translated_pieces)
 
     if len(word) <= 2:
         return "bağlama göre işlevsel kelime"
@@ -2636,9 +2656,11 @@ def extract_collocations(text: str, word: str, limit: int = 3) -> list[str]:
 
 def build_library_word_detail(text: str, word: str) -> dict[str, str]:
     lowered_word = word.lower()
-    if " " in lowered_word:
+    if is_compound_expression(lowered_word):
         sentence = find_sentence_for_word(text, word)
         library_meaning = infer_turkish_meaning(lowered_word)
+        if lowered_word not in LOCAL_PHRASE_MAP and should_use_local_meaning(word, library_meaning):
+            library_meaning = translate_library_word_with_fallback(lowered_word, lowered_word) or "bağlama göre kullanılan ifade"
         compact_sentence = re.sub(r"\s+", " ", sentence).strip() if sentence else ""
         context_lines = [f'Bu metindeki anlamı: "{library_meaning}"']
         if compact_sentence:
