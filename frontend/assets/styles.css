@@ -3275,3 +3275,96 @@ body.dark-mode .profile-menu-badge{
 body.dark-mode .inline-highlight{
   color:#ffe082 !important;
 }
+
+/* Final readability pass */
+body:not(.dark-mode) .welcome-copy p,
+body:not(.dark-mode) .section-head p,
+body:not(.dark-mode) .rail-intro p,
+body:not(.dark-mode) .library-copy,
+body:not(.dark-mode) .helper-note,
+body:not(.dark-mode) .field-note,
+body:not(.dark-mode) .field > span,
+body:not(.dark-mode) .field small,
+body:not(.dark-mode) .profile-tip p,
+body:not(.dark-mode) .saved-word-item span,
+body:not(.dark-mode) .history-item span,
+body:not(.dark-mode) .history-empty,
+body:not(.dark-mode) .muted-copy,
+body:not(.dark-mode) .manual-result,
+body:not(.dark-mode) .manual-result-block p,
+body:not(.dark-mode) .site-footer small{
+  color:#59708b !important;
+}
+body:not(.dark-mode) .welcome-headline,
+body:not(.dark-mode) .rail-intro h2,
+body:not(.dark-mode) .section-head h3,
+body:not(.dark-mode) .reading-title,
+body:not(.dark-mode) .profile-menu-head strong,
+body:not(.dark-mode) .account-card h4,
+body:not(.dark-mode) .saved-word-item strong,
+body:not(.dark-mode) .history-item strong,
+body:not(.dark-mode) .manual-result-block strong{
+  color:#17304f !important;
+}
+body:not(.dark-mode) .mini-label,
+body:not(.dark-mode) .rail-kicker,
+body:not(.dark-mode) .mini-stat-label,
+body:not(.dark-mode) .profile-menu-badge,
+body:not(.dark-mode) .quiz-mini-badge,
+body:not(.dark-mode) .count-pill,
+body:not(.dark-mode) .hero-kicker,
+body:not(.dark-mode) .welcome-side-note span{
+  color:#4f6480 !important;
+}
+body:not(.dark-mode) .welcome-side-note{
+  background:linear-gradient(135deg, rgba(255,255,255,.94), rgba(234,242,252,.9)) !important;
+  border-color:rgba(148,173,203,.34) !important;
+}
+body:not(.dark-mode) .field input::placeholder{
+  color:#7d93ad !important;
+}
+body:not(.dark-mode) .auth-face .field input{
+  color:#16314d !important;
+}
+
+body.dark-mode .welcome-copy p,
+body.dark-mode .section-head p,
+body.dark-mode .rail-intro p,
+body.dark-mode .library-copy,
+body.dark-mode .helper-note,
+body.dark-mode .field-note,
+body.dark-mode .field > span,
+body.dark-mode .field small,
+body.dark-mode .profile-tip p,
+body.dark-mode .saved-word-item span,
+body.dark-mode .history-item span,
+body.dark-mode .history-empty,
+body.dark-mode .muted-copy,
+body.dark-mode .manual-result,
+body.dark-mode .manual-result-block p,
+body.dark-mode .mobile-word-body p,
+body.dark-mode .mobile-insight-card p,
+body.dark-mode .site-footer small{
+  color:#e2edf9 !important;
+}
+body.dark-mode .mini-label,
+body.dark-mode .rail-kicker,
+body.dark-mode .mini-stat-label,
+body.dark-mode .profile-menu-badge,
+body.dark-mode .quiz-mini-badge,
+body.dark-mode .count-pill,
+body.dark-mode .hero-kicker,
+body.dark-mode .welcome-side-note span{
+  color:#c3d2e3 !important;
+}
+body.dark-mode .welcome-headline-accent{
+  color:#8fc0ff !important;
+  text-shadow:none !important;
+}
+body.dark-mode .welcome-side-note{
+  background:linear-gradient(135deg, rgba(255,255,255,.12), rgba(180,208,236,.08)) !important;
+  border-color:rgba(205,222,244,.14) !important;
+}
+body.dark-mode .field input::placeholder{
+  color:#deebf8 !important;
+}
