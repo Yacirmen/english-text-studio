@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260418af" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260419authflip1" />
 </head>
 <body>
   <div id="welcomeGate" class="welcome-gate">
@@ -26,23 +26,47 @@
       </div>
 
       <div class="welcome-auth">
-        <div class="auth-toggle welcome-toggle">
+        <div class="auth-toggle welcome-toggle" data-auth-toggle>
           <button id="gateShowLoginBtn" class="auth-tab active" type="button">Log In</button>
           <button id="gateShowRegisterBtn" class="auth-tab" type="button">Sign Up</button>
         </div>
 
-        <form id="gateAuthForm" class="stack-md">
-          <label class="field">
-            <span>Username</span>
-            <input id="gateAuthEmail" type="text" placeholder="your_username" />
-          </label>
-          <label class="field">
-            <span>Password</span>
-            <input id="gateAuthPassword" type="password" placeholder="at least 6 characters" />
-          </label>
-          <p id="gateAuthError" class="error-text hidden"></p>
-          <button id="gateAuthSubmitBtn" class="primary-btn" type="submit">Log In</button>
-        </form>
+        <div class="auth-flip-scene">
+          <div id="gateAuthCard" class="auth-flip-card" aria-live="polite">
+            <section class="auth-face auth-face-login">
+              <span class="auth-face-kicker">Welcome back</span>
+              <strong class="auth-face-title">Pick up where your saved words left off.</strong>
+              <form id="gateLoginForm" class="stack-md auth-form">
+                <label class="field">
+                  <span>Username</span>
+                  <input id="gateLoginUsername" type="text" placeholder="your_username" />
+                </label>
+                <label class="field">
+                  <span>Password</span>
+                  <input id="gateLoginPassword" type="password" placeholder="at least 6 characters" />
+                </label>
+                <p id="gateLoginError" class="error-text hidden"></p>
+                <button id="gateLoginSubmitBtn" class="primary-btn" type="submit">Log In</button>
+              </form>
+            </section>
+            <section class="auth-face auth-face-register">
+              <span class="auth-face-kicker">New account</span>
+              <strong class="auth-face-title">Create your reading space and keep every win.</strong>
+              <form id="gateRegisterForm" class="stack-md auth-form">
+                <label class="field">
+                  <span>Username</span>
+                  <input id="gateRegisterUsername" type="text" placeholder="your_username" />
+                </label>
+                <label class="field">
+                  <span>Password</span>
+                  <input id="gateRegisterPassword" type="password" placeholder="at least 6 characters" />
+                </label>
+                <p id="gateRegisterError" class="error-text hidden"></p>
+                <button id="gateRegisterSubmitBtn" class="primary-btn" type="submit">Sign Up</button>
+              </form>
+            </section>
+          </div>
+        </div>
         <button id="continueGuestBtn" class="outline-btn gate-guest-btn" type="button">Continue as Guest</button>
       </div>
     </div>
@@ -101,23 +125,47 @@
                   <p>Sign in to save words and unlock personal review.</p>
                 </div>
 
-                <div class="auth-toggle">
+                <div class="auth-toggle" data-auth-toggle>
                   <button id="showLoginBtn" class="auth-tab active" type="button">Log In</button>
                   <button id="showRegisterBtn" class="auth-tab" type="button">Sign Up</button>
                 </div>
 
-                <form id="authForm" class="stack-md">
-                  <label class="field">
-                    <span>Username</span>
-                    <input id="authUsername" type="text" placeholder="your_username" />
-                  </label>
-                  <label class="field">
-                    <span>Password</span>
-                    <input id="authPassword" type="password" placeholder="at least 6 characters" />
-                  </label>
-                  <p id="authError" class="error-text hidden"></p>
-                  <button id="authSubmitBtn" class="primary-btn" type="submit">Log In</button>
-                </form>
+                <div class="auth-flip-scene auth-flip-scene-compact">
+                  <div id="authCard" class="auth-flip-card" aria-live="polite">
+                    <section class="auth-face auth-face-login">
+                      <span class="auth-face-kicker">Member login</span>
+                      <strong class="auth-face-title">Open your saved words, streak, and recent reads.</strong>
+                      <form id="authLoginForm" class="stack-md auth-form">
+                        <label class="field">
+                          <span>Username</span>
+                          <input id="authLoginUsername" type="text" placeholder="your_username" />
+                        </label>
+                        <label class="field">
+                          <span>Password</span>
+                          <input id="authLoginPassword" type="password" placeholder="at least 6 characters" />
+                        </label>
+                        <p id="authLoginError" class="error-text hidden"></p>
+                        <button id="authLoginSubmitBtn" class="primary-btn" type="submit">Log In</button>
+                      </form>
+                    </section>
+                    <section class="auth-face auth-face-register">
+                      <span class="auth-face-kicker">Start fresh</span>
+                      <strong class="auth-face-title">Build a personal library and turn quick reads into review wins.</strong>
+                      <form id="authRegisterForm" class="stack-md auth-form">
+                        <label class="field">
+                          <span>Username</span>
+                          <input id="authRegisterUsername" type="text" placeholder="your_username" />
+                        </label>
+                        <label class="field">
+                          <span>Password</span>
+                          <input id="authRegisterPassword" type="password" placeholder="at least 6 characters" />
+                        </label>
+                        <p id="authRegisterError" class="error-text hidden"></p>
+                        <button id="authRegisterSubmitBtn" class="primary-btn" type="submit">Sign Up</button>
+                      </form>
+                    </section>
+                  </div>
+                </div>
               </div>
 
               <div id="authUser" class="stack-md hidden">
@@ -417,6 +465,6 @@
     </section>
   </aside>
 
-  <script src="/assets/app.js?v=20260419phrasal3"></script>
+  <script src="/assets/app.js?v=20260419authflip1"></script>
 </body>
 </html>

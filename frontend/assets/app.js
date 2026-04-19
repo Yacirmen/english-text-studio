@@ -122,11 +122,17 @@ const state = {
 
 const $ = (selector) => document.querySelector(selector);
 const welcomeGateEl = $("#welcomeGate");
-const gateAuthForm = $("#gateAuthForm");
-const gateAuthEmailEl = $("#gateAuthEmail");
-const gateAuthPasswordEl = $("#gateAuthPassword");
-const gateAuthErrorEl = $("#gateAuthError");
-const gateAuthSubmitBtn = $("#gateAuthSubmitBtn");
+const gateAuthCardEl = $("#gateAuthCard");
+const gateLoginForm = $("#gateLoginForm");
+const gateLoginUsernameEl = $("#gateLoginUsername");
+const gateLoginPasswordEl = $("#gateLoginPassword");
+const gateLoginErrorEl = $("#gateLoginError");
+const gateLoginSubmitBtn = $("#gateLoginSubmitBtn");
+const gateRegisterForm = $("#gateRegisterForm");
+const gateRegisterUsernameEl = $("#gateRegisterUsername");
+const gateRegisterPasswordEl = $("#gateRegisterPassword");
+const gateRegisterErrorEl = $("#gateRegisterError");
+const gateRegisterSubmitBtn = $("#gateRegisterSubmitBtn");
 const gateShowLoginBtn = $("#gateShowLoginBtn");
 const gateShowRegisterBtn = $("#gateShowRegisterBtn");
 const continueGuestBtn = $("#continueGuestBtn");
@@ -143,7 +149,7 @@ const profileMenuBadgeEl = $("#profileMenuBadge");
 const profileTipTextEl = $("#profileTipText");
 const generateForm = $("#generate-form");
 const manualForm = $("#manual-form");
-const authForm = $("#authForm");
+const authCardEl = $("#authCard");
 const levelEl = $("#level");
 const topicEl = $("#topic");
 const lengthEl = $("#lengthTarget");
@@ -173,10 +179,16 @@ const setupLengthBadgeEl = $("#setupLengthBadge");
 const setupSummaryEl = $("#setupSummary");
 const authGuestEl = $("#authGuest");
 const authUserEl = $("#authUser");
-const authUsernameEl = $("#authUsername");
-const authPasswordEl = $("#authPassword");
-const authErrorEl = $("#authError");
-const authSubmitBtn = $("#authSubmitBtn");
+const authLoginForm = $("#authLoginForm");
+const authLoginUsernameEl = $("#authLoginUsername");
+const authLoginPasswordEl = $("#authLoginPassword");
+const authLoginErrorEl = $("#authLoginError");
+const authLoginSubmitBtn = $("#authLoginSubmitBtn");
+const authRegisterForm = $("#authRegisterForm");
+const authRegisterUsernameEl = $("#authRegisterUsername");
+const authRegisterPasswordEl = $("#authRegisterPassword");
+const authRegisterErrorEl = $("#authRegisterError");
+const authRegisterSubmitBtn = $("#authRegisterSubmitBtn");
 const showLoginBtn = $("#showLoginBtn");
 const showRegisterBtn = $("#showRegisterBtn");
 const logoutBtn = $("#logoutBtn");
@@ -239,6 +251,7 @@ const mobileWordExampleEl = $("#mobileWordExample");
 const pronounceWordBtn = $("#pronounceWordBtn");
 const mobilePronounceWordBtn = $("#mobilePronounceWordBtn");
 let mobileWordCollocationsEl = $("#mobileWordCollocations");
+const authToggleEls = Array.from(document.querySelectorAll("[data-auth-toggle]"));
 
 if (!mobileWordCollocationsEl && mobileWordExampleEl) {
   const hostBlock = mobileWordExampleEl.closest(".insight-block")?.parentElement;
@@ -1060,14 +1073,74 @@ function updateAccountStatsOnly() {
   masteredWordsCountEl.textContent = state.stats.mastered_words || 0;
 }
 
+function hideAuthErrors() {
+  [authLoginErrorEl, authRegisterErrorEl, gateLoginErrorEl, gateRegisterErrorEl].forEach((el) => el?.classList.add("hidden"));
+}
+
+function syncInputPair(sourceEl, targetEl) {
+  if (!sourceEl || !targetEl) return;
+  sourceEl.addEventListener("input", () => {
+    targetEl.value = sourceEl.value;
+  });
+}
+
+async function submitAuthForm({
+  endpoint,
+  usernameEl,
+  passwordEl,
+  errorEl,
+  submitBtn,
+  mirrorUsernameEls = [],
+  mirrorPasswordEls = [],
+}) {
+  errorEl?.classList.add("hidden");
+  setLoading(submitBtn, endpoint.includes("/login") ? "Logging in..." : "Creating account...", true);
+  try {
+    const payload = {
+      username: usernameEl.value.trim(),
+      password: passwordEl.value.trim(),
+    };
+    const parsed = await apiFetch(endpoint, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    if (!parsed.ok) throw new Error(parsed.data.detail || "Authentication failed.");
+    [...mirrorUsernameEls, usernameEl].forEach((el) => {
+      if (el) el.value = payload.username;
+    });
+    [...mirrorPasswordEls, passwordEl].forEach((el) => {
+      if (el) el.value = "";
+    });
+    state.user = parsed.data.user;
+    state.stats = parsed.data.stats || { saved_words: 0, mastered_words: 0 };
+    completeAppEntry(false);
+    await refreshSession();
+    if (!state.user) {
+      throw new Error("Signed in, but the session could not be established. Check that your browser allows cookies for 127.0.0.1.");
+    }
+    await loadQuiz();
+  } catch (error) {
+    if (errorEl) {
+      errorEl.textContent = error.message;
+      errorEl.classList.remove("hidden");
+    }
+  } finally {
+    setLoading(submitBtn, "", false);
+  }
+}
+
 function renderAuthMode() {
   const isLogin = state.authMode === "login";
   showLoginBtn.classList.toggle("active", isLogin);
   showRegisterBtn.classList.toggle("active", !isLogin);
   gateShowLoginBtn?.classList.toggle("active", isLogin);
   gateShowRegisterBtn?.classList.toggle("active", !isLogin);
-  authSubmitBtn.textContent = isLogin ? "Log In" : "Sign Up";
-  if (gateAuthSubmitBtn) gateAuthSubmitBtn.textContent = isLogin ? "Log In" : "Sign Up";
+  authCardEl?.classList.toggle("flipped", !isLogin);
+  gateAuthCardEl?.classList.toggle("flipped", !isLogin);
+  authToggleEls.forEach((el) => {
+    el.dataset.mode = isLogin ? "login" : "register";
+  });
+  hideAuthErrors();
 }
 
 function renderWelcomeGate() {
@@ -1447,71 +1520,56 @@ manualForm.addEventListener("submit", async (event) => {
   }
 });
 
-authForm.addEventListener("submit", async (event) => {
+authLoginForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  authErrorEl.classList.add("hidden");
-  const endpoint = state.authMode === "login" ? "/api/auth/login" : "/api/auth/register";
-  setLoading(authSubmitBtn, state.authMode === "login" ? "Logging in..." : "Creating account...", true);
-  try {
-    const parsed = await apiFetch(endpoint, {
-      method: "POST",
-      body: JSON.stringify({
-        username: authUsernameEl.value.trim(),
-        password: authPasswordEl.value.trim(),
-      }),
-    });
-    if (!parsed.ok) throw new Error(parsed.data.detail || "Authentication failed.");
-    state.user = parsed.data.user;
-    state.stats = parsed.data.stats || { saved_words: 0, mastered_words: 0 };
-    authUsernameEl.value = "";
-    authPasswordEl.value = "";
-    completeAppEntry(false);
-    await refreshSession();
-    if (!state.user) {
-      throw new Error("Signed in, but the session could not be established. Check that your browser allows cookies for 127.0.0.1.");
-    }
-    await loadQuiz();
-  } catch (error) {
-    authErrorEl.textContent = error.message;
-    authErrorEl.classList.remove("hidden");
-  } finally {
-    setLoading(authSubmitBtn, "", false);
-  }
+  await submitAuthForm({
+    endpoint: "/api/auth/login",
+    usernameEl: authLoginUsernameEl,
+    passwordEl: authLoginPasswordEl,
+    errorEl: authLoginErrorEl,
+    submitBtn: authLoginSubmitBtn,
+    mirrorUsernameEls: [authRegisterUsernameEl, gateLoginUsernameEl, gateRegisterUsernameEl],
+    mirrorPasswordEls: [authRegisterPasswordEl, gateLoginPasswordEl, gateRegisterPasswordEl],
+  });
 });
 
-gateAuthForm?.addEventListener("submit", async (event) => {
+authRegisterForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  gateAuthErrorEl.classList.add("hidden");
-  const endpoint = state.authMode === "login" ? "/api/auth/login" : "/api/auth/register";
-  setLoading(gateAuthSubmitBtn, state.authMode === "login" ? "Logging in..." : "Creating account...", true);
-  try {
-    const payload = {
-      username: gateAuthEmailEl.value.trim(),
-      password: gateAuthPasswordEl.value.trim(),
-    };
-    const parsed = await apiFetch(endpoint, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-    if (!parsed.ok) throw new Error(parsed.data.detail || "Authentication failed.");
-    authUsernameEl.value = payload.username;
-    authPasswordEl.value = "";
-    gateAuthEmailEl.value = "";
-    gateAuthPasswordEl.value = "";
-    state.user = parsed.data.user;
-    state.stats = parsed.data.stats || { saved_words: 0, mastered_words: 0 };
-    completeAppEntry(false);
-    await refreshSession();
-    if (!state.user) {
-      throw new Error("Signed in, but the session could not be established. Check that your browser allows cookies for 127.0.0.1.");
-    }
-    await loadQuiz();
-  } catch (error) {
-    gateAuthErrorEl.textContent = error.message;
-    gateAuthErrorEl.classList.remove("hidden");
-  } finally {
-    setLoading(gateAuthSubmitBtn, "", false);
-  }
+  await submitAuthForm({
+    endpoint: "/api/auth/register",
+    usernameEl: authRegisterUsernameEl,
+    passwordEl: authRegisterPasswordEl,
+    errorEl: authRegisterErrorEl,
+    submitBtn: authRegisterSubmitBtn,
+    mirrorUsernameEls: [authLoginUsernameEl, gateLoginUsernameEl, gateRegisterUsernameEl],
+    mirrorPasswordEls: [authLoginPasswordEl, gateLoginPasswordEl, gateRegisterPasswordEl],
+  });
+});
+
+gateLoginForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await submitAuthForm({
+    endpoint: "/api/auth/login",
+    usernameEl: gateLoginUsernameEl,
+    passwordEl: gateLoginPasswordEl,
+    errorEl: gateLoginErrorEl,
+    submitBtn: gateLoginSubmitBtn,
+    mirrorUsernameEls: [gateRegisterUsernameEl, authLoginUsernameEl, authRegisterUsernameEl],
+    mirrorPasswordEls: [gateRegisterPasswordEl, authLoginPasswordEl, authRegisterPasswordEl],
+  });
+});
+
+gateRegisterForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await submitAuthForm({
+    endpoint: "/api/auth/register",
+    usernameEl: gateRegisterUsernameEl,
+    passwordEl: gateRegisterPasswordEl,
+    errorEl: gateRegisterErrorEl,
+    submitBtn: gateRegisterSubmitBtn,
+    mirrorUsernameEls: [gateLoginUsernameEl, authLoginUsernameEl, authRegisterUsernameEl],
+    mirrorPasswordEls: [gateLoginPasswordEl, authLoginPasswordEl, authRegisterPasswordEl],
+  });
 });
 
 showLoginBtn.addEventListener("click", () => {
@@ -1532,6 +1590,24 @@ gateShowLoginBtn?.addEventListener("click", () => {
 gateShowRegisterBtn?.addEventListener("click", () => {
   state.authMode = "register";
   renderAuthMode();
+});
+
+[
+  [authLoginUsernameEl, authRegisterUsernameEl],
+  [authLoginUsernameEl, gateLoginUsernameEl],
+  [authLoginUsernameEl, gateRegisterUsernameEl],
+  [authLoginPasswordEl, authRegisterPasswordEl],
+  [authLoginPasswordEl, gateLoginPasswordEl],
+  [authLoginPasswordEl, gateRegisterPasswordEl],
+  [authRegisterUsernameEl, gateLoginUsernameEl],
+  [authRegisterUsernameEl, gateRegisterUsernameEl],
+  [authRegisterPasswordEl, gateLoginPasswordEl],
+  [authRegisterPasswordEl, gateRegisterPasswordEl],
+  [gateLoginUsernameEl, gateRegisterUsernameEl],
+  [gateLoginPasswordEl, gateRegisterPasswordEl],
+].forEach(([firstEl, secondEl]) => {
+  syncInputPair(firstEl, secondEl);
+  syncInputPair(secondEl, firstEl);
 });
 
 continueGuestBtn?.addEventListener("click", () => completeAppEntry(true));
