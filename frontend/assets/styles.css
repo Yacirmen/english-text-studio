@@ -1983,13 +1983,13 @@ body.dark-mode .mobile-word-panel::-webkit-scrollbar-thumb{
   padding:0;
   margin:0;
   display:grid;
-  gap:10px;
+  gap:8px;
 }
 .insight-list li{
-  padding:10px 12px;
-  border-radius:16px;
-  background:rgba(24,49,83,.06);
-  border:1px solid rgba(24,49,83,.08);
+  padding:0;
+  border:none;
+  background:none;
+  border-radius:0;
 }
 .insight-details{
   margin-top:8px;
@@ -2220,8 +2220,6 @@ body.dark-mode .insight-details summary{
   border-color:rgba(255,255,255,.12);
 }
 body.dark-mode .insight-list li{
-  background:rgba(255,255,255,.08);
-  border-color:rgba(255,255,255,.12);
   color:#f2f7ff;
 }
 body.dark-mode .rail-intro p,
