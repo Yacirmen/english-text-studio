@@ -171,6 +171,8 @@ const quizModeReadingBtn = $("#quizModeReadingBtn");
 const navMenuShellEl = $("#navMenuShell");
 const navMenuTriggerEl = $("#navMenuTrigger");
 const navMenuEl = $("#navMenu");
+const navMenuSwitchEls = Array.from(document.querySelectorAll("[data-menu-category]"));
+const navMenuPanelEls = Array.from(document.querySelectorAll("[data-menu-panel]"));
 const openProfileBtn = $("#openProfileBtn");
 const profileAvatarBtn = $("#profileAvatarBtn");
 const profileTriggerInitialsEl = $("#profileTriggerInitials");
@@ -1082,8 +1084,8 @@ function setLibraryView(view) {
     libraryKickerEl.textContent = "Translate";
     libraryTitleEl.textContent = "Quick translation";
   } else if (view === "info") {
-    libraryKickerEl.textContent = "Info";
-    libraryTitleEl.textContent = "About, contact, privacy, and terms";
+    libraryKickerEl.textContent = "Office";
+    libraryTitleEl.textContent = "ReadLex company and trust notes";
   }
   setNavMenuOpen(false);
 }
@@ -1099,6 +1101,17 @@ function setNavMenuOpen(isOpen) {
   }
   navMenuShellEl?.classList.toggle("is-open", Boolean(isOpen));
   navMenuTriggerEl?.setAttribute("aria-expanded", isOpen ? "true" : "false");
+}
+
+function setNavMenuCategory(category = "account") {
+  navMenuSwitchEls.forEach((button) => {
+    const isActive = button.dataset.menuCategory === category;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-selected", isActive ? "true" : "false");
+  });
+  navMenuPanelEls.forEach((panel) => {
+    panel.classList.toggle("is-active", panel.dataset.menuPanel === category);
+  });
 }
 
 async function openLibraryPanel(view) {
@@ -2057,6 +2070,13 @@ bindNavMenuAction(openSavedWordsBtn, "saved");
 bindNavMenuAction(openQuizBtn, "quiz");
 bindNavMenuAction(openManualHelpBtn, "manual");
 bindNavMenuAction(openInfoBtn, "info");
+navMenuSwitchEls.forEach((button) => {
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setNavMenuCategory(button.dataset.menuCategory || "account");
+  });
+});
 closeMobileWordBtn?.addEventListener("click", closeMobileWordSheet);
 mobileWordHandleBtn?.addEventListener("click", closeMobileWordSheet);
 mobileWordBackdropEl?.addEventListener("click", closeMobileWordSheet);
@@ -2133,6 +2153,7 @@ applyTheme(savedTheme === "dark" ? "dark" : "light");
 syncViewModeFromViewport();
 renderKeywordChips();
 renderWelcomeGate();
+setNavMenuCategory("account");
 window.addEventListener("resize", syncViewModeFromViewport);
 refreshSession().then(async () => {
   if (state.user) completeAppEntry(false);

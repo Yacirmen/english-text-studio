@@ -120,68 +120,81 @@
             id="navMenuTrigger"
             class="menu-trigger"
             type="button"
-            aria-label="Open quick panels"
+            aria-label="Open ReadLex office menu"
             aria-expanded="false"
             aria-controls="navMenu"
           >
-            <span class="menu-trigger-kicker">Panels</span>
-            <strong class="menu-trigger-title">Quick access</strong>
+            <span class="menu-trigger-kicker">ReadLex</span>
+            <strong class="menu-trigger-title">Office Desk</strong>
             <span class="menu-trigger-icon" aria-hidden="true">+</span>
           </button>
-          <div id="navMenu" class="nav-menu" role="menu" aria-label="Quick access panels">
-            <div class="nav-menu-section">
-              <span class="nav-menu-label">Account</span>
-              <button id="openProgressBtn" class="nav-menu-item nav-menu-item-pink" type="button" role="menuitem">
-                <span class="nav-menu-item-copy">
-                  <strong>Progress</strong>
-                  <small>Track streak, goal, and recent reading.</small>
-                </span>
-                <span class="nav-menu-badge" aria-hidden="true">Stats</span>
-              </button>
-              <button id="openProfileBtn" class="nav-menu-item nav-menu-item-profile" type="button" role="menuitem">
-                <span class="nav-menu-item-copy">
-                  <strong>Profile</strong>
-                  <small>Sign in, manage account access, and log out.</small>
-                </span>
-                <span class="nav-menu-badge" aria-hidden="true">Account</span>
-              </button>
+          <div id="navMenu" class="nav-menu" role="menu" aria-label="ReadLex office menu">
+            <div class="nav-menu-topline">
+              <div class="nav-menu-overview">
+                <span class="nav-menu-overview-kicker">Workspace</span>
+                <strong class="nav-menu-overview-title">Choose a lane, keep the menu clean.</strong>
+              </div>
+              <div class="nav-menu-switcher" role="tablist" aria-label="Office Desk sections">
+                <button class="nav-menu-switch active" type="button" data-menu-category="account" role="tab" aria-selected="true">Account</button>
+                <button class="nav-menu-switch" type="button" data-menu-category="study" role="tab" aria-selected="false">Study</button>
+                <button class="nav-menu-switch" type="button" data-menu-category="company" role="tab" aria-selected="false">Company</button>
+              </div>
             </div>
-            <div class="nav-menu-section">
-              <span class="nav-menu-label">Study tools</span>
-              <button id="openSavedWordsBtn" class="nav-menu-item nav-menu-item-green" type="button" role="menuitem">
-                <span class="nav-menu-item-copy">
-                  <strong>Saved words</strong>
-                  <small>Jump into your word bank and keep phrases close.</small>
-                </span>
-                <span class="nav-menu-badge" aria-hidden="true">Words</span>
-              </button>
-              <button id="openQuizBtn" class="nav-menu-item nav-menu-item-blue" type="button" role="menuitem">
-                <span class="nav-menu-item-copy">
-                  <strong>Quiz</strong>
-                  <small>Review fast with reading and saved-word practice.</small>
-                </span>
-                <span class="nav-menu-badge" aria-hidden="true">Review</span>
-              </button>
-              <button id="openManualHelpBtn" class="nav-menu-item nav-menu-item-cream" type="button" role="menuitem">
-                <span class="nav-menu-item-copy">
-                  <strong>Translate</strong>
-                  <small>Ask for a quick explanation without leaving the flow.</small>
-                </span>
-                <span class="nav-menu-badge" aria-hidden="true">Help</span>
-              </button>
-            </div>
-            <div class="nav-menu-section">
-              <span class="nav-menu-label">Studio</span>
-              <button id="openInfoBtn" class="nav-menu-item nav-menu-item-indigo" type="button" role="menuitem">
-                <span class="nav-menu-item-copy">
-                  <strong>Info</strong>
-                  <small>See what ReadLex is, how it handles data, and how the launch is framed.</small>
-                </span>
-                <span class="nav-menu-badge" aria-hidden="true">Trust</span>
-              </button>
+            <div class="nav-menu-panels">
+              <div class="nav-menu-section is-active" data-menu-panel="account">
+                <span class="nav-menu-label">Account</span>
+                <button id="openProgressBtn" class="nav-menu-item nav-menu-item-pink" type="button" role="menuitem">
+                  <span class="nav-menu-item-copy">
+                    <strong>Progress</strong>
+                    <small>Track streak, goal, and recent reading.</small>
+                  </span>
+                  <span class="nav-menu-badge" aria-hidden="true">Stats</span>
+                </button>
+                <button id="openProfileBtn" class="nav-menu-item nav-menu-item-profile" type="button" role="menuitem">
+                  <span class="nav-menu-item-copy">
+                    <strong>Profile</strong>
+                    <small>Sign in, manage account access, and log out.</small>
+                  </span>
+                  <span class="nav-menu-badge" aria-hidden="true">Account</span>
+                </button>
+              </div>
+              <div class="nav-menu-section" data-menu-panel="study">
+                <span class="nav-menu-label">Study tools</span>
+                <button id="openSavedWordsBtn" class="nav-menu-item nav-menu-item-green" type="button" role="menuitem">
+                  <span class="nav-menu-item-copy">
+                    <strong>Saved words</strong>
+                    <small>Jump into your word bank and keep phrases close.</small>
+                  </span>
+                  <span class="nav-menu-badge" aria-hidden="true">Words</span>
+                </button>
+                <button id="openQuizBtn" class="nav-menu-item nav-menu-item-blue" type="button" role="menuitem">
+                  <span class="nav-menu-item-copy">
+                    <strong>Quiz</strong>
+                    <small>Review fast with reading and saved-word practice.</small>
+                  </span>
+                  <span class="nav-menu-badge" aria-hidden="true">Review</span>
+                </button>
+                <button id="openManualHelpBtn" class="nav-menu-item nav-menu-item-cream" type="button" role="menuitem">
+                  <span class="nav-menu-item-copy">
+                    <strong>Translate</strong>
+                    <small>Ask for a quick explanation without leaving the flow.</small>
+                  </span>
+                  <span class="nav-menu-badge" aria-hidden="true">Help</span>
+                </button>
+              </div>
+              <div class="nav-menu-section" data-menu-panel="company">
+                <span class="nav-menu-label">Company</span>
+                <button id="openInfoBtn" class="nav-menu-item nav-menu-item-indigo" type="button" role="menuitem">
+                  <span class="nav-menu-item-copy">
+                    <strong>ReadLex Office</strong>
+                    <small>See the product overview, contact channel, privacy posture, and launch notes.</small>
+                  </span>
+                  <span class="nav-menu-badge" aria-hidden="true">Office</span>
+                </button>
+              </div>
             </div>
             <div class="nav-menu-foot">
-              <span>ReadLex keeps account, review, and trust details in one calm place.</span>
+              <span>ReadLex keeps product, account, and trust details in one polished workspace.</span>
             </div>
           </div>
         </div>
@@ -542,16 +555,16 @@
     </section>
 
     <section id="infoPanel" class="library-section hidden">
-      <p class="library-copy">A compact trust space for understanding the product, its current scope, and how public launch is being handled.</p>
+      <p class="library-copy">A cleaner company-facing space for understanding the product, its current release posture, and where users can reach the team.</p>
       <div class="info-panel-shell">
         <div class="info-panel-hero">
-          <span class="mini-label on-dark">ReadLex Guide</span>
-          <h4>Built to make reading practice easier to keep, easier to revisit, and easier to trust.</h4>
-          <p>Use this panel as the quiet, human side of the product: what it does, what it stores, and what users should expect from this version.</p>
+          <span class="mini-label on-dark">ReadLex Office</span>
+          <h4>A calmer reading product with a clearer professional face.</h4>
+          <p>This panel explains what ReadLex does, how the current build should be understood, and where business or support communication should go during launch.</p>
           <div class="info-chip-row">
             <span class="info-chip">Reading-first</span>
             <span class="info-chip">Phrase-aware</span>
-            <span class="info-chip">Review-ready</span>
+            <span class="info-chip">Launch-ready</span>
           </div>
         </div>
 
@@ -577,21 +590,22 @@
             <summary>
               <span class="info-accordion-copy">
                 <strong>Contact</strong>
-                <small>How users can reach the team during launch.</small>
+                <small>Where support, feedback, and early business contact should go.</small>
               </span>
             </summary>
             <div class="info-accordion-body">
-              <p>This build is still in active refinement, so contact is intentionally simple and direct. Use the launch or feedback channel that came with this build for bug reports, library requests, partnership notes, or early access questions.</p>
+              <p>ReadLex is still being refined, so contact is intentionally direct. Use the address below for bug reports, launch questions, collaboration notes, content requests, or early business communication.</p>
               <div class="info-contact-grid">
-                <article class="info-contact-card">
+                <article class="info-contact-card info-contact-card-primary">
                   <span class="mini-label on-dark">Best for</span>
-                  <strong>Bug reports</strong>
-                  <p>Layout problems, login friction, saved-word issues, or broken translations.</p>
+                  <strong>Direct email</strong>
+                  <p class="info-contact-note">Primary contact for support, feedback, and early business communication.</p>
+                  <a class="info-contact-link" href="mailto:readlexofficial@gmail.com">readlexofficial@gmail.com</a>
                 </article>
                 <article class="info-contact-card">
                   <span class="mini-label on-dark">Best for</span>
-                  <strong>Content requests</strong>
-                  <p>Level requests, topic ideas, phrase coverage, and reading library expansion.</p>
+                  <strong>Use cases</strong>
+                  <p>Bug reports, library requests, launch feedback, school use, and early partnerships.</p>
                 </article>
               </div>
             </div>
