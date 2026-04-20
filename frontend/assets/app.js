@@ -1827,8 +1827,12 @@ async function handleLogout(event) {
   event?.preventDefault?.();
   event?.stopPropagation?.();
   if (state.loggingOut) return;
+  const logoutTrigger =
+    event?.target?.closest?.("#logoutBtn") ||
+    logoutBtn ||
+    document.getElementById("logoutBtn");
   state.loggingOut = true;
-  setLoading(logoutBtn, "Logging out...", true);
+  setLoading(logoutTrigger, "Logging out...", true);
   try {
     await apiFetch("/api/auth/logout", { method: "POST" });
     state.user = null;
@@ -1843,12 +1847,22 @@ async function handleLogout(event) {
     setProfileMenuOpen(false);
   } finally {
     state.loggingOut = false;
-    setLoading(logoutBtn, "", false);
+    setLoading(logoutTrigger, "", false);
   }
+}
+
+function handleProfileMenuPress(event) {
+  const logoutTarget = event.target?.closest?.("#logoutBtn");
+  if (!logoutTarget) return;
+  void handleLogout(event);
 }
 
 logoutBtn?.addEventListener("click", handleLogout);
 logoutBtn?.addEventListener("touchend", handleLogout, { passive: false });
+logoutBtn?.addEventListener("pointerup", handleLogout);
+profileMenuEl?.addEventListener("click", handleProfileMenuPress);
+profileMenuEl?.addEventListener("touchend", handleProfileMenuPress, { passive: false });
+profileMenuEl?.addEventListener("pointerup", handleProfileMenuPress);
 
 clearSavedWordsBtn?.addEventListener("click", async () => {
   const parsed = await apiFetch("/api/saved-words/clear", { method: "POST" });
