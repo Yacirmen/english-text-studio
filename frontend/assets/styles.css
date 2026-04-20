@@ -179,6 +179,18 @@ body::before{
   background:linear-gradient(180deg, rgba(33,63,100,.92), rgba(24,48,79,.84));
   border-color:rgba(170,193,220,.1);
   margin-top:2px;
+  width:100%;
+}
+.welcome-feature-card-wide .welcome-feature-copy{
+  width:100%;
+  min-width:0;
+}
+.welcome-feature-card-wide .welcome-feature-copy strong,
+.welcome-feature-card-wide .welcome-feature-copy p{
+  max-width:none;
+  white-space:normal;
+  overflow-wrap:normal;
+  word-break:normal;
 }
 .welcome-feature-icon{
   width:34px;
@@ -3023,6 +3035,21 @@ body.dark-mode .collocation-chip{
   .welcome-feature-copy p{
     font-size:.76rem;
     line-height:1.4;
+  }
+  .welcome-feature-card-wide{
+    display:block;
+    width:100%;
+  }
+  .welcome-feature-card-wide .welcome-feature-copy{
+    width:100%;
+    min-width:0;
+  }
+  .welcome-feature-card-wide .welcome-feature-copy strong,
+  .welcome-feature-card-wide .welcome-feature-copy p{
+    max-width:none !important;
+    white-space:normal;
+    overflow-wrap:break-word;
+    word-break:normal;
   }
   .welcome-auth{
     flex:0 0 auto;
