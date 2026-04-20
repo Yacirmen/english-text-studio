@@ -168,7 +168,12 @@ const quizTypeBadgeEl = $("#quizTypeBadge");
 const quizModeSavedBtn = $("#quizModeSavedBtn");
 const quizModeHardBtn = $("#quizModeHardBtn");
 const quizModeReadingBtn = $("#quizModeReadingBtn");
+const navMenuShellEl = $("#navMenuShell");
+const navMenuTriggerEl = $("#navMenuTrigger");
+const navMenuEl = $("#navMenu");
 const openProfileBtn = $("#openProfileBtn");
+const profileAvatarBtn = $("#profileAvatarBtn");
+const profileTriggerInitialsEl = $("#profileTriggerInitials");
 const openProgressBtn = $("#openProgressBtn");
 const openSavedWordsBtn = $("#openSavedWordsBtn");
 const openQuizBtn = $("#openQuizBtn");
@@ -205,6 +210,8 @@ const pronounceWordBtn = $("#pronounceWordBtn");
 const mobilePronounceWordBtn = $("#mobilePronounceWordBtn");
 let mobileWordCollocationsEl = $("#mobileWordCollocations");
 const authToggleEls = Array.from(document.querySelectorAll("[data-auth-toggle]"));
+const MENU_DESKTOP_QUERY = window.matchMedia("(hover: hover) and (pointer: fine)");
+let navMenuCloseTimer = null;
 
 if (!mobileWordCollocationsEl && mobileWordExampleEl) {
   const hostBlock = mobileWordExampleEl.closest(".insight-block")?.parentElement;
@@ -398,6 +405,43 @@ const PHRASE_PREFERENCES = new Set([
   "due to",
   "rather than",
   "in favor of",
+  "genetic modification",
+  "human embryos",
+  "science fiction",
+  "gene editing",
+  "designer babies",
+  "human genome",
+  "digital detox",
+  "open plan offices",
+  "biophilic design",
+  "natural light",
+  "social cohesion",
+  "solar radiation management",
+  "analysis paralysis",
+  "buyer's remorse",
+  "mother tongue",
+  "gig economy",
+  "short term contracts",
+  "independent contractors",
+  "collective bargaining",
+  "artificial general intelligence",
+  "structural unemployment",
+  "machine learning",
+  "mri scans",
+  "ct scans",
+  "orbital debris",
+  "kessler syndrome",
+  "space commercialization",
+  "post truth era",
+  "false equivalence",
+  "restorative justice",
+  "cognitive enhancers",
+  "smart drugs",
+  "surveillance capitalism",
+  "personal data",
+  "hate speech",
+  "militant democracy",
+  "de extinction",
 ]);
 
 function findAdjacentWordButton(fromEl, direction) {
@@ -968,6 +1012,7 @@ function setLibraryView(view) {
   libraryOverlayEl.classList.toggle("hidden", !isOpen);
   libraryPanelEl.classList.toggle("hidden", !isOpen);
   document.body.classList.toggle("library-open", isOpen);
+  profileAvatarBtn?.setAttribute("aria-expanded", view === "profile" ? "true" : "false");
   profilePanelEl.classList.toggle("hidden", view !== "profile");
   progressPanelEl.classList.toggle("hidden", view !== "progress");
   savedWordsPanelEl.classList.toggle("hidden", view !== "saved");
@@ -990,12 +1035,51 @@ function setLibraryView(view) {
     libraryKickerEl.textContent = "Translate";
     libraryTitleEl.textContent = "Quick translation";
   }
+  setNavMenuOpen(false);
+}
+
+function isDesktopMenuMode() {
+  return Boolean(MENU_DESKTOP_QUERY?.matches) && window.innerWidth > 768;
+}
+
+function setNavMenuOpen(isOpen) {
+  if (navMenuCloseTimer) {
+    window.clearTimeout(navMenuCloseTimer);
+    navMenuCloseTimer = null;
+  }
+  navMenuShellEl?.classList.toggle("is-open", Boolean(isOpen));
+  navMenuTriggerEl?.setAttribute("aria-expanded", isOpen ? "true" : "false");
+}
+
+async function openLibraryPanel(view) {
+  if (view === "saved" && state.user) {
+    await fetchSavedWords("recent");
+  }
+  if (view === "quiz" && !state.quiz && state.user) {
+    await loadQuiz();
+  }
+  setLibraryView(view);
+}
+
+function bindNavMenuAction(button, view) {
+  if (!button) return;
+  button.addEventListener("click", async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    await openLibraryPanel(view);
+  });
 }
 
 function renderUserPanel() {
   const loggedIn = Boolean(state.user);
   authGuestEl.classList.toggle("hidden", loggedIn);
   authUserEl.classList.toggle("hidden", !loggedIn);
+  if (profileTriggerInitialsEl) {
+    profileTriggerInitialsEl.textContent = loggedIn
+      ? String(state.user?.username || "U").trim().charAt(0).toUpperCase() || "U"
+      : "G";
+  }
+  profileAvatarBtn?.classList.toggle("signed-in", loggedIn);
   if (loggedIn) {
     const uniqueReadingHistory = state.readingHistory.filter((item, index, items) => {
       const key = [
@@ -1232,11 +1316,22 @@ async function submitAuthForm({
     state.user = parsed.data.user;
     state.stats = parsed.data.stats || { saved_words: 0, mastered_words: 0 };
     completeAppEntry(false);
-    await refreshSession();
-    if (!state.user) {
-      throw new Error("Signed in, but the session could not be established. Check that your browser allows cookies for 127.0.0.1.");
+    try {
+      await refreshSession();
+    } catch (sessionError) {
+      console.warn("Session refresh failed after auth success.", sessionError);
+      state.user = parsed.data.user;
+      state.stats = parsed.data.stats || state.stats;
     }
-    await loadQuiz();
+    if (!state.user) {
+      state.user = parsed.data.user;
+      state.stats = parsed.data.stats || state.stats;
+    }
+    try {
+      await loadQuiz();
+    } catch (quizError) {
+      console.warn("Quiz bootstrap failed after auth success.", quizError);
+    }
   } catch (error) {
     if (errorEl) {
       const message =
@@ -1777,7 +1872,14 @@ continueGuestBtn?.addEventListener("click", () => completeAppEntry(true));
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     setLibraryView(null);
+    setNavMenuOpen(false);
     setMobileWordSheetOpen(false);
+  }
+});
+
+document.addEventListener("click", (event) => {
+  if (!navMenuShellEl?.contains(event.target)) {
+    setNavMenuOpen(false);
   }
 });
 
@@ -1866,21 +1968,44 @@ clearBtn.addEventListener("click", () => {
 });
 
 nextQuizBtn.addEventListener("click", () => loadQuiz(state.quizMode === "reading" ? state.quiz?.word || null : state.quiz?.word_id || null));
-openProfileBtn?.addEventListener("click", () => {
-  setLibraryView("profile");
+profileAvatarBtn?.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  openLibraryPanel("profile");
 });
-openProgressBtn?.addEventListener("click", () => {
-  setLibraryView("progress");
+navMenuTriggerEl?.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  if (isDesktopMenuMode()) {
+    setNavMenuOpen(true);
+    return;
+  }
+  setNavMenuOpen(!navMenuShellEl?.classList.contains("is-open"));
 });
-openSavedWordsBtn.addEventListener("click", async () => {
-  if (state.user) await fetchSavedWords("recent");
-  setLibraryView("saved");
+navMenuShellEl?.addEventListener("mouseenter", () => {
+  if (isDesktopMenuMode()) setNavMenuOpen(true);
 });
-openQuizBtn.addEventListener("click", async () => {
-  if (!state.quiz && state.user) await loadQuiz();
-  setLibraryView("quiz");
+navMenuShellEl?.addEventListener("mouseleave", () => {
+  if (!isDesktopMenuMode()) return;
+  navMenuCloseTimer = window.setTimeout(() => {
+    setNavMenuOpen(false);
+  }, 140);
 });
-openManualHelpBtn.addEventListener("click", () => setLibraryView("manual"));
+navMenuShellEl?.addEventListener("focusin", () => {
+  if (isDesktopMenuMode()) setNavMenuOpen(true);
+});
+navMenuShellEl?.addEventListener("focusout", () => {
+  window.setTimeout(() => {
+    if (!navMenuShellEl?.contains(document.activeElement)) {
+      setNavMenuOpen(false);
+    }
+  }, 0);
+});
+bindNavMenuAction(openProfileBtn, "profile");
+bindNavMenuAction(openProgressBtn, "progress");
+bindNavMenuAction(openSavedWordsBtn, "saved");
+bindNavMenuAction(openQuizBtn, "quiz");
+bindNavMenuAction(openManualHelpBtn, "manual");
 closeMobileWordBtn?.addEventListener("click", closeMobileWordSheet);
 mobileWordHandleBtn?.addEventListener("click", closeMobileWordSheet);
 mobileWordBackdropEl?.addEventListener("click", closeMobileWordSheet);

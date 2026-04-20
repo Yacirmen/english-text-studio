@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260420profilepanel1" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260420navmenu1" />
 </head>
 <body>
   <div id="welcomeGate" class="welcome-gate">
@@ -94,12 +94,70 @@
         <span class="topbar-slogan-accent">Read. Save. Retain.</span>
       </div>
       <div class="top-status">
-        <div class="top-tools">
-          <button id="openProfileBtn" class="toolbar-btn toolbar-btn-profile toolbar-btn-compact" type="button">Profile</button>
-          <button id="openProgressBtn" class="toolbar-btn toolbar-btn-pink toolbar-btn-compact" type="button">Progress</button>
-          <button id="openSavedWordsBtn" class="toolbar-btn toolbar-btn-green toolbar-btn-compact" type="button">Saved</button>
-          <button id="openQuizBtn" class="toolbar-btn toolbar-btn-blue toolbar-btn-compact" type="button">Quiz</button>
-          <button id="openManualHelpBtn" class="toolbar-btn toolbar-btn-cream toolbar-btn-compact" type="button">Translate</button>
+        <div id="navMenuShell" class="menu-shell">
+          <button
+            id="navMenuTrigger"
+            class="menu-trigger"
+            type="button"
+            aria-label="Open quick panels"
+            aria-expanded="false"
+            aria-controls="navMenu"
+          >
+            <span class="menu-trigger-kicker">Panels</span>
+            <strong class="menu-trigger-title">Quick access</strong>
+            <span class="menu-trigger-icon" aria-hidden="true">+</span>
+          </button>
+          <div id="navMenu" class="nav-menu" role="menu" aria-label="Quick access panels">
+            <div class="nav-menu-section">
+              <span class="nav-menu-label">Account</span>
+              <button id="openProgressBtn" class="nav-menu-item nav-menu-item-pink" type="button" role="menuitem">
+                <span class="nav-menu-item-copy">
+                  <strong>Progress</strong>
+                  <small>Track streak, goal, and recent reading.</small>
+                </span>
+                <span class="nav-menu-badge" aria-hidden="true">Stats</span>
+              </button>
+              <button id="openProfileBtn" class="nav-menu-item nav-menu-item-profile" type="button" role="menuitem">
+                <span class="nav-menu-item-copy">
+                  <strong>Profile</strong>
+                  <small>Sign in, manage account access, and log out.</small>
+                </span>
+                <span class="nav-menu-badge" aria-hidden="true">Account</span>
+              </button>
+            </div>
+            <div class="nav-menu-section">
+              <span class="nav-menu-label">Study tools</span>
+              <button id="openSavedWordsBtn" class="nav-menu-item nav-menu-item-green" type="button" role="menuitem">
+                <span class="nav-menu-item-copy">
+                  <strong>Saved words</strong>
+                  <small>Jump into your word bank and keep phrases close.</small>
+                </span>
+                <span class="nav-menu-badge" aria-hidden="true">Words</span>
+              </button>
+              <button id="openQuizBtn" class="nav-menu-item nav-menu-item-blue" type="button" role="menuitem">
+                <span class="nav-menu-item-copy">
+                  <strong>Quiz</strong>
+                  <small>Review fast with reading and saved-word practice.</small>
+                </span>
+                <span class="nav-menu-badge" aria-hidden="true">Review</span>
+              </button>
+              <button id="openManualHelpBtn" class="nav-menu-item nav-menu-item-cream" type="button" role="menuitem">
+                <span class="nav-menu-item-copy">
+                  <strong>Translate</strong>
+                  <small>Ask for a quick explanation without leaving the flow.</small>
+                </span>
+                <span class="nav-menu-badge" aria-hidden="true">Help</span>
+              </button>
+            </div>
+            <div class="nav-menu-foot">
+              <span>About us and Contact can slot into this menu next.</span>
+            </div>
+          </div>
+        </div>
+        <div class="profile-shell">
+          <button id="profileAvatarBtn" class="profile-trigger" type="button" aria-label="Open profile panel" aria-expanded="false">
+            <span id="profileTriggerInitials" class="profile-trigger-initials">G</span>
+          </button>
         </div>
       </div>
     </header>
@@ -453,6 +511,6 @@
     </section>
   </aside>
 
-  <script src="/assets/app.js?v=20260420profilepanel1"></script>
+  <script src="/assets/app.js?v=20260420navmenu1"></script>
 </body>
 </html>
