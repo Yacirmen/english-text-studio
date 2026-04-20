@@ -11,8 +11,10 @@ from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import httpx
+import bcrypt
 from fastapi import Cookie, FastAPI, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
@@ -32,7 +34,7 @@ except ImportError:  # pragma: no cover
 ROOT_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = ROOT_DIR / "frontend"
 ENV_PATH = ROOT_DIR / ".env"
-DB_PATH = ROOT_DIR / "backend" / "app.db"
+DB_PATH = Path(os.getenv("READLEX_DB_PATH", str(ROOT_DIR / "backend" / "app.db"))).resolve()
 CURATED_LIBRARY_SOURCE = "desktop_curated"
 CURATED_READINGS_PATH = ROOT_DIR / "backend" / "curated_readings.txt"
 EXTRA_WORD_MAP_PATH = ROOT_DIR / "backend" / "extra_word_map.json"
@@ -721,6 +723,8 @@ GOOGLE_TRANSLATE_API_URL = "https://translation.googleapis.com/language/translat
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 USE_POSTGRES = DATABASE_URL.startswith("postgres")
 APP_BASE_URL = os.getenv("APP_BASE_URL", "http://127.0.0.1:8041").strip().rstrip("/")
+CORS_ALLOWED_ORIGINS_RAW = os.getenv("CORS_ALLOWED_ORIGINS", "").strip()
+COOKIE_SECURE_RAW = os.getenv("COOKIE_SECURE", "auto").strip().lower()
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
 RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "").strip()
 SMTP_HOST = os.getenv("SMTP_HOST", "").strip()
@@ -729,6 +733,42 @@ SMTP_USERNAME = os.getenv("SMTP_USERNAME", "").strip()
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "").strip()
 SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", SMTP_USERNAME).strip()
 SMTP_USE_TLS = os.getenv("SMTP_USE_TLS", "true").strip().lower() != "false"
+
+
+def normalized_origin(url: str) -> str:
+    raw = str(url or "").strip().rstrip("/")
+    if not raw:
+        return ""
+    parsed = urlparse(raw if "://" in raw else f"https://{raw}")
+    if not parsed.scheme or not parsed.netloc:
+        return ""
+    return f"{parsed.scheme}://{parsed.netloc}"
+
+
+def build_allowed_origins() -> list[str]:
+    configured = [
+        normalized_origin(item)
+        for item in CORS_ALLOWED_ORIGINS_RAW.split(",")
+        if item.strip()
+    ]
+    if configured:
+        return sorted({item for item in configured if item})
+    defaults = {
+        normalized_origin(APP_BASE_URL),
+        "http://127.0.0.1:8041",
+        "http://localhost:8041",
+        "http://127.0.0.1:8046",
+        "http://localhost:8046",
+    }
+    return sorted({item for item in defaults if item})
+
+
+ALLOWED_ORIGINS = build_allowed_origins()
+COOKIE_SECURE = (
+    COOKIE_SECURE_RAW == "true"
+    if COOKIE_SECURE_RAW in {"true", "false"}
+    else normalized_origin(APP_BASE_URL).startswith("https://")
+)
 
 
 class GenerateRequest(BaseModel):
@@ -1470,7 +1510,36 @@ import_curated_readings()
 
 
 def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+def hash_password_legacy(password: str) -> str:
     return hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+
+def is_legacy_password_hash(password_hash: str) -> bool:
+    return bool(re.fullmatch(r"[a-f0-9]{64}", str(password_hash or "").strip()))
+
+
+def verify_password(password: str, password_hash: str) -> bool:
+    stored_hash = str(password_hash or "").strip()
+    if not stored_hash:
+        return False
+    if is_legacy_password_hash(stored_hash):
+        return secrets.compare_digest(hash_password_legacy(password), stored_hash)
+    try:
+        return bcrypt.checkpw(password.encode("utf-8"), stored_hash.encode("utf-8"))
+    except Exception:
+        return False
+
+
+def password_hash_needs_upgrade(password_hash: str) -> bool:
+    stored_hash = str(password_hash or "").strip()
+    if not stored_hash:
+        return True
+    if is_legacy_password_hash(stored_hash):
+        return True
+    return not stored_hash.startswith("$2")
 
 
 def clean_username(username: str) -> str:
@@ -1621,7 +1690,8 @@ def create_session(response: Response, user_id: int) -> str:
         value=token,
         httponly=True,
         samesite="lax",
-        secure=False,
+        secure=COOKIE_SECURE,
+        path="/",
         max_age=60 * 60 * 24 * 30,
     )
     return token
@@ -1630,7 +1700,7 @@ def create_session(response: Response, user_id: int) -> str:
 def clear_session(response: Response, session_token: str | None) -> None:
     if session_token:
         db_execute("DELETE FROM sessions WHERE token = ?", (session_token,))
-    response.delete_cookie(SESSION_COOKIE)
+    response.delete_cookie(SESSION_COOKIE, path="/", samesite="lax", secure=COOKIE_SECURE)
 
 
 def ensure_user_progress(user_id: int) -> dict[str, Any]:
@@ -1835,11 +1905,11 @@ def classify_turkish_meaning(value: str) -> str:
     lowered = value.strip().lower()
     if lowered.endswith(("mek", "mak")):
         return "verb"
-    if lowered.endswith(("yor", "?yor", "iyor", "uyor", "?yor", "ilir", "?l?r", "ulur", "?l?r", "lan?r", "lenir")):
+    if lowered.endswith(("yor", "ıyor", "iyor", "uyor", "ilir", "ılır", "ulur", "lanır", "lenir")):
         return "verb"
-    if lowered.endswith(("li", "l?", "lu", "l?", "siz", "s?z", "suz", "s?z", "sel", "sal")):
+    if lowered.endswith(("li", "lı", "lu", "lü", "siz", "sız", "suz", "süz", "sel", "sal")):
         return "adjective"
-    if lowered.endswith(("ik", "?k", "uk", "?k")):
+    if lowered.endswith(("ik", "ık", "uk", "ük")):
         return "adjective"
     return "noun"
 
@@ -1853,7 +1923,7 @@ def quiz_candidate_meanings(words: list[dict[str, Any]], target_id: int, target_
         candidate = str(row.get("turkish") or "").strip().lower()
         if not candidate:
             continue
-        if any(mark in candidate for mark in ["al?namad?", "bulunamad?", "not available"]):
+        if any(mark in candidate for mark in ["alınamadı", "bulunamadı", "not available"]):
             continue
         if len(candidate) < 2:
             continue
@@ -2336,16 +2406,77 @@ def repair_mojibake(value: str) -> str:
     if not value:
         return value
     suspicious = ("Ã", "Å", "Ä", "Ä±", "ÄŸ", "ÅŸ", "Ã¼", "Ã¶", "Ã§", "â")
-    if not any(token in value for token in suspicious):
+    targeted_replacements = {
+        "ta??mak": "taşımak",
+        "kar??la?t?rmak": "karşılaştırmak",
+        "d?zenli": "düzenli",
+        "kar???k": "karışık",
+        "geni?": "geniş",
+        "yo?un": "yoğun",
+        "karma??k": "karmaşık",
+        "yava?": "yavaş",
+        "h?zl?": "hızlı",
+        "g??l?": "güçlü",
+        "zay?f": "zayıf",
+        "ama?": "amaç",
+        "al??kanl?k": "alışkanlık",
+        "kan?t": "kanıt",
+        "??z?m": "çözüm",
+        "al?namad?": "alınamadı",
+        "bulunamad?": "bulunamadı",
+        "?yor": "ıyor",
+        "?l?r": "ılır",
+        "l?": "lı",
+        "s?z": "sız",
+        "?k": "ık",
+    }
+    needs_decode = any(token in value for token in suspicious)
+    needs_replacements = any(token in value for token in targeted_replacements)
+    if not needs_decode and not needs_replacements:
         return value
-    for source_encoding in ("latin1", "cp1252"):
-        try:
-            repaired = value.encode(source_encoding).decode("utf-8")
-            if repaired:
-                return repaired
-        except (UnicodeEncodeError, UnicodeDecodeError):
-            continue
+    repaired_value = value
+    if needs_decode:
+        for source_encoding in ("latin1", "cp1252"):
+            try:
+                repaired = value.encode(source_encoding).decode("utf-8")
+                if repaired:
+                    repaired_value = repaired
+                    break
+            except (UnicodeEncodeError, UnicodeDecodeError):
+                continue
+    for source, target in targeted_replacements.items():
+        repaired_value = repaired_value.replace(source, target)
+    return repaired_value
+
+
+def sanitize_text_tree(value: Any) -> Any:
+    if isinstance(value, str):
+        return repair_mojibake(value)
+    if isinstance(value, dict):
+        return {sanitize_text_tree(key): sanitize_text_tree(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [sanitize_text_tree(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(sanitize_text_tree(item) for item in value)
     return value
+
+
+def sanitize_runtime_text_catalogs() -> None:
+    global QUIZ_DISTRACTOR_BANK, LEVEL_CONFIG, LOCAL_WORD_MAP, LOCAL_PHRASE_MAP
+    global IRREGULAR_WORD_MAP, WORD_MEANING_OVERRIDES, EXTRA_WORD_MAP, LIBRARY_WORD_MAP
+    global FEATURED_PHRASAL_READING
+    QUIZ_DISTRACTOR_BANK = sanitize_text_tree(QUIZ_DISTRACTOR_BANK)
+    LEVEL_CONFIG = sanitize_text_tree(LEVEL_CONFIG)
+    LOCAL_WORD_MAP = sanitize_text_tree(LOCAL_WORD_MAP)
+    LOCAL_PHRASE_MAP = sanitize_text_tree(LOCAL_PHRASE_MAP)
+    IRREGULAR_WORD_MAP = sanitize_text_tree(IRREGULAR_WORD_MAP)
+    WORD_MEANING_OVERRIDES = sanitize_text_tree(WORD_MEANING_OVERRIDES)
+    EXTRA_WORD_MAP = sanitize_text_tree(EXTRA_WORD_MAP)
+    LIBRARY_WORD_MAP = sanitize_text_tree(LIBRARY_WORD_MAP)
+    FEATURED_PHRASAL_READING = sanitize_text_tree(FEATURED_PHRASAL_READING)
+
+
+sanitize_runtime_text_catalogs()
 
 
 def is_suspicious_meaning(source_word: str, candidate: str) -> bool:
@@ -3126,11 +3257,11 @@ def validate_text_quality(text: str, level: str, keywords: list[str]) -> tuple[b
 def ensure_provider_ready() -> None:
     if MODEL_PROVIDER == "gemini":
         if not GEMINI_API_KEY:
-            raise HTTPException(status_code=500, detail="GEMINI_API_KEY bulunamadÄ±.")
+            raise HTTPException(status_code=500, detail=repair_mojibake("GEMINI_API_KEY bulunamadı."))
         return
     if MODEL_PROVIDER == "hf":
         if not HF_TOKEN:
-            raise HTTPException(status_code=500, detail="HF_TOKEN bulunamadÄ±.")
+            raise HTTPException(status_code=500, detail=repair_mojibake("HF_TOKEN bulunamadı."))
         return
     raise HTTPException(status_code=500, detail=f"Desteklenmeyen provider: {MODEL_PROVIDER}")
 
@@ -3157,7 +3288,7 @@ def request_gemini(prompt: str, system_instruction: str, *, temperature: float, 
         data = response.json()
     text = extract_text(data)
     if not text:
-        raise RuntimeError("Gemini boÅŸ yanÄ±t dÃ¶ndÃ¼.")
+        raise RuntimeError(repair_mojibake("Gemini boş yanıt döndü."))
     return text
 
 
@@ -3172,7 +3303,7 @@ def request_hf(prompt: str, system_instruction: str, *, temperature: float, max_
     text = response.choices[0].message.content or ""
     cleaned = text.strip()
     if not cleaned:
-        raise RuntimeError("HF Router boÅŸ yanÄ±t dÃ¶ndÃ¼.")
+        raise RuntimeError(repair_mojibake("HF Router boş yanıt döndü."))
     return cleaned
 
 
@@ -3288,27 +3419,27 @@ def normalize_api_error(exc: Exception) -> HTTPException:
     lowered = raw.lower()
     if "api key" in lowered or "permission" in lowered or "unauthorized" in lowered:
         if MODEL_PROVIDER == "hf":
-            return HTTPException(status_code=401, detail="HF token geÃ§ersiz veya yetkisiz.")
-        return HTTPException(status_code=401, detail="Gemini API key geÃ§ersiz veya yetkisiz.")
+            return HTTPException(status_code=401, detail=repair_mojibake("HF token geçersiz veya yetkisiz."))
+        return HTTPException(status_code=401, detail=repair_mojibake("Gemini API key geçersiz veya yetkisiz."))
     if "429" in lowered or "quota" in lowered or "rate limit" in lowered:
         if MODEL_PROVIDER == "hf":
-            return HTTPException(status_code=429, detail="HF Ã¼cretsiz limitine ulaÅŸÄ±ldÄ±.")
-        return HTTPException(status_code=429, detail="Gemini free tier limiti aÅŸÄ±ldÄ±.")
+            return HTTPException(status_code=429, detail=repair_mojibake("HF ücretsiz limitine ulaşıldı."))
+        return HTTPException(status_code=429, detail=repair_mojibake("Gemini free tier limiti aşıldı."))
     if "403" in lowered:
-        return HTTPException(status_code=403, detail="SeÃ§ili saÄŸlayÄ±cÄ± bu isteÄŸe izin vermedi.")
+        return HTTPException(status_code=403, detail=repair_mojibake("Seçili sağlayıcı bu isteğe izin vermedi."))
     if "404" in lowered:
-        return HTTPException(status_code=404, detail="SeÃ§ili model bulunamadÄ±.")
+        return HTTPException(status_code=404, detail=repair_mojibake("Seçili model bulunamadı."))
     if "503" in lowered or "connection" in lowered or "timed out" in lowered:
         if MODEL_PROVIDER == "hf":
-            return HTTPException(status_code=503, detail="HF Router servisine ÅŸu anda ulaÅŸÄ±lamÄ±yor.")
-        return HTTPException(status_code=503, detail="Gemini servisine ÅŸu anda ulaÅŸÄ±lamÄ±yor.")
+            return HTTPException(status_code=503, detail=repair_mojibake("HF Router servisine şu anda ulaşılamıyor."))
+        return HTTPException(status_code=503, detail=repair_mojibake("Gemini servisine şu anda ulaşılamıyor."))
     return HTTPException(status_code=500, detail=raw)
 
 
 app = FastAPI(title="ReadLex")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -3357,13 +3488,17 @@ def register(payload: AuthRequest, response: Response) -> dict[str, Any]:
 @app.post("/api/auth/login")
 def login(payload: AuthRequest, response: Response) -> dict[str, Any]:
     username = clean_username(payload.username)
-    password_hash = hash_password(payload.password)
     row = db_fetchone(
-        "SELECT id, username, created_at, is_active FROM users WHERE username = ? AND password_hash = ?",
-        (username, password_hash),
+        "SELECT id, username, created_at, is_active, password_hash FROM users WHERE username = ?",
+        (username,),
     )
-    if not row:
+    if not row or not verify_password(payload.password, str(row.get("password_hash", ""))):
         raise HTTPException(status_code=401, detail="Username or password is incorrect.")
+    if password_hash_needs_upgrade(str(row.get("password_hash", ""))):
+        db_execute(
+            "UPDATE users SET password_hash = ? WHERE id = ?",
+            (hash_password(payload.password), int(row["id"])),
+        )
     create_session(response, int(row["id"]))
     return {"user": user_payload(row), "stats": build_user_stats(int(row["id"]))}
 
@@ -3545,7 +3680,7 @@ def quiz_check(payload: QuizAnswerRequest, session_token: str | None = Cookie(de
         (payload.word_id, int(user["id"])),
     )
     if not row:
-        raise HTTPException(status_code=404, detail="Quiz kelimesi bulunamadÄ±.")
+        raise HTTPException(status_code=404, detail=repair_mojibake("Quiz kelimesi bulunamadı."))
     expected_answer = row["word"] if payload.question_type == "blank" else row["turkish"]
     is_correct = payload.answer.strip().lower() == expected_answer.strip().lower()
     db_execute(
@@ -3567,11 +3702,11 @@ def quiz_check(payload: QuizAnswerRequest, session_token: str | None = Cookie(de
 def generate(payload: GenerateRequest, session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE)) -> dict[str, Any]:
     keywords = sanitize_keywords(payload.keywords)
     if payload.level not in LEVEL_CONFIG:
-        raise HTTPException(status_code=400, detail="GeÃ§ersiz seviye.")
+        raise HTTPException(status_code=400, detail=repair_mojibake("Geçersiz seviye."))
     if payload.source not in {"library", "ai"}:
-        raise HTTPException(status_code=400, detail="GeÃ§ersiz iÃ§erik kaynaÄŸÄ±.")
+        raise HTTPException(status_code=400, detail=repair_mojibake("Geçersiz içerik kaynağı."))
     if payload.source == "ai" and (len(keywords) < 2 or len(keywords) > 12):
-        raise HTTPException(status_code=400, detail="2 ile 12 arasÄ±nda anahtar kelime gerekli.")
+        raise HTTPException(status_code=400, detail=repair_mojibake("2 ile 12 arasında anahtar kelime gerekli."))
     if payload.source == "library":
         library_match = pick_library_reading(
             payload.level,
@@ -3598,7 +3733,7 @@ def generate(payload: GenerateRequest, session_token: str | None = Cookie(defaul
                 "content_source": "library",
                 "glossary": build_library_glossary(library_match["text"]),
             }
-        raise HTTPException(status_code=404, detail="Bu filtreler iÃ§in library iÃ§inde uygun bir metin bulunamadÄ±.")
+        raise HTTPException(status_code=404, detail=repair_mojibake("Bu filtreler için library içinde uygun bir metin bulunamadı."))
     prompt = build_text_prompt(payload.level, payload.topic, keywords, payload.length_target)
     try:
         text = request_text(prompt, payload.level, payload.topic, keywords)

@@ -178,6 +178,7 @@ const openProgressBtn = $("#openProgressBtn");
 const openSavedWordsBtn = $("#openSavedWordsBtn");
 const openQuizBtn = $("#openQuizBtn");
 const openManualHelpBtn = $("#openManualHelpBtn");
+const openInfoBtn = $("#openInfoBtn");
 const libraryOverlayEl = $("#libraryOverlay");
 const libraryPanelEl = $("#libraryPanel");
 const profilePanelEl = $("#profilePanel");
@@ -185,6 +186,7 @@ const progressPanelEl = $("#progressPanel");
 const savedWordsPanelEl = $("#savedWordsPanel");
 const quizPanelEl = $("#quizPanel");
 const manualHelpPanelEl = $("#manualHelpPanel");
+const infoPanelEl = $("#infoPanel");
 const libraryTitleEl = $("#libraryTitle");
 const libraryKickerEl = $("#libraryKicker");
 const closeLibraryBtn = $("#closeLibraryBtn");
@@ -1062,6 +1064,7 @@ function setLibraryView(view) {
   savedWordsPanelEl.classList.toggle("hidden", view !== "saved");
   quizPanelEl.classList.toggle("hidden", view !== "quiz");
   manualHelpPanelEl.classList.toggle("hidden", view !== "manual");
+  infoPanelEl.classList.toggle("hidden", view !== "info");
   if (libraryPanelScrollEl) libraryPanelScrollEl.style.transform = "";
   if (view === "profile") {
     libraryKickerEl.textContent = "Profile";
@@ -1078,6 +1081,9 @@ function setLibraryView(view) {
   } else if (view === "manual") {
     libraryKickerEl.textContent = "Translate";
     libraryTitleEl.textContent = "Quick translation";
+  } else if (view === "info") {
+    libraryKickerEl.textContent = "Info";
+    libraryTitleEl.textContent = "About, contact, privacy, and terms";
   }
   setNavMenuOpen(false);
 }
@@ -2050,6 +2056,7 @@ bindNavMenuAction(openProgressBtn, "progress");
 bindNavMenuAction(openSavedWordsBtn, "saved");
 bindNavMenuAction(openQuizBtn, "quiz");
 bindNavMenuAction(openManualHelpBtn, "manual");
+bindNavMenuAction(openInfoBtn, "info");
 closeMobileWordBtn?.addEventListener("click", closeMobileWordSheet);
 mobileWordHandleBtn?.addEventListener("click", closeMobileWordSheet);
 mobileWordBackdropEl?.addEventListener("click", closeMobileWordSheet);
