@@ -379,6 +379,30 @@ const PHRASE_PREFERENCES = new Set([
   "turn out",
   "calm down",
   "get along",
+  "work life",
+  "work life balance",
+  "social media",
+  "mental health",
+  "climate change",
+  "space exploration",
+  "space tourism",
+  "basic income",
+  "universal basic income",
+  "blue collar",
+  "white collar",
+  "open plan",
+  "mixed use",
+  "face to face",
+  "in conclusion",
+  "to summarize",
+  "for instance",
+  "in contrast",
+  "in reality",
+  "in summary",
+  "in light of",
+  "due to",
+  "rather than",
+  "in favor of",
 ]);
 
 function findAdjacentWordButton(fromEl, direction) {
@@ -390,21 +414,34 @@ function findAdjacentWordButton(fromEl, direction) {
   return null;
 }
 
+function getWordByOffset(fromEl, steps) {
+  let node = fromEl;
+  const direction = steps >= 0 ? "next" : "prev";
+  let remaining = Math.abs(steps);
+  while (remaining > 0 && node) {
+    node = findAdjacentWordButton(node, direction);
+    remaining -= 1;
+  }
+  return node?.dataset?.word || "";
+}
+
 function resolvePreferredPhrase(buttonEl) {
   if (!buttonEl?.dataset?.word) return "";
   const current = buttonEl.dataset.word;
-  const nextBtn = findAdjacentWordButton(buttonEl, "next");
-  const prevBtn = findAdjacentWordButton(buttonEl, "prev");
-  const nextWord = nextBtn?.dataset?.word || "";
-  const prevWord = prevBtn?.dataset?.word || "";
+  const prevWord = getWordByOffset(buttonEl, -1);
+  const prevPrevWord = getWordByOffset(buttonEl, -2);
+  const nextWord = getWordByOffset(buttonEl, 1);
+  const nextNextWord = getWordByOffset(buttonEl, 2);
+  const candidates = [
+    `${current} ${nextWord} ${nextNextWord}`.trim(),
+    `${prevWord} ${current} ${nextWord}`.trim(),
+    `${prevPrevWord} ${prevWord} ${current}`.trim(),
+    `${current} ${nextWord}`.trim(),
+    `${prevWord} ${current}`.trim(),
+  ].filter((item) => item && !item.includes("  "));
 
-  if (nextWord) {
-    const forward = `${current} ${nextWord}`;
-    if (PHRASE_PREFERENCES.has(forward)) return forward;
-  }
-  if (prevWord) {
-    const backward = `${prevWord} ${current}`;
-    if (PHRASE_PREFERENCES.has(backward)) return backward;
+  for (const candidate of candidates) {
+    if (PHRASE_PREFERENCES.has(candidate)) return candidate;
   }
   return current;
 }

@@ -315,6 +315,53 @@ LOCAL_PHRASE_MAP = {
     "thirty-minute": "otuz dakikalık",
     "two-hour": "iki saatlik",
     "well-being": "iyi oluş",
+    "always-connected": "sürekli bağlantıda",
+    "work-life": "iş-yaşam",
+    "work-life balance": "iş-yaşam dengesi",
+    "work life balance": "iş-yaşam dengesi",
+    "post-truth": "hakikat sonrası",
+    "fight-or-flight": "savaş ya da kaç",
+    "black box": "kara kutu",
+    "black boxes": "kara kutular",
+    "decision making": "karar verme",
+    "social media": "sosyal medya",
+    "mental health": "ruh sağlığı",
+    "climate change": "iklim değişikliği",
+    "climate crisis": "iklim krizi",
+    "space exploration": "uzay araştırmaları",
+    "space tourism": "uzay turizmi",
+    "outer space": "dış uzay",
+    "outer space treaty": "Dış Uzay Antlaşması",
+    "basic income": "temel gelir",
+    "universal basic income": "evrensel temel gelir",
+    "blue-collar": "mavi yakalı",
+    "white-collar": "beyaz yakalı",
+    "low-earth orbit": "alçak dünya yörüngesi",
+    "low earth orbit": "alçak dünya yörüngesi",
+    "earth observation": "yer gözlemi",
+    "closed-loop": "kapalı döngü",
+    "open-plan": "açık plan",
+    "mixed-use": "karma kullanımlı",
+    "face to face": "yüz yüze",
+    "in conclusion": "sonuç olarak",
+    "to summarize": "özetle",
+    "for instance": "örneğin",
+    "in contrast": "buna karşılık",
+    "in reality": "gerçekte",
+    "in summary": "özet olarak",
+    "in light of": "... ışığında",
+    "in the long term": "uzun vadede",
+    "in the short term": "kısa vadede",
+    "due to": "nedeniyle",
+    "rather than": "yerine",
+    "in favor of": "lehine",
+    "means-tested": "gelir testine dayalı",
+    "zero-carbon": "sıfır karbon",
+    "zero carbon": "sıfır karbon",
+    "de-extinction": "yeniden tür canlandırma",
+    "multi-planetary": "çok gezegenli",
+    "long-term": "uzun vadeli",
+    "short-term contracts": "kısa süreli sözleşmeler",
 }
 
 FEATURED_PHRASAL_READING: dict[str, Any] = {
@@ -568,6 +615,30 @@ WORD_MEANING_OVERRIDES = {
     "looked": "göründü",
     "unfocused": "odaksız",
     "unresolved": "çözülmemiş",
+    "before": "önce",
+    "inside": "içinde",
+    "over": "üzerinde / boyunca",
+    "near": "yakınında",
+    "much": "çok",
+    "most": "çoğu / en çok",
+    "get": "almak / elde etmek",
+    "plan": "plan",
+    "project": "proje",
+    "risk": "risk",
+    "platform": "platform",
+    "stress": "stres",
+    "drama": "drama",
+    "festival": "festival",
+    "program": "program",
+    "pilot": "pilot",
+    "video": "video",
+    "living-room": "oturma odası",
+    "late-stage": "geç evre",
+    "distort": "çarpıtmak",
+    "home-cooked": "ev yapımı",
+    "well-being": "iyi oluş",
+    "work-life": "iş-yaşam",
+    "always-connected": "sürekli bağlantıda",
 }
 
 
@@ -1789,8 +1860,42 @@ def sanitize_keywords(raw_keywords: list[str]) -> list[str]:
     return result
 
 
+def normalize_phrase_key(value: str) -> str:
+    lowered = repair_mojibake(str(value or "")).strip().lower()
+    lowered = (
+        lowered.replace("’", "'")
+        .replace("`", "'")
+        .replace("–", "-")
+        .replace("—", "-")
+    )
+    lowered = re.sub(r"\s+", " ", lowered)
+    return lowered.strip()
+
+
+def phrase_lookup_candidates(value: str) -> list[str]:
+    base = normalize_phrase_key(value)
+    if not base:
+        return []
+    candidates: list[str] = []
+
+    def add(item: str) -> None:
+        cleaned = normalize_phrase_key(item)
+        if cleaned and cleaned not in candidates:
+            candidates.append(cleaned)
+
+    add(base)
+    add(base.replace("-", " "))
+    add(base.replace(" ", "-"))
+    add(base.replace("'", ""))
+    add(base.replace("'", " ").replace("  ", " "))
+    return candidates
+
+
 def sanitize_word(word: str) -> str:
-    return re.sub(r"[^A-Za-z -]", "", word).strip()
+    cleaned = normalize_phrase_key(word)
+    cleaned = re.sub(r"[^A-Za-z' -]", "", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip(" -'")
+    return cleaned
 
 
 def parse_keywords_field(value: str) -> list[str]:
@@ -2137,10 +2242,14 @@ def lookup_word_map_value(key: str) -> str | None:
 
 
 def infer_turkish_meaning(word: str) -> str:
-    lowered = word.lower().strip()
-    if lowered in LOCAL_PHRASE_MAP:
-        return repair_mojibake(LOCAL_PHRASE_MAP[lowered])
+    lowered = normalize_phrase_key(word)
+    for phrase_candidate in phrase_lookup_candidates(lowered):
+        if phrase_candidate in LOCAL_PHRASE_MAP:
+            return repair_mojibake(LOCAL_PHRASE_MAP[phrase_candidate])
     for candidate in word_root_candidates(lowered):
+        for phrase_candidate in phrase_lookup_candidates(candidate):
+            if phrase_candidate in LOCAL_PHRASE_MAP:
+                return repair_mojibake(LOCAL_PHRASE_MAP[phrase_candidate])
         resolved = lookup_word_map_value(candidate)
         if resolved and not is_suspicious_meaning(lowered, resolved):
             if lowered.endswith("ly") and candidate != lowered:
