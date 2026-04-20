@@ -439,6 +439,11 @@ body.dark-mode .toolbar-btn-cream{
   color:#9b6200;
   box-shadow:0 9px 0 #f4d99a, 0 14px 26px rgba(155,98,0,.14);
 }
+body.dark-mode .toolbar-btn-profile{
+  background:linear-gradient(180deg,#edf2ff 0%,#dce6ff 100%);
+  color:#34527f;
+  box-shadow:0 9px 0 #b8c9f1, 0 14px 26px rgba(52,82,127,.14);
+}
 body.dark-mode .toolbar-btn:hover{
   box-shadow:0 9px 0 rgba(24,49,83,.12), 0 14px 26px rgba(24,49,83,.1), 0 0 22px rgba(255,255,255,.24);
 }
@@ -770,6 +775,11 @@ body.dark-mode .inline-highlight{
   color:#9b6200;
   box-shadow:0 9px 0 #f4d99a, 0 14px 26px rgba(155,98,0,.14);
 }
+.toolbar-btn-profile{
+  background:linear-gradient(180deg,#edf2ff 0%,#dce6ff 100%);
+  color:#34527f;
+  box-shadow:0 9px 0 #b8c9f1, 0 14px 26px rgba(52,82,127,.14);
+}
 .nav-pill{
   display:inline-flex;
   align-items:center;
@@ -992,6 +1002,11 @@ body.dark-mode .inline-highlight{
   color:#163000;
 }
 .auth-face .primary-btn{margin-bottom:0}
+.profile-library-panel{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
 .account-card{
   padding:16px;
   border-radius:22px;

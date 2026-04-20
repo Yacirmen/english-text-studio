@@ -95,14 +95,6 @@ const gateShowLoginBtn = $("#gateShowLoginBtn");
 const gateShowRegisterBtn = $("#gateShowRegisterBtn");
 const continueGuestBtn = $("#continueGuestBtn");
 const themeToggleBtn = $("#themeToggleBtn");
-const profileTriggerBtn = $("#profileTriggerBtn");
-const profileTriggerInitialsEl = $("#profileTriggerInitials");
-const profileMenuEl = $("#profileMenu");
-const profileOverlayEl = $("#profileOverlay");
-const closeProfileMenuBtn = $("#closeProfileMenuBtn");
-const profileHandleBtn = $("#profileHandleBtn");
-const profileMenuTitleEl = $("#profileMenuTitle");
-const profileMenuBadgeEl = $("#profileMenuBadge");
 const profileTipTextEl = $("#profileTipText");
 const generateForm = $("#generate-form");
 const manualForm = $("#manual-form");
@@ -176,12 +168,14 @@ const quizTypeBadgeEl = $("#quizTypeBadge");
 const quizModeSavedBtn = $("#quizModeSavedBtn");
 const quizModeHardBtn = $("#quizModeHardBtn");
 const quizModeReadingBtn = $("#quizModeReadingBtn");
+const openProfileBtn = $("#openProfileBtn");
 const openProgressBtn = $("#openProgressBtn");
 const openSavedWordsBtn = $("#openSavedWordsBtn");
 const openQuizBtn = $("#openQuizBtn");
 const openManualHelpBtn = $("#openManualHelpBtn");
 const libraryOverlayEl = $("#libraryOverlay");
 const libraryPanelEl = $("#libraryPanel");
+const profilePanelEl = $("#profilePanel");
 const progressPanelEl = $("#progressPanel");
 const savedWordsPanelEl = $("#savedWordsPanel");
 const quizPanelEl = $("#quizPanel");
@@ -971,18 +965,19 @@ function renderQuiz() {
 function setLibraryView(view) {
   state.libraryView = view;
   const isOpen = Boolean(view);
-  if (isOpen) {
-    setProfileMenuOpen(false);
-  }
   libraryOverlayEl.classList.toggle("hidden", !isOpen);
   libraryPanelEl.classList.toggle("hidden", !isOpen);
   document.body.classList.toggle("library-open", isOpen);
+  profilePanelEl.classList.toggle("hidden", view !== "profile");
   progressPanelEl.classList.toggle("hidden", view !== "progress");
   savedWordsPanelEl.classList.toggle("hidden", view !== "saved");
   quizPanelEl.classList.toggle("hidden", view !== "quiz");
   manualHelpPanelEl.classList.toggle("hidden", view !== "manual");
   if (libraryPanelScrollEl) libraryPanelScrollEl.style.transform = "";
-  if (view === "progress") {
+  if (view === "profile") {
+    libraryKickerEl.textContent = "Profile";
+    libraryTitleEl.textContent = "Account access";
+  } else if (view === "progress") {
     libraryKickerEl.textContent = "Progress";
     libraryTitleEl.textContent = "Your streak and history";
   } else if (view === "saved") {
@@ -1023,8 +1018,6 @@ function renderUserPanel() {
     accountNameEl.textContent = state.user.username;
     savedWordsCountEl.textContent = state.stats.saved_words || 0;
     masteredWordsCountEl.textContent = state.stats.mastered_words || 0;
-    if (profileMenuTitleEl) profileMenuTitleEl.textContent = state.user.username;
-    if (profileMenuBadgeEl) profileMenuBadgeEl.textContent = `${state.stats.saved_words || 0} saved`;
     if (profileTipTextEl) {
       profileTipTextEl.textContent =
         (state.stats.saved_words || 0) > 0
@@ -1071,40 +1064,21 @@ function renderUserPanel() {
               content_source: reading.content_source,
               source: reading.content_source,
             };
-            setProfileMenuOpen(false);
+            setLibraryView(null);
             renderExperience();
           });
         });
       }
     }
-    if (profileTriggerInitialsEl) {
-      profileTriggerInitialsEl.textContent = state.user.username.slice(0, 1).toUpperCase();
-    }
-    profileTriggerBtn?.classList.add("signed-in");
   } else {
-    if (profileMenuTitleEl) profileMenuTitleEl.textContent = "Guest mode";
-    if (profileMenuBadgeEl) profileMenuBadgeEl.textContent = "Explore";
-    if (profileTriggerInitialsEl) profileTriggerInitialsEl.textContent = "G";
     if (readingHistoryListEl) readingHistoryListEl.innerHTML = `<p class="history-empty">Sign in to keep your reading trail.</p>`;
     if (dailyGoalTextEl) dailyGoalTextEl.textContent = "0 / 5 today";
     if (streakBadgeEl) streakBadgeEl.textContent = "Streak 0";
     if (goalBarFillEl) goalBarFillEl.style.width = "0%";
     if (hardWordsTextEl) hardWordsTextEl.textContent = "0 hard words ready for review.";
-    profileTriggerBtn?.classList.remove("signed-in");
   }
   renderSavedWords();
   renderQuiz();
-}
-
-function setProfileMenuOpen(isOpen) {
-  if (isOpen) {
-    setLibraryView(null);
-  }
-  profileMenuEl?.classList.toggle("hidden", !isOpen);
-  profileOverlayEl?.classList.toggle("hidden", !isOpen || !isMobilePreview());
-  profileTriggerBtn?.setAttribute("aria-expanded", isOpen ? "true" : "false");
-  document.body.classList.toggle("profile-open", isOpen);
-  if (profileMenuEl) profileMenuEl.style.transform = "";
 }
 
 function registerSheetDrag(handleEl, panelEl, closeFn, isOpenFn) {
@@ -1800,25 +1774,9 @@ gateShowRegisterBtn?.addEventListener("click", () => {
 
 continueGuestBtn?.addEventListener("click", () => completeAppEntry(true));
 
-profileTriggerBtn?.addEventListener("click", (event) => {
-  event.stopPropagation();
-  const willOpen = profileMenuEl?.classList.contains("hidden");
-  setProfileMenuOpen(Boolean(willOpen));
-});
-
-profileMenuEl?.addEventListener("click", (event) => {
-  event.stopPropagation();
-});
-
-profileOverlayEl?.addEventListener("click", () => setProfileMenuOpen(false));
-closeProfileMenuBtn?.addEventListener("click", () => setProfileMenuOpen(false));
-profileHandleBtn?.addEventListener("click", () => setProfileMenuOpen(false));
-
-document.addEventListener("click", () => setProfileMenuOpen(false));
-
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
-    setProfileMenuOpen(false);
+    setLibraryView(null);
     setMobileWordSheetOpen(false);
   }
 });
@@ -1844,25 +1802,16 @@ async function handleLogout(event) {
     window.sessionStorage.removeItem(GUEST_FLAG_KEY);
     renderUserPanel();
     renderWelcomeGate();
-    setProfileMenuOpen(false);
+    setLibraryView(null);
   } finally {
     state.loggingOut = false;
     setLoading(logoutTrigger, "", false);
   }
 }
 
-function handleProfileMenuPress(event) {
-  const logoutTarget = event.target?.closest?.("#logoutBtn");
-  if (!logoutTarget) return;
-  void handleLogout(event);
-}
-
 logoutBtn?.addEventListener("click", handleLogout);
 logoutBtn?.addEventListener("touchend", handleLogout, { passive: false });
 logoutBtn?.addEventListener("pointerup", handleLogout);
-profileMenuEl?.addEventListener("click", handleProfileMenuPress);
-profileMenuEl?.addEventListener("touchend", handleProfileMenuPress, { passive: false });
-profileMenuEl?.addEventListener("pointerup", handleProfileMenuPress);
 
 clearSavedWordsBtn?.addEventListener("click", async () => {
   const parsed = await apiFetch("/api/saved-words/clear", { method: "POST" });
@@ -1917,6 +1866,9 @@ clearBtn.addEventListener("click", () => {
 });
 
 nextQuizBtn.addEventListener("click", () => loadQuiz(state.quizMode === "reading" ? state.quiz?.word || null : state.quiz?.word_id || null));
+openProfileBtn?.addEventListener("click", () => {
+  setLibraryView("profile");
+});
 openProgressBtn?.addEventListener("click", () => {
   setLibraryView("progress");
 });
@@ -1946,7 +1898,6 @@ libraryOverlayEl.addEventListener("click", () => setLibraryView(null));
 
 registerSheetDrag(mobileWordHandleBtn, mobileWordPanelEl, closeMobileWordSheet, () => mobileWordSheetEl?.classList.contains("sheet-open"));
 registerSheetDrag(libraryHandleBtn, libraryPanelScrollEl, () => setLibraryView(null), () => !libraryPanelEl?.classList.contains("hidden"));
-registerSheetDrag(profileHandleBtn, profileMenuEl, () => setProfileMenuOpen(false), () => !profileMenuEl?.classList.contains("hidden"));
 
 themeToggleBtn?.addEventListener("click", toggleTheme);
 
