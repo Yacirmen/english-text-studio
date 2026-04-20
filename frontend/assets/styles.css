@@ -90,18 +90,19 @@ body::before{
 .welcome-copy{
   display:flex;
   flex-direction:column;
-  justify-content:center;
+  justify-content:flex-start;
   min-width:0;
-  padding:6px 4px 6px 2px;
+  padding:2px 6px 6px 2px;
 }
 .welcome-headline{
   display:flex;
   flex-direction:column;
-  gap:2px;
-  margin:12px 0 10px;
-  max-width:8.5ch;
-  font-size:clamp(2rem,3.6vw,3.35rem);
-  line-height:.96;
+  align-items:flex-start;
+  gap:0;
+  margin:10px 0 16px;
+  max-width:7.2ch;
+  font-size:clamp(2.4rem,4.9vw,4.25rem);
+  line-height:.88;
   letter-spacing:-.06em;
 }
 .welcome-headline span{
@@ -111,49 +112,32 @@ body::before{
   color:#204e82;
   text-shadow:0 10px 24px rgba(28,176,246,.16);
 }
-.welcome-copy p{
-  max-width:34ch;
-  margin:0;
-  color:var(--muted);
-  font-size:.93rem;
-  line-height:1.58;
-}
-.welcome-points{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin-top:14px;
-}
-.welcome-points span{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-height:32px;
-  padding:0 11px;
-  border-radius:999px;
-  background:rgba(255,255,255,.88);
-  color:#3e5470;
-  font-size:.72rem;
-  font-weight:900;
-  box-shadow:0 10px 20px rgba(24,49,83,.08);
-}
 .welcome-side-note{
   display:flex;
-  align-items:center;
-  margin-top:14px;
-  padding:12px 14px;
-  border-radius:18px;
-  background:linear-gradient(135deg, rgba(255,255,255,.74), rgba(226,240,255,.66));
-  border:1px solid rgba(175,198,225,.34);
+  flex-direction:column;
+  align-items:flex-start;
+  gap:8px;
+  margin-top:2px;
+  padding:0;
+  border-radius:0;
+  background:none;
+  border:none;
 }
 .welcome-side-note span{
-  color:#23466f;
-  font-size:.72rem;
-  font-weight:900;
-  letter-spacing:.1em;
-  text-transform:uppercase;
+  color:rgba(92,114,141,.92);
+  font-size:.98rem;
+  font-weight:700;
+  letter-spacing:-.01em;
+  text-transform:none;
 }
-.welcome-side-note-compact{max-width:320px}
+.welcome-side-note p{
+  max-width:30ch;
+  margin:0;
+  color:rgba(116,136,162,.78);
+  font-size:.92rem;
+  line-height:1.55;
+}
+.welcome-side-note-compact{max-width:340px}
 .welcome-auth{
   padding:20px;
   border-radius:26px;
@@ -445,6 +429,11 @@ body.dark-mode .toolbar-btn-blue{
   color:#0a78b4;
   box-shadow:0 9px 0 #9fdcff, 0 14px 26px rgba(10,120,180,.14);
 }
+body.dark-mode .toolbar-btn-pink{
+  background:linear-gradient(180deg,#ffeaf3 0%,#ffd8e8 100%);
+  color:#a34d78;
+  box-shadow:0 9px 0 #efbfd4, 0 14px 26px rgba(163,77,120,.14);
+}
 body.dark-mode .toolbar-btn-cream{
   background:linear-gradient(180deg,#fff6e7 0%,#ffedc9 100%);
   color:#9b6200;
@@ -458,6 +447,9 @@ body.dark-mode .toolbar-btn-green:hover{
 }
 body.dark-mode .toolbar-btn-blue:hover{
   box-shadow:0 9px 0 #9fdcff, 0 14px 26px rgba(10,120,180,.16), 0 0 24px rgba(50,186,248,.20);
+}
+body.dark-mode .toolbar-btn-pink:hover{
+  box-shadow:0 9px 0 #efbfd4, 0 14px 26px rgba(163,77,120,.16), 0 0 24px rgba(255,189,213,.20);
 }
 body.dark-mode .toolbar-btn-cream:hover{
   box-shadow:0 9px 0 #f4d99a, 0 14px 26px rgba(155,98,0,.16), 0 0 24px rgba(255,216,77,.16);
@@ -767,6 +759,11 @@ body.dark-mode .inline-highlight{
   background:linear-gradient(180deg,#e3f6ff 0%,#cfeeff 100%);
   color:#0a78b4;
   box-shadow:0 9px 0 #9fdcff, 0 14px 26px rgba(10,120,180,.14);
+}
+.toolbar-btn-pink{
+  background:linear-gradient(180deg,#ffe7f1 0%,#ffd4e7 100%);
+  color:#9d416f;
+  box-shadow:0 9px 0 #f3b7d0, 0 14px 26px rgba(157,65,111,.14);
 }
 .toolbar-btn-cream{
   background:linear-gradient(180deg,#fff6e7 0%,#ffedc9 100%);
@@ -2610,37 +2607,24 @@ body.dark-mode .collocation-chip{
     gap:14px;
   }
   .welcome-copy{
-    padding:2px 2px 0;
+    padding:0;
   }
   .welcome-headline{
-    margin:8px 0 10px;
-    max-width:10ch;
-    gap:2px;
-    font-size:clamp(1.7rem,7.4vw,2.28rem);
-    line-height:.97;
-  }
-  .welcome-copy p{
-    max-width:none;
-    font-size:.84rem;
-    line-height:1.5;
-  }
-  .welcome-points{
-    gap:8px;
-    margin-top:12px;
-  }
-  .welcome-points span{
-    min-height:32px;
-    justify-content:center;
-    padding:0 10px;
-    font-size:.7rem;
+    margin:8px 0 14px;
+    max-width:6.6ch;
+    font-size:clamp(2.1rem,10.2vw,3rem);
+    line-height:.9;
   }
   .welcome-side-note{
-    margin-top:12px;
-    padding:11px 12px;
-    border-radius:18px;
+    margin-top:0;
   }
   .welcome-side-note span{
-    font-size:.68rem;
+    font-size:.88rem;
+  }
+  .welcome-side-note p{
+    max-width:26ch;
+    font-size:.82rem;
+    line-height:1.5;
   }
   .welcome-auth{padding:14px;border-radius:20px}
   .welcome-toggle{margin-bottom:14px}
@@ -3322,13 +3306,14 @@ body:not(.dark-mode) .mini-stat-label,
 body:not(.dark-mode) .profile-menu-badge,
 body:not(.dark-mode) .quiz-mini-badge,
 body:not(.dark-mode) .count-pill,
-body:not(.dark-mode) .hero-kicker,
-body:not(.dark-mode) .welcome-side-note span{
+body:not(.dark-mode) .hero-kicker{
   color:#4f6480 !important;
 }
-body:not(.dark-mode) .welcome-side-note{
-  background:linear-gradient(135deg, rgba(255,255,255,.94), rgba(234,242,252,.9)) !important;
-  border-color:rgba(148,173,203,.34) !important;
+body:not(.dark-mode) .welcome-side-note span{
+  color:rgba(88,109,136,.92) !important;
+}
+body:not(.dark-mode) .welcome-side-note p{
+  color:rgba(110,130,154,.78) !important;
 }
 body:not(.dark-mode) .field input::placeholder{
   color:#7d93ad !important;
@@ -3363,17 +3348,21 @@ body.dark-mode .mini-stat-label,
 body.dark-mode .profile-menu-badge,
 body.dark-mode .quiz-mini-badge,
 body.dark-mode .count-pill,
-body.dark-mode .hero-kicker,
-body.dark-mode .welcome-side-note span{
+body.dark-mode .hero-kicker{
   color:#c3d2e3 !important;
+}
+body.dark-mode .welcome-side-note span{
+  color:rgba(214,226,242,.88) !important;
+}
+body.dark-mode .welcome-side-note p{
+  color:rgba(189,206,228,.68) !important;
 }
 body.dark-mode .welcome-headline-accent{
   color:#8fc0ff !important;
   text-shadow:none !important;
 }
-body.dark-mode .welcome-side-note{
-  background:linear-gradient(135deg, rgba(255,255,255,.12), rgba(180,208,236,.08)) !important;
-  border-color:rgba(205,222,244,.14) !important;
+body.dark-mode .toolbar-btn-pink{
+  box-shadow:0 9px 0 #efbfd4, 0 14px 26px rgba(163,77,120,.14) !important;
 }
 body.dark-mode .field input::placeholder{
   color:#deebf8 !important;
