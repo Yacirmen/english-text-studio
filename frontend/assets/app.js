@@ -69,6 +69,7 @@ const state = {
   libraryView: null,
   libraryStats: null,
   quizStats: { answered: 0, correct: 0, streak: 0 },
+  loggingOut: false,
   hasEnteredApp: window.sessionStorage.getItem(GUEST_FLAG_KEY) === "1",
   viewMode: window.innerWidth < 860 ? "mobile" : "web",
 };
@@ -1822,19 +1823,32 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-logoutBtn.addEventListener("click", async () => {
-  await apiFetch("/api/auth/logout", { method: "POST" });
-  state.user = null;
-  state.stats = { saved_words: 0, mastered_words: 0 };
-  state.recentWords = [];
-  state.readingHistory = [];
-  state.quiz = null;
-  state.hasEnteredApp = false;
-  window.sessionStorage.removeItem(GUEST_FLAG_KEY);
-  renderUserPanel();
-  renderWelcomeGate();
-  setProfileMenuOpen(false);
-});
+async function handleLogout(event) {
+  event?.preventDefault?.();
+  event?.stopPropagation?.();
+  if (state.loggingOut) return;
+  state.loggingOut = true;
+  setLoading(logoutBtn, "Logging out...", true);
+  try {
+    await apiFetch("/api/auth/logout", { method: "POST" });
+    state.user = null;
+    state.stats = { saved_words: 0, mastered_words: 0 };
+    state.recentWords = [];
+    state.readingHistory = [];
+    state.quiz = null;
+    state.hasEnteredApp = false;
+    window.sessionStorage.removeItem(GUEST_FLAG_KEY);
+    renderUserPanel();
+    renderWelcomeGate();
+    setProfileMenuOpen(false);
+  } finally {
+    state.loggingOut = false;
+    setLoading(logoutBtn, "", false);
+  }
+}
+
+logoutBtn?.addEventListener("click", handleLogout);
+logoutBtn?.addEventListener("touchend", handleLogout, { passive: false });
 
 clearSavedWordsBtn?.addEventListener("click", async () => {
   const parsed = await apiFetch("/api/saved-words/clear", { method: "POST" });
