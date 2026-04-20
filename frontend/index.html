@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260420welcomehero12" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260420infopanel1" />
 </head>
 <body>
   <div id="welcomeGate" class="welcome-gate">
@@ -170,8 +170,18 @@
                 <span class="nav-menu-badge" aria-hidden="true">Help</span>
               </button>
             </div>
+            <div class="nav-menu-section">
+              <span class="nav-menu-label">Studio</span>
+              <button id="openInfoBtn" class="nav-menu-item nav-menu-item-indigo" type="button" role="menuitem">
+                <span class="nav-menu-item-copy">
+                  <strong>Info</strong>
+                  <small>See what ReadLex is, how it handles data, and how the launch is framed.</small>
+                </span>
+                <span class="nav-menu-badge" aria-hidden="true">Trust</span>
+              </button>
+            </div>
             <div class="nav-menu-foot">
-              <span>About us and Contact can slot into this menu next.</span>
+              <span>ReadLex keeps account, review, and trust details in one calm place.</span>
             </div>
           </div>
         </div>
@@ -530,8 +540,102 @@
       </form>
       <div id="manualResult" class="manual-result hidden"></div>
     </section>
+
+    <section id="infoPanel" class="library-section hidden">
+      <p class="library-copy">A compact trust space for understanding the product, its current scope, and how public launch is being handled.</p>
+      <div class="info-panel-shell">
+        <div class="info-panel-hero">
+          <span class="mini-label on-dark">ReadLex Guide</span>
+          <h4>Built to make reading practice easier to keep, easier to revisit, and easier to trust.</h4>
+          <p>Use this panel as the quiet, human side of the product: what it does, what it stores, and what users should expect from this version.</p>
+          <div class="info-chip-row">
+            <span class="info-chip">Reading-first</span>
+            <span class="info-chip">Phrase-aware</span>
+            <span class="info-chip">Review-ready</span>
+          </div>
+        </div>
+
+        <div class="info-accordion-list">
+          <details class="info-accordion" open>
+            <summary>
+              <span class="info-accordion-copy">
+                <strong>About ReadLex</strong>
+                <small>What the product is designed to help with.</small>
+              </span>
+            </summary>
+            <div class="info-accordion-body">
+              <p>ReadLex is a focused reading studio for learners who want more than quick translation. It turns a reading session into a loop: choose a text, tap useful words or phrases, save them, and come back through quiz and review.</p>
+              <ul class="info-list">
+                <li>Built around short reading sessions instead of heavy lesson screens.</li>
+                <li>Designed to keep meaning, context, and example usage tied together.</li>
+                <li>Made for gradual retention rather than one-time lookup.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>
+              <span class="info-accordion-copy">
+                <strong>Contact</strong>
+                <small>How users can reach the team during launch.</small>
+              </span>
+            </summary>
+            <div class="info-accordion-body">
+              <p>This build is still in active refinement, so contact is intentionally simple and direct. Use the launch or feedback channel that came with this build for bug reports, library requests, partnership notes, or early access questions.</p>
+              <div class="info-contact-grid">
+                <article class="info-contact-card">
+                  <span class="mini-label on-dark">Best for</span>
+                  <strong>Bug reports</strong>
+                  <p>Layout problems, login friction, saved-word issues, or broken translations.</p>
+                </article>
+                <article class="info-contact-card">
+                  <span class="mini-label on-dark">Best for</span>
+                  <strong>Content requests</strong>
+                  <p>Level requests, topic ideas, phrase coverage, and reading library expansion.</p>
+                </article>
+              </div>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>
+              <span class="info-accordion-copy">
+                <strong>Privacy</strong>
+                <small>What user data this version stores and why.</small>
+              </span>
+            </summary>
+            <div class="info-accordion-body">
+              <p>ReadLex stores only the information needed to support account access and review features in this version.</p>
+              <ul class="info-list">
+                <li>Username and password hash are stored to support account access.</li>
+                <li>Saved words, review results, and reading history are stored to power recall features.</li>
+                <li>Session cookies are used to keep signed-in users logged in securely.</li>
+                <li>This version should not be treated as a place to enter sensitive personal information.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details class="info-accordion">
+            <summary>
+              <span class="info-accordion-copy">
+                <strong>Terms of Use</strong>
+                <small>The expected boundaries for this current release.</small>
+              </span>
+            </summary>
+            <div class="info-accordion-body">
+              <ul class="info-list">
+                <li>ReadLex is offered as a learning tool and may continue to change as the product evolves.</li>
+                <li>Users should not rely on a single word card as professional, legal, or medical advice.</li>
+                <li>Service quality, reading availability, and account features may be refined between releases.</li>
+                <li>Abuse, scraping, or attempts to disrupt the experience may lead to access being removed.</li>
+              </ul>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
   </aside>
 
-  <script src="/assets/app.js?v=20260420phrasefix7"></script>
+  <script src="/assets/app.js?v=20260420infopanel1"></script>
 </body>
 </html>
