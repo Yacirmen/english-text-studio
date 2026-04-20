@@ -444,6 +444,24 @@ const PHRASE_PREFERENCES = new Set([
   "de extinction",
 ]);
 
+const PHRASE_LEMMA_OVERRIDES = {
+  broke: "break",
+  broken: "break",
+  gave: "give",
+  given: "give",
+  looked: "look",
+  ran: "run",
+  taken: "take",
+  took: "take",
+  turned: "turn",
+  worked: "work",
+  set: "set",
+  calmed: "calm",
+  figured: "figure",
+  getting: "get",
+  got: "get",
+};
+
 function findAdjacentWordButton(fromEl, direction) {
   let node = direction === "prev" ? fromEl.previousSibling : fromEl.nextSibling;
   while (node) {
@@ -464,6 +482,30 @@ function getWordByOffset(fromEl, steps) {
   return node?.dataset?.word || "";
 }
 
+function normalizePhraseWord(word) {
+  const raw = String(word || "").toLowerCase().trim();
+  if (!raw) return "";
+  if (PHRASE_LEMMA_OVERRIDES[raw]) return PHRASE_LEMMA_OVERRIDES[raw];
+  if (raw.endsWith("ing") && raw.length > 5) return raw.slice(0, -3);
+  if (raw.endsWith("ied") && raw.length > 4) return `${raw.slice(0, -3)}y`;
+  if (raw.endsWith("ed") && raw.length > 4) {
+    const base = raw.slice(0, -2);
+    if (base.endsWith(base.slice(-1).repeat(1)) && /[b-df-hj-np-tv-z]$/.test(base) && base.length > 2) {
+      return base.slice(0, -1);
+    }
+    return base;
+  }
+  return raw;
+}
+
+function normalizePhraseCandidate(candidate) {
+  return String(candidate || "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => normalizePhraseWord(part))
+    .join(" ");
+}
+
 function resolvePreferredPhrase(buttonEl) {
   if (!buttonEl?.dataset?.word) return "";
   const current = buttonEl.dataset.word;
@@ -481,6 +523,8 @@ function resolvePreferredPhrase(buttonEl) {
 
   for (const candidate of candidates) {
     if (PHRASE_PREFERENCES.has(candidate)) return candidate;
+    const normalizedCandidate = normalizePhraseCandidate(candidate);
+    if (PHRASE_PREFERENCES.has(normalizedCandidate)) return normalizedCandidate;
   }
   return current;
 }
