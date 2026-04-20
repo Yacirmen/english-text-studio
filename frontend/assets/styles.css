@@ -2615,35 +2615,34 @@ body.dark-mode .collocation-chip{
     padding:0;
   }
   .welcome-headline{
-    width:min(100%, 320px);
-    margin:12px 0 16px;
-    gap:10px;
+    width:min(100%, 286px);
+    margin:10px 0 14px;
+    gap:4px;
     max-width:none;
-    font-size:clamp(1.9rem,8.7vw,2.58rem);
-    line-height:.96;
+    font-size:clamp(2.08rem,9.4vw,2.72rem);
+    line-height:.92;
   }
   .welcome-headline .welcome-headline-line{
     display:block;
     min-width:0;
-    letter-spacing:-.045em;
+    width:100%;
+    margin-left:0;
+    letter-spacing:-.05em;
   }
   .welcome-headline-line-read{
     align-self:flex-start;
-    margin-left:0;
   }
   .welcome-headline-line-save{
-    align-self:center;
-    margin-left:10%;
+    align-self:flex-start;
   }
   .welcome-headline-line-remember{
-    align-self:flex-end;
-    margin-left:0;
-    font-size:.88em;
-    letter-spacing:-.038em;
+    align-self:flex-start;
+    font-size:1em;
+    letter-spacing:-.05em;
   }
   .welcome-side-note{
-    max-width:290px;
-    margin-top:4px;
+    max-width:270px;
+    margin-top:2px;
   }
   .welcome-side-note span{
     font-size:.88rem;
