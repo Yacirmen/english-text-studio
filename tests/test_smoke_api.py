@@ -99,6 +99,73 @@ def test_library_generate_records_history_for_logged_in_user(client):
     assert reading["content_source"] == "library"
 
 
+def test_ai_generate_falls_back_to_local_text(client, app_module, monkeypatch):
+    register_user(client, username="aiuser")
+
+    def fail_model(*args, **kwargs):
+        raise RuntimeError("provider unavailable")
+
+    monkeypatch.setattr(app_module, "request_model", fail_model)
+    response = client.post(
+        "/api/generate",
+        json={
+            "level": "B1",
+            "topic": "Work Life",
+            "length_target": 150,
+            "keywords": ["meeting", "project"],
+            "source": "ai",
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["content_source"] == "ai"
+    assert "meeting" in payload["text"].lower()
+    assert "project" in payload["text"].lower()
+
+
+def test_postgres_insert_accepts_non_id_returning_column(app_module, monkeypatch):
+    class FakeCursor:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def execute(self, query, params):
+            self.query = query
+            self.params = params
+
+        def fetchone(self):
+            return {"user_id": 42}
+
+    class FakeConnection:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def cursor(self):
+            return FakeCursor()
+
+        def commit(self):
+            self.committed = True
+
+    class FakePsycopg:
+        @staticmethod
+        def connect(*args, **kwargs):
+            return FakeConnection()
+
+    monkeypatch.setattr(app_module, "USE_POSTGRES", True)
+    monkeypatch.setattr(app_module, "psycopg", FakePsycopg)
+    monkeypatch.setattr(app_module, "DATABASE_URL", "postgresql://example")
+
+    inserted_id = app_module.db_insert("INSERT INTO user_progress VALUES (?) RETURNING user_id", (42,))
+
+    assert inserted_id == 42
+
+
 def test_word_detail_saved_words_and_quiz_roundtrip(client):
     register_user(client, username="quizuser")
 

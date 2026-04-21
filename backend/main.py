@@ -916,7 +916,11 @@ def db_insert(query: str, params: tuple[Any, ...] = ()) -> int:
                 cur.execute(_pg_query(query), params)
                 row = cur.fetchone()
             conn.commit()
-        return int(row["id"])
+        if not row:
+            raise RuntimeError("PostgreSQL insert did not return an id.")
+        if "id" in row:
+            return int(row["id"])
+        return int(next(iter(row.values())))
     connection = sqlite3.connect(DB_PATH)
     try:
         cursor = connection.execute(query, params)
@@ -2722,6 +2726,162 @@ def force_library_meaning(word: str, lemma: str, current: str) -> str:
         return "bağlama göre işlevsel kelime"
 
     return "bağlama göre kullanılan ifade"
+
+
+TOPIC_SCENARIOS: dict[str, list[str]] = {
+    "Serbest": [
+        "a learner notices a small problem and fixes it through a better habit",
+        "a short everyday decision becomes easier after clear communication",
+        "a practical routine helps someone stay focused and organized",
+    ],
+    "Random": [
+        "a learner notices a small problem and fixes it through a better habit",
+        "a short everyday decision becomes easier after clear communication",
+        "a practical routine helps someone stay focused and organized",
+    ],
+    "Education": [
+        "a student improves a study plan before an important exam",
+        "a teacher helps a class understand a difficult idea through examples",
+    ],
+    "Travel": [
+        "a traveler solves a small problem in an unfamiliar city",
+        "a short trip becomes smoother because someone prepares carefully",
+    ],
+    "Work Life": [
+        "a team handles a deadline by clarifying responsibilities",
+        "a meeting becomes useful when people focus on the real problem",
+    ],
+    "Technology": [
+        "a person uses a digital tool more intentionally instead of getting distracted",
+        "a small technical change improves how a team works",
+    ],
+    "Health": [
+        "a person builds a healthier routine through realistic daily choices",
+        "a simple habit improves energy, sleep, and attention",
+    ],
+    "Daily Life": [
+        "a busy day becomes manageable through planning and calm decisions",
+        "a household routine improves after one practical change",
+    ],
+    "Environment": [
+        "a community reduces waste through a small shared decision",
+        "a local project makes people think differently about resources",
+    ],
+    "Communication": [
+        "a misunderstanding is solved through clearer language",
+        "feedback becomes useful when it is specific and respectful",
+    ],
+    "Food": [
+        "a meal choice becomes part of a healthier routine",
+        "someone learns why preparation changes the quality of a meal",
+    ],
+    "Public Services": [
+        "a public service works better when people understand how to use it",
+        "a local transport issue improves through better coordination",
+    ],
+    "Media": [
+        "a reader learns to check information before sharing it",
+        "a platform changes how people notice and react to news",
+    ],
+    "Science": [
+        "a simple observation leads to a clearer scientific explanation",
+        "evidence changes how people understand a common problem",
+    ],
+    "Psychology": [
+        "a person recognizes a pattern in attention, stress, or motivation",
+        "a small mental habit changes how someone reacts to pressure",
+    ],
+    "Finance": [
+        "a simple budget helps someone make a calmer decision",
+        "a financial choice becomes clearer after comparing priorities",
+    ],
+    "Arts": [
+        "an artist improves a project through practice and revision",
+        "a creative choice changes how people experience a piece of work",
+    ],
+    "Culture": [
+        "a community tradition helps people understand shared identity",
+        "a cultural habit reveals how memory and belonging work",
+    ],
+}
+
+
+TOPIC_SENTENCE_BANK: dict[str, list[str]] = {
+    "Serbest": [
+        "Mina wanted to make her day feel less rushed, so she wrote down the three tasks that mattered most.",
+        "At first the plan looked too simple, but it helped her notice what was useful and what was only noise.",
+        "By the evening, she understood that a small routine can make a normal day feel more controlled.",
+    ],
+    "Random": [
+        "Mina wanted to make her day feel less rushed, so she wrote down the three tasks that mattered most.",
+        "At first the plan looked too simple, but it helped her notice what was useful and what was only noise.",
+        "By the evening, she understood that a small routine can make a normal day feel more controlled.",
+    ],
+    "Education": [
+        "A student changed the way she studied after realizing that long notes did not always help her remember.",
+        "She began to review short examples, explain ideas aloud, and connect new information to earlier lessons.",
+    ],
+    "Travel": [
+        "During a short trip, Arda learned that good preparation can prevent many small problems.",
+        "He checked the route, kept important details on his phone, and asked for help when the signs were unclear.",
+    ],
+    "Work Life": [
+        "The team was close to a deadline, but the real problem was not the amount of work.",
+        "Once each person explained their responsibility clearly, the project became easier to manage.",
+    ],
+    "Technology": [
+        "Deniz used to open every notification immediately, even when he needed to concentrate.",
+        "After changing a few settings, his phone became a tool again instead of a constant interruption.",
+    ],
+    "Health": [
+        "Selin wanted to feel healthier, but she knew that extreme plans would not last very long.",
+        "She started with short walks, better sleep, and meals that were easy to prepare at home.",
+    ],
+    "Daily Life": [
+        "A normal morning became stressful because too many small decisions were left until the last minute.",
+        "Preparing a few things the night before made the next day calmer and more predictable.",
+    ],
+    "Environment": [
+        "A neighborhood group decided to reduce waste by making recycling easier for everyone.",
+        "The change was small, but it helped people see how daily habits affect shared spaces.",
+    ],
+    "Communication": [
+        "Two friends disagreed because each person thought the other one understood the plan.",
+        "When they slowed down and explained the details, the problem became much easier to solve.",
+    ],
+    "Food": [
+        "Instead of eating quickly outside, Ece prepared a simple meal before a busy afternoon.",
+        "The food was not complicated, but it helped her feel more energetic and focused.",
+    ],
+    "Public Services": [
+        "A new bus route confused many people during its first week.",
+        "Clear signs and patient explanations helped passengers use the service with more confidence.",
+    ],
+    "Media": [
+        "Before sharing an article, Lina checked where it came from and whether other sources confirmed it.",
+        "That small pause helped her avoid spreading a dramatic but misleading story.",
+    ],
+    "Science": [
+        "A simple classroom experiment helped students understand why evidence matters.",
+        "They compared results, noticed patterns, and changed their first explanation.",
+    ],
+    "Psychology": [
+        "Kerem noticed that he made worse decisions when he was tired and distracted.",
+        "By taking short breaks, he became more aware of his attention and emotions.",
+    ],
+    "Finance": [
+        "A basic budget helped Asya see which expenses were necessary and which were only habits.",
+        "After one week, she felt more confident because her choices matched her priorities.",
+    ],
+    "Arts": [
+        "An artist revised the same sketch several times before the final version felt balanced.",
+        "Each small change made the image clearer and more expressive.",
+    ],
+    "Culture": [
+        "A local festival reminded people why shared traditions can feel meaningful.",
+        "The event connected food, music, memory, and the stories of older family members.",
+    ],
+}
 
 
 def choose_local_scenario(topic: str, keywords: list[str]) -> dict[str, Any]:
