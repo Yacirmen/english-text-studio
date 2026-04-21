@@ -61,9 +61,19 @@ const state = {
   dismissedMobileWord: "",
   authMode: "login",
   user: null,
-  stats: { saved_words: 0, mastered_words: 0, saved_today: 0, daily_goal: 5, streak: 0, hard_words: 0 },
+  stats: {
+    saved_words: 0,
+    mastered_words: 0,
+    saved_today: 0,
+    readings_today: 0,
+    total_readings: 0,
+    daily_goal: 5,
+    streak: 0,
+    hard_words: 0,
+  },
   recentWords: [],
   readingHistory: [],
+  progressHistory: [],
   quiz: null,
   quizMode: "saved",
   libraryView: null,
@@ -77,6 +87,19 @@ const state = {
 const persistedSelectionKeys = new Set();
 let sessionRefreshTimer = null;
 let sessionRefreshInflight = null;
+
+function emptyStats() {
+  return {
+    saved_words: 0,
+    mastered_words: 0,
+    saved_today: 0,
+    readings_today: 0,
+    total_readings: 0,
+    daily_goal: 5,
+    streak: 0,
+    hard_words: 0,
+  };
+}
 
 const $ = (selector) => document.querySelector(selector);
 const welcomeGateEl = $("#welcomeGate");
@@ -148,6 +171,10 @@ const dailyGoalTextEl = $("#dailyGoalText");
 const streakBadgeEl = $("#streakBadge");
 const goalBarFillEl = $("#goalBarFill");
 const hardWordsTextEl = $("#hardWordsText");
+const totalReadingsTextEl = $("#totalReadingsText");
+const todayReadingsTextEl = $("#todayReadingsText");
+const todayWordsTextEl = $("#todayWordsText");
+const progressHistoryListEl = $("#progressHistoryList");
 const readingHistoryListEl = $("#readingHistoryList");
 const savedWordsEmptyEl = $("#savedWordsEmpty");
 const savedWordsListEl = $("#savedWordsList");
@@ -1133,6 +1160,12 @@ function bindNavMenuAction(button, view) {
   });
 }
 
+function formatProgressDate(isoDate) {
+  const [year, month, day] = String(isoDate || "").split("-");
+  if (!year || !month || !day) return String(isoDate || "Today");
+  return `${day}.${month}.${year}`;
+}
+
 function renderUserPanel() {
   const loggedIn = Boolean(state.user);
   authGuestEl.classList.toggle("hidden", loggedIn);
@@ -1165,11 +1198,14 @@ function renderUserPanel() {
     accountNameEl.textContent = state.user.username;
     savedWordsCountEl.textContent = state.stats.saved_words || 0;
     masteredWordsCountEl.textContent = state.stats.mastered_words || 0;
+    if (totalReadingsTextEl) totalReadingsTextEl.textContent = state.stats.total_readings || 0;
+    if (todayReadingsTextEl) todayReadingsTextEl.textContent = state.stats.readings_today || 0;
+    if (todayWordsTextEl) todayWordsTextEl.textContent = state.stats.saved_today || 0;
     if (profileTipTextEl) {
       profileTipTextEl.textContent =
-        (state.stats.saved_words || 0) > 0
-          ? "Your saved words and quiz streak live here. Open review from the toolbar anytime."
-          : "Start tapping words in a reading and your personal review stack will build here.";
+        (state.stats.total_readings || 0) > 0
+          ? "Keep the loop simple: read, save useful phrases, then return through quiz."
+          : "Open your first reading and this desk will start tracking your rhythm.";
     }
     if (dailyGoalTextEl) {
       dailyGoalTextEl.textContent = `${state.stats.saved_today || 0} / ${state.stats.daily_goal || 5} today`;
@@ -1183,6 +1219,28 @@ function renderUserPanel() {
     }
     if (hardWordsTextEl) {
       hardWordsTextEl.textContent = `${state.stats.hard_words || 0} hard words ready for review.`;
+    }
+    if (progressHistoryListEl) {
+      const rows = Array.isArray(state.progressHistory) ? state.progressHistory : [];
+      if (!rows.length) {
+        progressHistoryListEl.innerHTML = `<p class="history-empty">Daily totals will appear after your first signed-in reading.</p>`;
+      } else {
+        progressHistoryListEl.innerHTML = rows
+          .map((item) => {
+            const texts = Number(item.texts || 0);
+            const words = Number(item.words || 0);
+            return `
+              <article class="progress-history-item">
+                <div>
+                  <span>${escapeHtml(formatProgressDate(item.date))}</span>
+                  <strong>${texts} Text${texts === 1 ? "" : "s"}</strong>
+                </div>
+                <em>${words} Word${words === 1 ? "" : "s"}</em>
+              </article>
+            `;
+          })
+          .join("");
+      }
     }
     if (readingHistoryListEl) {
       if (!uniqueReadingHistory.length) {
@@ -1219,6 +1277,10 @@ function renderUserPanel() {
     }
   } else {
     if (readingHistoryListEl) readingHistoryListEl.innerHTML = `<p class="history-empty">Sign in to keep your reading trail.</p>`;
+    if (progressHistoryListEl) progressHistoryListEl.innerHTML = `<p class="history-empty">Sign in to track daily text and word history.</p>`;
+    if (totalReadingsTextEl) totalReadingsTextEl.textContent = "0";
+    if (todayReadingsTextEl) todayReadingsTextEl.textContent = "0";
+    if (todayWordsTextEl) todayWordsTextEl.textContent = "0";
     if (dailyGoalTextEl) dailyGoalTextEl.textContent = "0 / 5 today";
     if (streakBadgeEl) streakBadgeEl.textContent = "Streak 0";
     if (goalBarFillEl) goalBarFillEl.style.width = "0%";
@@ -1377,7 +1439,7 @@ async function submitAuthForm({
       if (el) el.value = "";
     });
     state.user = parsed.data.user;
-    state.stats = parsed.data.stats || { saved_words: 0, mastered_words: 0 };
+    state.stats = parsed.data.stats || emptyStats();
     completeAppEntry(false);
     try {
       await refreshSession();
@@ -1509,14 +1571,16 @@ async function refreshSession() {
   const parsed = await apiFetch("/api/auth/me", { method: "GET", headers: {} });
   if (parsed.ok) {
     state.user = parsed.data.user;
-    state.stats = parsed.data.stats || { saved_words: 0, mastered_words: 0, saved_today: 0, daily_goal: 5, streak: 0, hard_words: 0 };
+    state.stats = parsed.data.stats || emptyStats();
     state.recentWords = parsed.data.recent_words || [];
     state.readingHistory = parsed.data.history || [];
+    state.progressHistory = parsed.data.progress_history || [];
   } else {
     state.user = null;
-    state.stats = { saved_words: 0, mastered_words: 0, saved_today: 0, daily_goal: 5, streak: 0, hard_words: 0 };
+    state.stats = emptyStats();
     state.recentWords = [];
     state.readingHistory = [];
+    state.progressHistory = [];
   }
   renderUserPanel();
 }
@@ -1959,9 +2023,10 @@ async function handleLogout(event) {
   try {
     await apiFetch("/api/auth/logout", { method: "POST" });
     state.user = null;
-    state.stats = { saved_words: 0, mastered_words: 0 };
+    state.stats = emptyStats();
     state.recentWords = [];
     state.readingHistory = [];
+    state.progressHistory = [];
     state.quiz = null;
     state.hasEnteredApp = false;
     window.sessionStorage.removeItem(GUEST_FLAG_KEY);
@@ -1981,7 +2046,7 @@ logoutBtn?.addEventListener("pointerup", handleLogout);
 clearSavedWordsBtn?.addEventListener("click", async () => {
   const parsed = await apiFetch("/api/saved-words/clear", { method: "POST" });
   if (!parsed.ok) return;
-  state.stats = parsed.data.stats || { saved_words: 0, mastered_words: 0 };
+  state.stats = parsed.data.stats || emptyStats();
   state.recentWords = [];
   state.quiz = null;
   state.quizStats = { answered: 0, correct: 0, streak: 0 };

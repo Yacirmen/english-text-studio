@@ -1749,6 +1749,22 @@ def count_words_saved_today(user_id: int) -> int:
 def build_progress_stats(user_id: int) -> dict[str, int]:
     progress = ensure_user_progress(user_id)
     saved_today = count_words_saved_today(user_id)
+    readings_today_row = db_fetchone(
+        """
+        SELECT COUNT(*) AS total
+        FROM reading_history
+        WHERE user_id = ? AND substr(viewed_at, 1, 10) = ?
+        """,
+        (user_id, today_iso_date()),
+    ) or {"total": 0}
+    total_readings_row = db_fetchone(
+        """
+        SELECT COUNT(*) AS total
+        FROM reading_history
+        WHERE user_id = ?
+        """,
+        (user_id,),
+    ) or {"total": 0}
     streak = int(progress.get("streak_count") or 0)
     last_streak_date = str(progress.get("last_streak_date") or "")
     today = today_iso_date()
@@ -1772,9 +1788,50 @@ def build_progress_stats(user_id: int) -> dict[str, int]:
     return {
         "daily_goal": int(progress.get("daily_goal") or 5),
         "saved_today": saved_today,
+        "readings_today": int(readings_today_row["total"] or 0),
+        "total_readings": int(total_readings_row["total"] or 0),
         "streak": int(progress.get("streak_count") or 0),
         "hard_words": int(hard_row["total"] or 0),
     }
+
+
+def get_progress_history(user_id: int, limit: int = 14) -> list[dict[str, Any]]:
+    reading_rows = db_fetchall(
+        """
+        SELECT substr(viewed_at, 1, 10) AS day, COUNT(*) AS texts
+        FROM reading_history
+        WHERE user_id = ?
+        GROUP BY substr(viewed_at, 1, 10)
+        ORDER BY day DESC
+        LIMIT ?
+        """,
+        (user_id, limit),
+    )
+    word_rows = db_fetchall(
+        """
+        SELECT substr(updated_at, 1, 10) AS day, COUNT(*) AS words
+        FROM saved_words
+        WHERE user_id = ?
+        GROUP BY substr(updated_at, 1, 10)
+        ORDER BY day DESC
+        LIMIT ?
+        """,
+        (user_id, limit),
+    )
+    by_day: dict[str, dict[str, Any]] = {}
+    for row in reading_rows:
+        day = str(row.get("day") or "").strip()
+        if not day:
+            continue
+        by_day.setdefault(day, {"date": day, "texts": 0, "words": 0})
+        by_day[day]["texts"] = int(row.get("texts") or 0)
+    for row in word_rows:
+        day = str(row.get("day") or "").strip()
+        if not day:
+            continue
+        by_day.setdefault(day, {"date": day, "texts": 0, "words": 0})
+        by_day[day]["words"] = int(row.get("words") or 0)
+    return [by_day[day] for day in sorted(by_day.keys(), reverse=True)[:limit]]
 
 
 def get_reading_history(user_id: int, limit: int = 4) -> list[dict[str, Any]]:
@@ -3737,15 +3794,26 @@ def me(session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE)) -
     if not user:
         return {
             "user": None,
-            "stats": {"saved_words": 0, "mastered_words": 0, "saved_today": 0, "daily_goal": 5, "streak": 0, "hard_words": 0},
+            "stats": {
+                "saved_words": 0,
+                "mastered_words": 0,
+                "saved_today": 0,
+                "readings_today": 0,
+                "total_readings": 0,
+                "daily_goal": 5,
+                "streak": 0,
+                "hard_words": 0,
+            },
             "recent_words": [],
             "history": [],
+            "progress_history": [],
         }
     return {
         "user": user,
         "stats": build_user_stats(int(user["id"])),
         "recent_words": get_recent_words(int(user["id"])),
         "history": get_reading_history(int(user["id"])),
+        "progress_history": get_progress_history(int(user["id"])),
     }
 
 
