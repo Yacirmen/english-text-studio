@@ -1,0 +1,19 @@
+{
+  "name": "readlex-mobile-shell",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ReadLex mobile shell for iOS packaging with Capacitor.",
+  "scripts": {
+    "cap": "capacitor",
+    "ios:add": "capacitor add ios",
+    "ios:sync": "capacitor sync ios",
+    "ios:open": "capacitor open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^7.4.4",
+    "@capacitor/ios": "^7.4.4"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.4"
+  }
+}

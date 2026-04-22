@@ -49,6 +49,7 @@ const TOPIC_ORDER = [
 
 const GUEST_FLAG_KEY = "readlex_guest";
 const THEME_STORAGE_KEY = "readlex_theme";
+const INSTALL_DISMISSED_KEY = "readlex_install_tip_dismissed";
 
 const state = {
   text: "",
@@ -81,6 +82,7 @@ const state = {
   progressHistory: [],
   social: { friends: [], incoming: [], outgoing: [], suggestions: [], cheers_received: 0 },
   socialSearch: { query: "", results: [], loading: false },
+  deferredInstallPrompt: null,
   quiz: null,
   quizMode: "saved",
   libraryView: null,
@@ -131,6 +133,11 @@ const gateShowRegisterBtn = $("#gateShowRegisterBtn");
 const continueGuestBtn = $("#continueGuestBtn");
 const themeToggleBtn = $("#themeToggleBtn");
 const profileTipTextEl = $("#profileTipText");
+const installCoachEl = $("#installCoach");
+const installCoachTitleEl = $("#installCoachTitle");
+const installCoachTextEl = $("#installCoachText");
+const installCoachActionEl = $("#installCoachAction");
+const installCoachDismissEl = $("#installCoachDismiss");
 const generateForm = $("#generate-form");
 const manualForm = $("#manual-form");
 const authCardEl = $("#authCard");
@@ -295,6 +302,41 @@ function toggleTheme() {
   applyTheme(nextMode);
 }
 
+function isStandaloneApp() {
+  return Boolean(
+    window.matchMedia?.("(display-mode: standalone)")?.matches ||
+    window.navigator.standalone ||
+    window.location.protocol === "capacitor:"
+  );
+}
+
+function isIosDevice() {
+  const ua = window.navigator.userAgent || "";
+  return /iphone|ipad|ipod/i.test(ua) || (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 1);
+}
+
+function syncAppModeClasses() {
+  document.body.classList.toggle("is-standalone", isStandaloneApp());
+  document.body.classList.toggle("is-ios", isIosDevice());
+}
+
+function syncInstallCoach() {
+  if (!installCoachEl) return;
+  const dismissed = window.localStorage.getItem(INSTALL_DISMISSED_KEY) === "1";
+  const shouldShow = !dismissed && !isStandaloneApp() && (isIosDevice() || state.deferredInstallPrompt);
+  installCoachEl.classList.toggle("hidden", !shouldShow);
+  if (!shouldShow) return;
+  if (state.deferredInstallPrompt) {
+    installCoachTitleEl.textContent = "Install ReadLex";
+    installCoachTextEl.textContent = "Install the app shell for a cleaner full-screen reading flow.";
+    installCoachActionEl.textContent = "Install";
+  } else {
+    installCoachTitleEl.textContent = "Add ReadLex to your Home Screen";
+    installCoachTextEl.textContent = "On iPhone: tap Share in Safari, then choose Add to Home Screen.";
+    installCoachActionEl.textContent = "Show steps";
+  }
+}
+
 async function parseApiResponse(response) {
   const raw = await response.text();
   try {
@@ -305,7 +347,13 @@ async function parseApiResponse(response) {
 }
 
 async function apiFetch(url, options = {}) {
-  const response = await fetch(url, {
+  const apiBaseUrl =
+    window.READLEX_CONFIG?.apiBaseUrl ||
+    (window.location.protocol === "capacitor:" ? "https://english-text-studio-staging.onrender.com" : "");
+  const requestUrl = apiBaseUrl && String(url).startsWith("/")
+    ? `${apiBaseUrl.replace(/\/$/, "")}${url}`
+    : url;
+  const response = await fetch(requestUrl, {
     credentials: "include",
     ...options,
     headers: { "Content-Type": "application/json", ...(options.headers || {}) },
@@ -1433,13 +1481,15 @@ function renderUserPanel() {
       : "G";
   }
   profileAvatarBtn?.classList.toggle("signed-in", loggedIn);
-  profileAvatarBtn?.dataset.fireLevel = String(state.stats.fire_level || 0);
-  profileAvatarBtn?.setAttribute(
-    "aria-label",
-    loggedIn
-      ? `Open profile panel. ${state.stats.fire_label || "Cold start"} streak ${state.stats.login_streak || state.stats.streak || 0}.`
-      : "Open profile panel"
-  );
+  if (profileAvatarBtn) {
+    profileAvatarBtn.dataset.fireLevel = String(state.stats.fire_level || 0);
+    profileAvatarBtn.setAttribute(
+      "aria-label",
+      loggedIn
+        ? `Open profile panel. ${state.stats.fire_label || "Cold start"} streak ${state.stats.login_streak || state.stats.streak || 0}.`
+        : "Open profile panel"
+    );
+  }
   if (loggedIn) {
     const uniqueReadingHistory = state.readingHistory.filter((item, index, items) => {
       const key = [
@@ -2279,6 +2329,19 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+window.addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  state.deferredInstallPrompt = event;
+  syncInstallCoach();
+});
+
+window.addEventListener("appinstalled", () => {
+  state.deferredInstallPrompt = null;
+  window.localStorage.setItem(INSTALL_DISMISSED_KEY, "1");
+  syncAppModeClasses();
+  syncInstallCoach();
+});
+
 document.addEventListener("click", (event) => {
   if (!navMenuShellEl?.contains(event.target)) {
     setNavMenuOpen(false);
@@ -2420,6 +2483,25 @@ navMenuSwitchEls.forEach((button) => {
     setNavMenuCategory(button.dataset.menuCategory || "account");
   });
 });
+installCoachActionEl?.addEventListener("click", async () => {
+  if (state.deferredInstallPrompt) {
+    state.deferredInstallPrompt.prompt();
+    await state.deferredInstallPrompt.userChoice.catch(() => null);
+    state.deferredInstallPrompt = null;
+    window.localStorage.setItem(INSTALL_DISMISSED_KEY, "1");
+    syncInstallCoach();
+    return;
+  }
+  showToast("iPhone: Safari'de Paylaş düğmesine dokun, sonra Add to Home Screen seç.", {
+    variant: "success",
+    scope: "install",
+    duration: 6800,
+  });
+});
+installCoachDismissEl?.addEventListener("click", () => {
+  window.localStorage.setItem(INSTALL_DISMISSED_KEY, "1");
+  syncInstallCoach();
+});
 socialAddFormEl?.addEventListener("submit", async (event) => {
   event.preventDefault();
   await sendFriendRequest();
@@ -2504,6 +2586,8 @@ setLibraryView(null);
 updateSourceModeUi();
 const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
 applyTheme(savedTheme === "dark" ? "dark" : "light");
+syncAppModeClasses();
+syncInstallCoach();
 syncViewModeFromViewport();
 renderKeywordChips();
 renderWelcomeGate();

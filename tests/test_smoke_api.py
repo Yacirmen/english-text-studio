@@ -19,6 +19,22 @@ def login_user(client, username: str = "smoketest", password: str = "secret123")
     return response
 
 
+def test_pwa_assets_are_served(client):
+    manifest_response = client.get("/manifest.webmanifest")
+    assert manifest_response.status_code == 200
+    assert manifest_response.headers["content-type"].startswith("application/manifest+json")
+    assert manifest_response.json()["short_name"] == "ReadLex"
+
+    service_worker_response = client.get("/sw.js")
+    assert service_worker_response.status_code == 200
+    assert "READLEX_CACHE" in service_worker_response.text
+
+
+def test_mobile_origins_are_allowed(app_module):
+    assert "capacitor://localhost" in app_module.ALLOWED_ORIGINS
+    assert "ionic://localhost" in app_module.ALLOWED_ORIGINS
+
+
 def test_register_me_and_logout_flow(client):
     response = register_user(client, username="FlowUser")
     body = response.json()
@@ -287,6 +303,17 @@ def test_core_academic_terms_are_stable(app_module):
     assert "of" not in glossary
     assert glossary["flexibility"]["turkish"] == "esneklik"
     assert glossary["deeply"]["turkish"] == "derinden / son derece"
+
+
+def test_library_word_lookup_skips_suspicious_identity_values(app_module):
+    text = (
+        "Modern society is often shaped not only by objective realities, "
+        "but also by the ways in which those realities are perceived and interpreted."
+    )
+
+    assert app_module.build_library_word_detail(text, "Modern")["turkish"] == "çağdaş"
+    assert app_module.build_library_word_detail(text, "objective")["turkish"] == "nesnel"
+    assert app_module.build_library_word_detail(text, "interpreted")["turkish"] == "yorumlanmış / yorumlanan"
 
 
 def test_word_detail_resolves_inflected_phrase(client):

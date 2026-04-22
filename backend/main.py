@@ -118,7 +118,7 @@ LOCAL_WORD_MAP = {
     "method": "yÃ¶ntem",
     "morning": "sabah",
     "office": "ofis",
-    "plan": "plan",
+    "plan": "tasarı / plan",
     "project": "proje",
     "purpose": "amaÃ§",
     "quiet": "sessiz",
@@ -268,7 +268,7 @@ LOCAL_WORD_MAP.update(
         "rush": "acele etmek",
         "rushing": "acele etme",
         "weekend": "hafta sonu",
-        "video": "video",
+        "video": "görüntü kaydı / video",
         "plane": "uçak",
         "planes": "uçaklar",
         "expect": "beklemek",
@@ -503,12 +503,12 @@ WORD_MEANING_OVERRIDES = {
     "up": "yukarı / kadar",
     "go": "gitmek",
     "keep": "sürdürmek",
-    "risk": "risk",
-    "platform": "platform",
-    "video": "video",
-    "stress": "stres",
-    "festival": "festival",
-    "program": "program",
+    "risk": "tehlike ihtimali / risk",
+    "platform": "platform / çevrim içi ortam",
+    "video": "görüntü kaydı / video",
+    "stress": "stres / baskı",
+    "festival": "şenlik / festival",
+    "program": "etkinlik akışı / program",
     "many": "birçok",
     "need": "ihtiyaç duymak",
     "park": "park",
@@ -522,7 +522,7 @@ WORD_MEANING_OVERRIDES = {
     "off": "kapalı / kapatmak",
     "all": "hepsi / tüm",
     "second": "ikinci",
-    "modern": "modern",
+    "modern": "modern / çağdaş",
     "might": "olabilir",
     "must": "zorunda / mutlaka",
     "bad": "kötü",
@@ -573,6 +573,13 @@ WORD_MEANING_OVERRIDES = {
     "unknowingly": "farkında olmadan",
     "misjudgments": "yanlış yargılar",
     "subtly": "ince bir şekilde",
+    "between": "arasında",
+    "under": "altında / kapsamında",
+    "note": "not / dikkat çekmek",
+    "test": "sınav / test etmek",
+    "drama": "tiyatro türü / drama",
+    "perceived": "algılanan",
+    "interpreted": "yorumlanmış / yorumlanan",
     "real-world": "gerçek dünya",
     "reshape": "yeniden şekillendirmek",
     "stimuli": "uyaranlar",
@@ -678,16 +685,16 @@ WORD_MEANING_OVERRIDES = {
     "much": "çok",
     "most": "çoğu / en çok",
     "get": "almak / elde etmek",
-    "plan": "plan",
+    "plan": "tasarı / plan",
     "project": "proje",
-    "risk": "risk",
-    "platform": "platform",
-    "stress": "stres",
-    "drama": "drama",
-    "festival": "festival",
-    "program": "program",
+    "risk": "tehlike ihtimali / risk",
+    "platform": "platform / çevrim içi ortam",
+    "stress": "stres / baskı",
+    "drama": "tiyatro türü / drama",
+    "festival": "şenlik / festival",
+    "program": "etkinlik akışı / program",
     "pilot": "pilot",
-    "video": "video",
+    "video": "görüntü kaydı / video",
     "living-room": "oturma odası",
     "late-stage": "geç evre",
     "distort": "çarpıtmak",
@@ -730,6 +737,7 @@ USE_POSTGRES = DATABASE_URL.startswith("postgres")
 APP_BASE_URL = os.getenv("APP_BASE_URL", "http://127.0.0.1:8041").strip().rstrip("/")
 CORS_ALLOWED_ORIGINS_RAW = os.getenv("CORS_ALLOWED_ORIGINS", "").strip()
 COOKIE_SECURE_RAW = os.getenv("COOKIE_SECURE", "auto").strip().lower()
+COOKIE_SAMESITE_RAW = os.getenv("COOKIE_SAMESITE", "").strip().lower()
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
 RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "").strip()
 SMTP_HOST = os.getenv("SMTP_HOST", "").strip()
@@ -756,9 +764,13 @@ def build_allowed_origins() -> list[str]:
         for item in CORS_ALLOWED_ORIGINS_RAW.split(",")
         if item.strip()
     ]
-    if configured:
-        return sorted({item for item in configured if item})
-    defaults = {
+    mobile_origins = {
+        "capacitor://localhost",
+        "ionic://localhost",
+        "http://localhost",
+        "https://localhost",
+    }
+    defaults = set(configured) | mobile_origins | {
         normalized_origin(APP_BASE_URL),
         "http://127.0.0.1:8041",
         "http://localhost:8041",
@@ -773,6 +785,11 @@ COOKIE_SECURE = (
     COOKIE_SECURE_RAW == "true"
     if COOKIE_SECURE_RAW in {"true", "false"}
     else normalized_origin(APP_BASE_URL).startswith("https://")
+)
+COOKIE_SAMESITE = (
+    COOKIE_SAMESITE_RAW
+    if COOKIE_SAMESITE_RAW in {"lax", "strict", "none"}
+    else ("none" if COOKIE_SECURE else "lax")
 )
 
 
@@ -1808,7 +1825,7 @@ def create_session(response: Response, user_id: int) -> str:
         key=SESSION_COOKIE,
         value=token,
         httponly=True,
-        samesite="lax",
+        samesite=COOKIE_SAMESITE,
         secure=COOKIE_SECURE,
         path="/",
         max_age=60 * 60 * 24 * 30,
@@ -1819,7 +1836,7 @@ def create_session(response: Response, user_id: int) -> str:
 def clear_session(response: Response, session_token: str | None) -> None:
     if session_token:
         db_execute("DELETE FROM sessions WHERE token = ?", (session_token,))
-    response.delete_cookie(SESSION_COOKIE, path="/", samesite="lax", secure=COOKIE_SECURE)
+    response.delete_cookie(SESSION_COOKIE, path="/", samesite=COOKIE_SAMESITE, secure=COOKIE_SECURE)
 
 
 def ensure_user_progress(user_id: int) -> dict[str, Any]:
@@ -2868,18 +2885,19 @@ def is_suspicious_meaning(source_word: str, candidate: str) -> bool:
 def lookup_word_map_value(key: str) -> str | None:
     lowered = key.lower()
     approved_map = get_approved_lexical_map()
-    if lowered in approved_map:
-        return repair_mojibake(approved_map[lowered])
-    if lowered in WORD_MEANING_OVERRIDES:
-        return repair_mojibake(WORD_MEANING_OVERRIDES[lowered])
-    if lowered in LOCAL_WORD_MAP:
-        return repair_mojibake(LOCAL_WORD_MAP[lowered])
-    if lowered in IRREGULAR_WORD_MAP:
-        return repair_mojibake(IRREGULAR_WORD_MAP[lowered])
-    if lowered in LIBRARY_WORD_MAP:
-        return repair_mojibake(LIBRARY_WORD_MAP[lowered])
-    if lowered in EXTRA_WORD_MAP:
-        return repair_mojibake(EXTRA_WORD_MAP[lowered])
+    for mapping in (
+        approved_map,
+        WORD_MEANING_OVERRIDES,
+        LOCAL_WORD_MAP,
+        IRREGULAR_WORD_MAP,
+        LIBRARY_WORD_MAP,
+        EXTRA_WORD_MAP,
+    ):
+        if lowered not in mapping:
+            continue
+        value = repair_mojibake(mapping[lowered])
+        if value and not is_suspicious_meaning(lowered, value):
+            return value
     return None
 
 
@@ -3052,6 +3070,10 @@ def infer_contextual_library_meaning(word: str, sentence: str) -> str:
         if "case of" in compact_sentence:
             return "vakası"
         return "durum"
+    if lemma == "objective":
+        if any(token in tokens for token in ("reality", "realities", "fact", "facts", "evidence", "truth")):
+            return "nesnel"
+        return "amaç"
     if lemma == "issue":
         if any(token in tokens for token in ("problem", "problems", "challenge", "challenges")):
             return "sorun"
@@ -3105,7 +3127,7 @@ def is_library_name(word: str) -> bool:
     return cleaned in {
         "aylin", "deniz", "eren", "selin", "bora", "mina", "kerem", "lina",
         "arda", "derya", "kaan", "elif", "yusuf", "asya", "can", "melis",
-        "emma", "tom", "lucy", "anna", "david", "sarah", "ali",
+        "emma", "tom", "lucy", "anna", "david", "sarah", "ali", "ece",
     }
 
 
@@ -3730,11 +3752,14 @@ def build_library_word_detail(text: str, word: str) -> dict[str, str]:
     profile = resolve_cefr_entry(lowered_word)
     lemma = str(profile.get("lemma") or lowered_word) if profile else lowered_word
     forced_override = WORD_MEANING_OVERRIDES.get(lowered_word) or WORD_MEANING_OVERRIDES.get(lemma)
+    contextual_first_words = {"objective"}
     override_meaning = lookup_word_map_value(lowered_word) or lookup_word_map_value(lemma)
     raw_library_meaning = repair_mojibake(str(LIBRARY_WORD_MAP.get(lowered_word) or LIBRARY_WORD_MAP.get(lemma, "")))
     sentence = find_sentence_for_word(text, word)
     if forced_override:
         library_meaning = repair_mojibake(forced_override)
+    elif lemma in contextual_first_words:
+        library_meaning = infer_contextual_library_meaning(lemma, sentence)
     elif override_meaning and not is_suspicious_meaning(word, override_meaning):
         library_meaning = override_meaning
     elif is_suspicious_meaning(word, raw_library_meaning):
@@ -4082,6 +4107,16 @@ app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="assets"
 @app.get("/")
 def index() -> FileResponse:
     return FileResponse(STATIC_DIR / "index.html")
+
+
+@app.get("/manifest.webmanifest")
+def web_manifest() -> FileResponse:
+    return FileResponse(STATIC_DIR / "manifest.webmanifest", media_type="application/manifest+json")
+
+
+@app.get("/sw.js")
+def service_worker() -> FileResponse:
+    return FileResponse(STATIC_DIR / "sw.js", media_type="application/javascript")
 
 
 @app.get("/api/health")

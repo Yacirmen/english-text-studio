@@ -1,0 +1,19 @@
+{
+  "appId": "com.readlex.app",
+  "appName": "ReadLex",
+  "webDir": "frontend",
+  "ios": {
+    "contentInset": "automatic",
+    "scheme": "ReadLex"
+  },
+  "server": {
+    "cleartext": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "backgroundColor": "#132d49",
+      "showSpinner": false
+    }
+  }
+}

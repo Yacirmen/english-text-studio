@@ -3,11 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#132d49" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="ReadLex" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="ReadLex helps you read English, save useful words, and review them with context." />
   <title>ReadLex</title>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/assets/readlex-icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/readlex-icon-180.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260422streak1" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260423pwa2" />
 </head>
 <body>
   <div id="welcomeGate" class="welcome-gate">
@@ -206,6 +215,19 @@
         </div>
       </div>
     </header>
+
+    <section id="installCoach" class="install-coach hidden" aria-live="polite">
+      <div class="install-coach-icon" aria-hidden="true"></div>
+      <div class="install-coach-copy">
+        <span class="mini-label">iPhone ready</span>
+        <strong id="installCoachTitle">Add ReadLex to your Home Screen</strong>
+        <p id="installCoachText">Open Share in Safari, then choose Add to Home Screen for an app-like launch.</p>
+      </div>
+      <div class="install-coach-actions">
+        <button id="installCoachAction" class="ghost-btn install-coach-action" type="button">Show steps</button>
+        <button id="installCoachDismiss" class="install-coach-dismiss" type="button" aria-label="Dismiss install tip">×</button>
+      </div>
+    </section>
 
     <main class="studio-layout">
       <aside class="tool-rail">
@@ -719,6 +741,13 @@
     </section>
   </aside>
 
-  <script src="/assets/app.js?v=20260422streak1"></script>
+  <script src="/assets/app.js?v=20260423pwa2"></script>
+  <script>
+    if ("serviceWorker" in navigator && window.location.protocol !== "capacitor:") {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js").catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>
