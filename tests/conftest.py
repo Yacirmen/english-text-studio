@@ -27,6 +27,8 @@ def app_module(tmp_path_factory: pytest.TempPathFactory):
 def isolated_db(app_module):
     app_module.db_execute("DELETE FROM sessions")
     app_module.db_execute("DELETE FROM email_verifications")
+    app_module.db_execute("DELETE FROM social_events")
+    app_module.db_execute("DELETE FROM friendships")
     app_module.db_execute("DELETE FROM saved_words")
     app_module.db_execute("DELETE FROM reading_history")
     app_module.db_execute("DELETE FROM user_progress")

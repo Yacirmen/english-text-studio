@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260422lexical1" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260422streak1" />
 </head>
 <body>
   <div id="welcomeGate" class="welcome-gate">
@@ -515,7 +515,7 @@
           <span class="mini-label on-dark">Daily goal</span>
           <span id="streakBadge" class="profile-menu-badge">Streak 0</span>
         </div>
-        <strong id="dailyGoalText" class="profile-goal-text">0 / 5 today</strong>
+        <strong id="dailyGoalText" class="profile-goal-text">0 / 5 words today</strong>
         <div class="goal-bar">
           <span id="goalBarFill"></span>
         </div>
@@ -571,9 +571,11 @@
         <label class="field">
           <span>Find by username</span>
           <input id="socialUsernameInput" type="text" placeholder="friend_username" autocomplete="off" />
+          <small class="field-note">Type at least 3 characters. Exact usernames can be added instantly.</small>
         </label>
-        <button id="socialAddBtn" class="primary-btn" type="submit">Add friend</button>
+        <button id="socialAddBtn" class="primary-btn" type="submit">Send request</button>
       </form>
+      <div id="socialSearchResults" class="social-search-results hidden"></div>
       <div id="socialGuestNote" class="helper-note hidden">Sign in to add friends and unlock your social circle.</div>
       <div id="socialIncomingList" class="social-stack"></div>
       <div class="profile-panel social-panel-block">
@@ -717,6 +719,6 @@
     </section>
   </aside>
 
-  <script src="/assets/app.js?v=20260422lexical1"></script>
+  <script src="/assets/app.js?v=20260422streak1"></script>
 </body>
 </html>

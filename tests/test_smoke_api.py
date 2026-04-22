@@ -25,11 +25,14 @@ def test_register_me_and_logout_flow(client):
 
     assert body["user"]["username"] == "flowuser"
     assert body["user"]["email_verified"] is True
+    assert body["stats"]["login_streak"] == 1
+    assert body["stats"]["fire_level"] == 1
     assert "readlex_session" in client.cookies
 
     me_response = client.get("/api/auth/me")
     assert me_response.status_code == 200
     assert me_response.json()["user"]["username"] == "flowuser"
+    assert me_response.json()["stats"]["login_streak"] == 1
 
     logout_response = client.post("/api/auth/logout")
     assert logout_response.status_code == 200
@@ -38,6 +41,28 @@ def test_register_me_and_logout_flow(client):
     me_after_logout = client.get("/api/auth/me")
     assert me_after_logout.status_code == 200
     assert me_after_logout.json()["user"] is None
+
+
+def test_daily_login_streak_grows_once_per_day(client, app_module):
+    register_user(client, username="streaker")
+    client.post("/api/auth/logout")
+
+    user = app_module.db_fetchone("SELECT id FROM users WHERE username = ?", ("streaker",))
+    yesterday = (app_module.datetime.now().astimezone().date() - app_module.timedelta(days=1)).isoformat()
+    app_module.db_execute(
+        "UPDATE user_progress SET streak_count = ?, last_streak_date = ?, updated_at = ? WHERE user_id = ?",
+        (2, yesterday, app_module.now_iso(), int(user["id"])),
+    )
+
+    login_response = login_user(client, username="streaker")
+    stats = login_response.json()["stats"]
+    assert stats["login_streak"] == 3
+    assert stats["fire_level"] == 2
+    assert stats["fire_label"] == "Spark"
+
+    me_response = client.get("/api/auth/me")
+    assert me_response.status_code == 200
+    assert me_response.json()["stats"]["login_streak"] == 3
 
 
 def test_legacy_password_login_upgrades_hash(client, app_module):
@@ -211,15 +236,16 @@ def test_word_detail_saved_words_and_quiz_roundtrip(client):
     assert quiz_response.status_code == 200, quiz_response.text
     question = quiz_response.json()["question"]
     assert question is not None
+    assert question["question_type"] == "meaning"
+    assert "sentence" not in question
 
     saved_word = next(item for item in words if int(item["id"]) == int(question["word_id"]))
-    expected_answer = question["word"] if question["question_type"] == "blank" else saved_word["turkish"]
 
     check_response = client.post(
         "/api/quiz/check",
         json={
             "word_id": question["word_id"],
-            "answer": expected_answer,
+            "answer": saved_word["turkish"],
             "question_type": question["question_type"],
         },
     )
@@ -353,3 +379,26 @@ def test_social_friend_request_accept_and_cheer(client):
 
     cheer_response = client.post(f"/api/social/friends/{friends[0]['friendship_id']}/cheer")
     assert cheer_response.status_code == 200, cheer_response.text
+
+
+def test_social_search_and_suggestions_are_actionable(client):
+    register_user(client, username="alphauser")
+    client.post("/api/auth/logout")
+    register_user(client, username="betabuddy")
+    client.post("/api/auth/logout")
+
+    login_user(client, username="alphauser")
+    search_response = client.get("/api/social/search?q=beta")
+    assert search_response.status_code == 200, search_response.text
+    results = search_response.json()["results"]
+    assert len(results) == 1
+    assert results[0]["username"] == "betabuddy"
+    assert results[0]["relationship"] == "none"
+
+    request_response = client.post("/api/social/request", json={"username": "betabuddy"})
+    assert request_response.status_code == 200, request_response.text
+    assert request_response.json()["outgoing"][0]["user"]["username"] == "betabuddy"
+
+    search_after_request = client.get("/api/social/search?q=beta")
+    assert search_after_request.status_code == 200, search_after_request.text
+    assert search_after_request.json()["results"][0]["relationship"] == "pending_outgoing"

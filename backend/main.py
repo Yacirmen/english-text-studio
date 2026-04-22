@@ -1848,6 +1848,39 @@ def ensure_user_progress(user_id: int) -> dict[str, Any]:
     }
 
 
+def streak_fire_profile(streak: int) -> dict[str, Any]:
+    if streak >= 30:
+        return {"level": 5, "label": "Wildfire", "icon": "🔥🔥🔥", "next": 0}
+    if streak >= 14:
+        return {"level": 4, "label": "Blazing", "icon": "🔥🔥", "next": 30 - streak}
+    if streak >= 7:
+        return {"level": 3, "label": "On fire", "icon": "🔥", "next": 14 - streak}
+    if streak >= 3:
+        return {"level": 2, "label": "Spark", "icon": "✦", "next": 7 - streak}
+    if streak >= 1:
+        return {"level": 1, "label": "Warming up", "icon": "•", "next": 3 - streak}
+    return {"level": 0, "label": "Cold start", "icon": "•", "next": 1}
+
+
+def record_daily_login_streak(user_id: int) -> dict[str, Any]:
+    progress = ensure_user_progress(user_id)
+    today = today_iso_date()
+    last_streak_date = str(progress.get("last_streak_date") or "")
+    streak = int(progress.get("streak_count") or 0)
+    if last_streak_date == today:
+        return progress
+    yesterday = (datetime.now().astimezone().date() - timedelta(days=1)).isoformat()
+    streak = streak + 1 if last_streak_date == yesterday else 1
+    db_execute(
+        "UPDATE user_progress SET streak_count = ?, last_streak_date = ?, updated_at = ? WHERE user_id = ?",
+        (streak, today, now_iso(), user_id),
+    )
+    progress["streak_count"] = streak
+    progress["last_streak_date"] = today
+    progress["updated_at"] = now_iso()
+    return progress
+
+
 def count_words_saved_today(user_id: int) -> int:
     today = today_iso_date()
     row = db_fetchone(
@@ -1880,18 +1913,6 @@ def build_progress_stats(user_id: int) -> dict[str, int]:
         """,
         (user_id,),
     ) or {"total": 0}
-    streak = int(progress.get("streak_count") or 0)
-    last_streak_date = str(progress.get("last_streak_date") or "")
-    today = today_iso_date()
-    if saved_today >= int(progress.get("daily_goal") or 5) and last_streak_date != today:
-        yesterday = (datetime.now().astimezone().date() - timedelta(days=1)).isoformat()
-        streak = streak + 1 if last_streak_date == yesterday else 1
-        db_execute(
-            "UPDATE user_progress SET streak_count = ?, last_streak_date = ?, updated_at = ? WHERE user_id = ?",
-            (streak, today, now_iso(), user_id),
-        )
-        progress["streak_count"] = streak
-        progress["last_streak_date"] = today
     hard_row = db_fetchone(
         """
         SELECT COUNT(*) AS total
@@ -1900,12 +1921,20 @@ def build_progress_stats(user_id: int) -> dict[str, int]:
         """,
         (user_id,),
     ) or {"total": 0}
+    streak = int(progress.get("streak_count") or 0)
+    fire = streak_fire_profile(streak)
     return {
         "daily_goal": int(progress.get("daily_goal") or 5),
         "saved_today": saved_today,
         "readings_today": int(readings_today_row["total"] or 0),
         "total_readings": int(total_readings_row["total"] or 0),
-        "streak": int(progress.get("streak_count") or 0),
+        "streak": streak,
+        "login_streak": streak,
+        "last_login_date": str(progress.get("last_streak_date") or ""),
+        "fire_level": int(fire["level"]),
+        "fire_label": str(fire["label"]),
+        "fire_icon": str(fire["icon"]),
+        "fire_next": int(fire["next"]),
         "hard_words": int(hard_row["total"] or 0),
     }
 
@@ -2019,13 +2048,23 @@ def build_user_stats(user_id: int) -> dict[str, int]:
     return stats
 
 
-def social_user_payload(row: dict[str, Any], friendship_id: int | None = None) -> dict[str, Any]:
+def social_user_payload(
+    row: dict[str, Any],
+    friendship_id: int | None = None,
+    relationship: str = "none",
+    reason: str = "",
+) -> dict[str, Any]:
     stats = build_user_stats(int(row["id"]))
     return {
         "id": int(row["id"]),
         "username": str(row["username"]),
         "friendship_id": friendship_id,
+        "relationship": relationship,
+        "reason": reason,
         "streak": int(stats.get("streak") or 0),
+        "fire_level": int(stats.get("fire_level") or 0),
+        "fire_label": str(stats.get("fire_label") or "Cold start"),
+        "fire_icon": str(stats.get("fire_icon") or "•"),
         "total_readings": int(stats.get("total_readings") or 0),
         "saved_words": int(stats.get("saved_words") or 0),
         "words_today": int(stats.get("saved_today") or 0),
@@ -2098,10 +2137,24 @@ def list_social_requests(user_id: int, direction: str) -> list[dict[str, Any]]:
 def list_social_suggestions(user_id: int, limit: int = 6) -> list[dict[str, Any]]:
     rows = db_fetchall(
         """
-        SELECT id, username
-        FROM users
-        WHERE id != ?
-          AND id NOT IN (
+        SELECT u.id,
+               u.username,
+               COALESCE(rh.reading_count, 0) AS reading_count,
+               COALESCE(sw.saved_count, 0) AS saved_count,
+               COALESCE(rh.last_read, sw.last_save, u.created_at) AS last_activity
+        FROM users u
+        LEFT JOIN (
+            SELECT user_id, COUNT(*) AS reading_count, MAX(viewed_at) AS last_read
+            FROM reading_history
+            GROUP BY user_id
+        ) rh ON rh.user_id = u.id
+        LEFT JOIN (
+            SELECT user_id, COUNT(*) AS saved_count, MAX(updated_at) AS last_save
+            FROM saved_words
+            GROUP BY user_id
+        ) sw ON sw.user_id = u.id
+        WHERE u.id != ?
+          AND u.id NOT IN (
               SELECT CASE
                   WHEN requester_id = ? THEN addressee_id
                   ELSE requester_id
@@ -2109,12 +2162,70 @@ def list_social_suggestions(user_id: int, limit: int = 6) -> list[dict[str, Any]
               FROM friendships
               WHERE requester_id = ? OR addressee_id = ?
           )
-        ORDER BY created_at DESC
+        ORDER BY (COALESCE(rh.reading_count, 0) + COALESCE(sw.saved_count, 0)) DESC,
+                 last_activity DESC
         LIMIT ?
         """,
         (user_id, user_id, user_id, user_id, limit),
     )
-    return [social_user_payload(row) for row in rows]
+    suggestions: list[dict[str, Any]] = []
+    for row in rows:
+        reading_count = int(row.get("reading_count") or 0)
+        saved_count = int(row.get("saved_count") or 0)
+        if reading_count or saved_count:
+            reason = f"{reading_count} texts · {saved_count} saved"
+        else:
+            reason = "new learner"
+        suggestions.append(social_user_payload(row, relationship="none", reason=reason))
+    return suggestions
+
+
+def social_relationship_payload(current_user_id: int, row: dict[str, Any]) -> dict[str, Any]:
+    friendship_id = int(row["friendship_id"]) if row.get("friendship_id") is not None else None
+    relationship = "none"
+    if friendship_id:
+        status = str(row.get("status") or "")
+        requester_id = int(row.get("requester_id") or 0)
+        if status == "accepted":
+            relationship = "friend"
+        elif requester_id == current_user_id:
+            relationship = "pending_outgoing"
+        else:
+            relationship = "pending_incoming"
+    return social_user_payload(row, friendship_id=friendship_id, relationship=relationship)
+
+
+def search_social_users(user_id: int, query: str, limit: int = 8) -> list[dict[str, Any]]:
+    cleaned_query = clean_username(query)
+    contains = f"%{cleaned_query}%"
+    prefix = f"{cleaned_query}%"
+    rows = db_fetchall(
+        """
+        SELECT u.id,
+               u.username,
+               f.id AS friendship_id,
+               f.status,
+               f.requester_id,
+               f.addressee_id
+        FROM users u
+        LEFT JOIN friendships f ON (
+            (f.requester_id = ? AND f.addressee_id = u.id)
+            OR (f.addressee_id = ? AND f.requester_id = u.id)
+        )
+        WHERE u.id != ?
+          AND u.username LIKE ?
+        ORDER BY
+          CASE
+            WHEN u.username = ? THEN 0
+            WHEN u.username LIKE ? THEN 1
+            ELSE 2
+          END,
+          u.username ASC
+        LIMIT ?
+        """,
+        (user_id, user_id, user_id, contains, cleaned_query, prefix, limit),
+    )
+    return [social_relationship_payload(user_id, row) for row in rows]
 
 
 def save_word_for_user(user_id: int, word: str, text: str, detail: dict[str, str]) -> None:
@@ -2290,45 +2401,15 @@ def build_quiz_question(
             key=lambda row: (row["last_result"] == "correct", row["click_count"], row["id"]),
         )
     target = ranked[0]
-    translation_distractors = quiz_candidate_meanings(words, int(target["id"]), str(target["turkish"]))[:3]
-    translation_options = list(dict.fromkeys(translation_distractors + [str(target["turkish"]).strip().lower()]))
+    answer = str(target["turkish"]).strip()
+    translation_distractors = quiz_candidate_meanings(words, int(target["id"]), answer)[:3]
+    translation_options = list(dict.fromkeys(translation_distractors + [answer]))
     while len(translation_options) < 4:
-        for fallback in quiz_candidate_meanings(words, int(target["id"]), str(target["turkish"])):
+        for fallback in quiz_candidate_meanings(words, int(target["id"]), answer):
             if fallback not in translation_options:
                 translation_options.append(fallback)
             if len(translation_options) == 4:
                 break
-
-    example_text = str(target["example"] or "").strip()
-    can_make_blank = bool(example_text) and re.search(rf"\b{re.escape(str(target['word']))}\b", example_text, flags=re.IGNORECASE)
-    if can_make_blank and random.random() < 0.5:
-        blank_sentence = re.sub(
-            rf"\b{re.escape(str(target['word']))}\b",
-            "_____",
-            example_text,
-            count=1,
-            flags=re.IGNORECASE,
-        )
-        word_distractors = [row["word"] for row in words if row["id"] != target["id"]][:3]
-        word_options = list(dict.fromkeys(word_distractors + [target["word"]]))
-        while len(word_options) < 4:
-            for fallback in ["result", "habit", "travel", "focus"]:
-                if fallback not in word_options:
-                    word_options.append(fallback)
-                if len(word_options) == 4:
-                    break
-        random.shuffle(word_options)
-        return {
-            "word_id": target["id"],
-            "question_type": "blank",
-            "question": "Which word best completes the sentence?",
-            "sentence": blank_sentence,
-            "word": target["word"],
-            "options": word_options[:4],
-            "answer": target["word"],
-            "context": target["context"],
-            "example": target["example"],
-        }
 
     random.shuffle(translation_options)
     return {
@@ -2337,7 +2418,7 @@ def build_quiz_question(
         "question": f'What is the best Turkish meaning of "{target["word"]}"?',
         "word": target["word"],
         "options": translation_options[:4],
-        "answer": target["turkish"],
+        "answer": answer,
         "context": target["context"],
         "example": target["example"],
         "mode": mode,
@@ -4033,6 +4114,7 @@ def register(payload: AuthRequest, response: Response) -> dict[str, Any]:
             raise
         raise HTTPException(status_code=409, detail="This username is already in use.")
     create_session(response, user_id)
+    record_daily_login_streak(user_id)
     return {"user": {"id": user_id, "username": username, "created_at": timestamp, "email_verified": True}, "stats": build_user_stats(user_id)}
 
 
@@ -4051,6 +4133,7 @@ def login(payload: AuthRequest, response: Response) -> dict[str, Any]:
             (hash_password(payload.password), int(row["id"])),
         )
     create_session(response, int(row["id"]))
+    record_daily_login_streak(int(row["id"]))
     return {"user": user_payload(row), "stats": build_user_stats(int(row["id"]))}
 
 
@@ -4136,12 +4219,18 @@ def me(session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE)) -
                 "total_readings": 0,
                 "daily_goal": 5,
                 "streak": 0,
+                "login_streak": 0,
+                "fire_level": 0,
+                "fire_label": "Cold start",
+                "fire_icon": "•",
+                "fire_next": 1,
                 "hard_words": 0,
             },
             "recent_words": [],
             "history": [],
             "progress_history": [],
         }
+    record_daily_login_streak(int(user["id"]))
     return {
         "user": user,
         "stats": build_user_stats(int(user["id"])),
@@ -4169,6 +4258,19 @@ def social_overview(session_token: str | None = Cookie(default=None, alias=SESSI
         "outgoing": list_social_requests(user_id, "outgoing"),
         "suggestions": list_social_suggestions(user_id),
         "cheers_received": int(cheer_row["total"] or 0),
+    }
+
+
+@app.get("/api/social/search")
+def social_search(
+    q: str = Query(min_length=3, max_length=32),
+    session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE),
+) -> dict[str, Any]:
+    user = require_user(session_token)
+    cleaned_query = clean_username(q)
+    return {
+        "query": cleaned_query,
+        "results": search_social_users(int(user["id"]), cleaned_query),
     }
 
 
@@ -4379,7 +4481,7 @@ def quiz_check(payload: QuizAnswerRequest, session_token: str | None = Cookie(de
     )
     if not row:
         raise HTTPException(status_code=404, detail=repair_mojibake("Quiz kelimesi bulunamadı."))
-    expected_answer = row["word"] if payload.question_type == "blank" else row["turkish"]
+    expected_answer = row["turkish"]
     is_correct = payload.answer.strip().lower() == expected_answer.strip().lower()
     db_execute(
         "UPDATE saved_words SET last_result = ?, updated_at = ? WHERE id = ?",
@@ -4389,7 +4491,7 @@ def quiz_check(payload: QuizAnswerRequest, session_token: str | None = Cookie(de
         "correct": is_correct,
         "answer": expected_answer,
         "word": row["word"],
-        "question_type": payload.question_type,
+        "question_type": "meaning",
         "context": row["context"],
         "example": row["example"],
         "stats": build_user_stats(int(user["id"])),

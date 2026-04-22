@@ -69,12 +69,18 @@ const state = {
     total_readings: 0,
     daily_goal: 5,
     streak: 0,
+    login_streak: 0,
+    fire_level: 0,
+    fire_label: "Cold start",
+    fire_icon: "•",
+    fire_next: 1,
     hard_words: 0,
   },
   recentWords: [],
   readingHistory: [],
   progressHistory: [],
   social: { friends: [], incoming: [], outgoing: [], suggestions: [], cheers_received: 0 },
+  socialSearch: { query: "", results: [], loading: false },
   quiz: null,
   quizMode: "saved",
   libraryView: null,
@@ -98,6 +104,11 @@ function emptyStats() {
     total_readings: 0,
     daily_goal: 5,
     streak: 0,
+    login_streak: 0,
+    fire_level: 0,
+    fire_label: "Cold start",
+    fire_icon: "•",
+    fire_next: 1,
     hard_words: 0,
   };
 }
@@ -185,6 +196,7 @@ const socialFriendCountEl = $("#socialFriendCount");
 const socialIncomingListEl = $("#socialIncomingList");
 const socialFriendsListEl = $("#socialFriendsList");
 const socialSuggestionsListEl = $("#socialSuggestionsList");
+const socialSearchResultsEl = $("#socialSearchResults");
 const savedWordsEmptyEl = $("#savedWordsEmpty");
 const savedWordsListEl = $("#savedWordsList");
 const clearSavedWordsBtn = $("#clearSavedWordsBtn");
@@ -640,31 +652,6 @@ function buildReadingQuizQuestion(excludeWord = "") {
   const target = pool[Math.floor(Math.random() * pool.length)];
   const [word, detail] = target;
   const turkish = String(detail.turkish || "").trim();
-  const exampleSource = String(detail.example || "").split("\n").find((line) => line.trim()) || "";
-  const plainExample = exampleSource.replace(/^\d+\.\s*/, "").replace(/\s*\([^)]*\)\s*$/, "").trim();
-  const canMakeBlank = plainExample && new RegExp(`\\b${word}\\b`, "i").test(plainExample);
-  if (canMakeBlank && Math.random() < 0.5) {
-    const sentence = plainExample.replace(new RegExp(`\\b${word}\\b`, "i"), "_____");
-    const distractors = glossaryEntries
-      .filter(([candidate]) => candidate !== word)
-      .map(([candidate]) => candidate)
-      .slice(0, 12)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 3);
-    const options = [...new Set([...distractors, word])].sort(() => Math.random() - 0.5);
-    return {
-      word_id: `reading-${word}`,
-      question_type: "blank",
-      question: "Which word best completes the sentence?",
-      sentence,
-      word,
-      answer: word,
-      options,
-      context: detail.context || "",
-      example: detail.example || "",
-      mode: "reading",
-    };
-  }
   const distractors = glossaryEntries
     .filter(([candidate, candidateDetail]) => candidate !== word && candidateDetail?.turkish)
     .map(([, candidateDetail]) => String(candidateDetail.turkish).trim())
@@ -1023,16 +1010,11 @@ function renderQuiz() {
   quizCardEl.classList.add("quiz-refresh");
   quizPromptEl.textContent = state.quiz.question;
   if (quizTypeBadgeEl) {
-    quizTypeBadgeEl.textContent = state.quiz.question_type === "blank" ? "Blank Builder" : "Meaning Match";
+    quizTypeBadgeEl.textContent = "English to Turkish";
   }
   if (quizSentenceEl) {
-    if (state.quiz.sentence) {
-      quizSentenceEl.textContent = state.quiz.sentence;
-      quizSentenceEl.classList.remove("hidden");
-    } else {
-      quizSentenceEl.textContent = "";
-      quizSentenceEl.classList.add("hidden");
-    }
+    quizSentenceEl.textContent = "";
+    quizSentenceEl.classList.add("hidden");
   }
   quizFeedbackEl.classList.add("hidden");
   quizFeedbackEl.textContent = "";
@@ -1047,12 +1029,8 @@ function renderQuiz() {
         state.quizStats.correct += isCorrect ? 1 : 0;
         state.quizStats.streak = isCorrect ? state.quizStats.streak + 1 : 0;
         quizFeedbackEl.textContent = isCorrect
-          ? (state.quiz.question_type === "blank"
-            ? `Correct. "${state.quiz.answer}" fits the sentence.`
-            : `Correct. "${state.quiz.word}" = "${state.quiz.answer}".`)
-          : (state.quiz.question_type === "blank"
-            ? `Not this time. Correct word: ${state.quiz.answer}`
-            : `Not this time. Correct answer: ${state.quiz.answer}`);
+          ? `Correct. "${state.quiz.word}" = "${state.quiz.answer}".`
+          : `Not this time. Correct answer: ${state.quiz.answer}`;
         quizFeedbackEl.classList.remove("hidden");
         quizOptionsEl.querySelectorAll(".quiz-option").forEach((optionButton) => {
           optionButton.disabled = true;
@@ -1096,12 +1074,8 @@ function renderQuiz() {
         state.quizStats.streak = 0;
       }
         quizFeedbackEl.textContent = parsed.data.correct
-          ? (state.quiz.question_type === "blank"
-            ? `Correct. "${parsed.data.answer}" fits the sentence.`
-            : `Correct. "${parsed.data.word}" = "${parsed.data.answer}".`)
-          : (state.quiz.question_type === "blank"
-            ? `Not this time. Correct word: ${parsed.data.answer}`
-            : `Not this time. Correct answer: ${parsed.data.answer}`);
+          ? `Correct. "${parsed.data.word}" = "${parsed.data.answer}".`
+          : `Not this time. Correct answer: ${parsed.data.answer}`;
       quizFeedbackEl.classList.remove("hidden");
       state.stats = parsed.data.stats;
       updateAccountStatsOnly();
@@ -1220,47 +1194,97 @@ function bindNavMenuAction(button, view) {
 }
 
 function renderSocialCard(user, { action = "", requestId = "", friendshipId = "" } = {}) {
-  const badge = user.streak > 0 ? `Streak ${user.streak}` : `${user.total_readings || 0} texts`;
+  const relationship = user.relationship || "";
+  const badge = user.reason || (user.streak > 0 ? `Streak ${user.streak}` : `${user.total_readings || 0} texts`);
+  const fireLevel = Number(user.fire_level || 0);
+  const fireText = fireLevel > 0 ? `${user.fire_icon || "🔥"} ${user.fire_label || "On fire"}` : "Cold start";
+  const resolvedAction =
+    relationship === "friend"
+      ? "friend-label"
+      : relationship === "pending_outgoing"
+        ? "pending"
+        : relationship === "pending_incoming"
+          ? "accept"
+          : action;
   const actionHtml =
-    action === "accept"
+    resolvedAction === "accept"
       ? `<div class="social-actions">
           <button class="ghost-btn ghost-btn-inline social-accept" type="button" data-request-id="${requestId}">Accept</button>
           <button class="ghost-btn ghost-btn-inline social-decline" type="button" data-request-id="${requestId}">Decline</button>
         </div>`
-      : action === "add"
+      : resolvedAction === "add"
         ? `<button class="ghost-btn ghost-btn-inline social-add-suggested" type="button" data-username="${escapeHtml(user.username)}">Add</button>`
-        : action === "friend"
+        : resolvedAction === "friend"
           ? `<div class="social-actions">
               <button class="ghost-btn ghost-btn-inline social-cheer" type="button" data-friendship-id="${friendshipId}">Cheer</button>
               <button class="ghost-btn ghost-btn-inline social-remove" type="button" data-friendship-id="${friendshipId}">Remove</button>
             </div>`
-          : `<span class="social-pending">Pending</span>`;
+          : resolvedAction === "friend-label"
+            ? `<span class="social-pending social-status-good">Friend</span>`
+            : `<span class="social-pending">Pending</span>`;
   return `
     <article class="social-card">
       <div class="social-avatar">${escapeHtml(String(user.username || "U").charAt(0).toUpperCase())}</div>
       <div class="social-card-copy">
         <strong>${escapeHtml(user.username || "user")}</strong>
-        <span>${escapeHtml(badge)} · ${Number(user.saved_words || 0)} saved · ${Number(user.words_today || 0)} today</span>
+        <span>${escapeHtml(fireText)} · ${escapeHtml(badge)} · ${Number(user.saved_words || 0)} saved · ${Number(user.words_today || 0)} today</span>
       </div>
       ${actionHtml}
     </article>
   `;
 }
 
-function bindSocialActions() {
-  socialIncomingListEl?.querySelectorAll(".social-accept, .social-decline").forEach((button) => {
+function renderSocialSearchResults() {
+  if (!socialSearchResultsEl) return;
+  const query = String(state.socialSearch.query || "").trim();
+  if (!state.user || !query) {
+    socialSearchResultsEl.classList.add("hidden");
+    socialSearchResultsEl.innerHTML = "";
+    return;
+  }
+  socialSearchResultsEl.classList.remove("hidden");
+  if (state.socialSearch.loading) {
+    socialSearchResultsEl.innerHTML = `<p class="history-empty">Searching learners...</p>`;
+    return;
+  }
+  const results = state.socialSearch.results || [];
+  socialSearchResultsEl.innerHTML = `
+    <div class="social-search-head">
+      <strong>Search results</strong>
+      <span>${escapeHtml(query)}</span>
+    </div>
+    ${
+      results.length
+        ? results
+            .map((user) =>
+              renderSocialCard(user, {
+                action: "add",
+                requestId: user.friendship_id,
+                friendshipId: user.friendship_id,
+              })
+            )
+            .join("")
+        : `<p class="history-empty">No learner found with that username yet.</p>`
+    }
+  `;
+  bindSocialActions(socialSearchResultsEl);
+}
+
+function bindSocialActions(root = document) {
+  if (!root) return;
+  root.querySelectorAll?.(".social-accept, .social-decline").forEach((button) => {
     button.addEventListener("click", async () => {
       const action = button.classList.contains("social-accept") ? "accept" : "decline";
       await respondSocialRequest(button.dataset.requestId, action);
     });
   });
-  socialSuggestionsListEl?.querySelectorAll(".social-add-suggested").forEach((button) => {
+  root.querySelectorAll?.(".social-add-suggested").forEach((button) => {
     button.addEventListener("click", async () => {
       if (socialUsernameInputEl) socialUsernameInputEl.value = button.dataset.username || "";
       await sendFriendRequest(button.dataset.username || "");
     });
   });
-  socialFriendsListEl?.querySelectorAll(".social-cheer").forEach((button) => {
+  root.querySelectorAll?.(".social-cheer").forEach((button) => {
     button.addEventListener("click", async () => {
       const parsed = await apiFetch(`/api/social/friends/${button.dataset.friendshipId}/cheer`, { method: "POST" });
       if (!parsed.ok) {
@@ -1272,7 +1296,7 @@ function bindSocialActions() {
       showToast("Cheer sent. Tiny win, good energy.", { variant: "info", scope: "social" });
     });
   });
-  socialFriendsListEl?.querySelectorAll(".social-remove").forEach((button) => {
+  root.querySelectorAll?.(".social-remove").forEach((button) => {
     button.addEventListener("click", async () => {
       const parsed = await apiFetch(`/api/social/friends/${button.dataset.friendshipId}`, { method: "DELETE" });
       if (!parsed.ok) return;
@@ -1311,9 +1335,12 @@ function renderSocialPanel() {
   if (socialSuggestionsListEl) {
     socialSuggestionsListEl.innerHTML = suggestions.length
       ? suggestions.map((user) => renderSocialCard(user, { action: "add" })).join("")
-      : `<p class="history-empty">Suggestions will appear when more learners join.</p>`;
+      : `<p class="history-empty">Search a username above to invite your first friend.</p>`;
   }
-  bindSocialActions();
+  renderSocialSearchResults();
+  bindSocialActions(socialIncomingListEl);
+  bindSocialActions(socialFriendsListEl);
+  bindSocialActions(socialSuggestionsListEl);
 }
 
 async function loadSocial() {
@@ -1326,8 +1353,9 @@ async function loadSocial() {
     showToast(parsed.data.detail || "Social panel could not load.", { variant: "error", scope: "social" });
     return;
   }
-  state.social = parsed.data;
-  renderSocialPanel();
+    state.social = parsed.data;
+    renderSocialSearchResults();
+    renderSocialPanel();
 }
 
 async function sendFriendRequest(username) {
@@ -1341,8 +1369,10 @@ async function sendFriendRequest(username) {
     });
     if (!parsed.ok) throw new Error(parsed.data.detail || "Friend request failed.");
     state.social = parsed.data;
+    state.socialSearch = { query: "", results: [], loading: false };
     if (socialUsernameInputEl) socialUsernameInputEl.value = "";
     renderSocialPanel();
+    showToast("Friend request sent.", { variant: "info", scope: "social" });
   } catch (error) {
     showToast(error.message || "Friend request failed.", { variant: "error", scope: "social" });
   } finally {
@@ -1357,7 +1387,34 @@ async function respondSocialRequest(requestId, action) {
   });
   if (!parsed.ok) return;
   state.social = parsed.data;
+  state.socialSearch = { query: "", results: [], loading: false };
   renderSocialPanel();
+}
+
+let socialSearchTimer = null;
+
+async function searchSocialUsers(query) {
+  const cleaned = String(query || "").trim();
+  if (!state.user || cleaned.length < 3) {
+    state.socialSearch = { query: "", results: [], loading: false };
+    renderSocialSearchResults();
+    return;
+  }
+  state.socialSearch = { query: cleaned, results: [], loading: true };
+  renderSocialSearchResults();
+  try {
+    const parsed = await apiFetch(`/api/social/search?q=${encodeURIComponent(cleaned)}`);
+    if (!parsed.ok) throw new Error(parsed.data.detail || "Search failed.");
+    state.socialSearch = {
+      query: parsed.data.query || cleaned,
+      results: parsed.data.results || [],
+      loading: false,
+    };
+  } catch (error) {
+    state.socialSearch = { query: cleaned, results: [], loading: false };
+    showToast(error.message || "Search failed.", { variant: "error", scope: "social" });
+  }
+  renderSocialSearchResults();
 }
 
 function formatProgressDate(isoDate) {
@@ -1376,6 +1433,13 @@ function renderUserPanel() {
       : "G";
   }
   profileAvatarBtn?.classList.toggle("signed-in", loggedIn);
+  profileAvatarBtn?.dataset.fireLevel = String(state.stats.fire_level || 0);
+  profileAvatarBtn?.setAttribute(
+    "aria-label",
+    loggedIn
+      ? `Open profile panel. ${state.stats.fire_label || "Cold start"} streak ${state.stats.login_streak || state.stats.streak || 0}.`
+      : "Open profile panel"
+  );
   if (loggedIn) {
     const uniqueReadingHistory = state.readingHistory.filter((item, index, items) => {
       const key = [
@@ -1408,10 +1472,15 @@ function renderUserPanel() {
           : "Open your first reading and this desk will start tracking your rhythm.";
     }
     if (dailyGoalTextEl) {
-      dailyGoalTextEl.textContent = `${state.stats.saved_today || 0} / ${state.stats.daily_goal || 5} today`;
+      dailyGoalTextEl.textContent = `${state.stats.saved_today || 0} / ${state.stats.daily_goal || 5} words today`;
     }
     if (streakBadgeEl) {
-      streakBadgeEl.textContent = `Streak ${state.stats.streak || 0}`;
+      const streak = state.stats.login_streak || state.stats.streak || 0;
+      const fireLabel = state.stats.fire_label || "Cold start";
+      const next = Number(state.stats.fire_next || 0);
+      streakBadgeEl.textContent = next > 0
+        ? `${fireLabel} ${streak} · ${next} to next`
+        : `${fireLabel} ${streak}`;
     }
     if (goalBarFillEl) {
       const ratio = Math.min(100, ((state.stats.saved_today || 0) / Math.max(1, state.stats.daily_goal || 5)) * 100);
@@ -1786,6 +1855,7 @@ async function refreshSession() {
     state.readingHistory = [];
     state.progressHistory = [];
     state.social = { friends: [], incoming: [], outgoing: [], suggestions: [], cheers_received: 0 };
+    state.socialSearch = { query: "", results: [], loading: false };
   }
   renderUserPanel();
 }
@@ -2233,6 +2303,7 @@ async function handleLogout(event) {
     state.readingHistory = [];
     state.progressHistory = [];
     state.social = { friends: [], incoming: [], outgoing: [], suggestions: [], cheers_received: 0 };
+    state.socialSearch = { query: "", results: [], loading: false };
     state.quiz = null;
     state.hasEnteredApp = false;
     window.sessionStorage.removeItem(GUEST_FLAG_KEY);
@@ -2352,6 +2423,13 @@ navMenuSwitchEls.forEach((button) => {
 socialAddFormEl?.addEventListener("submit", async (event) => {
   event.preventDefault();
   await sendFriendRequest();
+});
+socialUsernameInputEl?.addEventListener("input", () => {
+  window.clearTimeout(socialSearchTimer);
+  const query = socialUsernameInputEl.value || "";
+  socialSearchTimer = window.setTimeout(() => {
+    void searchSocialUsers(query);
+  }, 260);
 });
 closeMobileWordBtn?.addEventListener("click", closeMobileWordSheet);
 mobileWordHandleBtn?.addEventListener("click", closeMobileWordSheet);
