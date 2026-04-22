@@ -446,6 +446,7 @@ const PHRASE_PREFERENCES = new Set([
   "in light of",
   "due to",
   "rather than",
+  "regardless of",
   "in favor of",
   "genetic modification",
   "human embryos",
@@ -548,9 +549,49 @@ function normalizePhraseCandidate(candidate) {
     .join(" ");
 }
 
+function getGlossaryPhraseKey(candidate) {
+  const raw = String(candidate || "").toLowerCase().trim().replace(/\s+/g, " ");
+  if (!raw) return "";
+  const variants = [
+    raw,
+    raw.replace(/-/g, " "),
+    raw.replace(/\s+/g, "-"),
+    normalizePhraseCandidate(raw),
+    normalizePhraseCandidate(raw.replace(/-/g, " ")),
+  ];
+  for (const variant of variants) {
+    if (variant && state.glossary?.[variant]) return variant;
+  }
+  return "";
+}
+
+function getPhraseCandidatesAround(buttonEl, radius = 4) {
+  const words = [];
+  for (let offset = -radius; offset <= radius; offset += 1) {
+    const word = offset === 0 ? buttonEl.dataset.word : getWordByOffset(buttonEl, offset);
+    words.push({ offset, word });
+  }
+  const currentIndex = radius;
+  const candidates = [];
+  for (let length = radius + 1; length >= 2; length -= 1) {
+    for (let start = 0; start <= words.length - length; start += 1) {
+      const end = start + length - 1;
+      if (start > currentIndex || end < currentIndex) continue;
+      const parts = words.slice(start, start + length).map((item) => item.word);
+      if (parts.some((part) => !part)) continue;
+      candidates.push(parts.join(" "));
+    }
+  }
+  return candidates;
+}
+
 function resolvePreferredPhrase(buttonEl) {
   if (!buttonEl?.dataset?.word) return "";
   const current = buttonEl.dataset.word;
+  for (const candidate of getPhraseCandidatesAround(buttonEl)) {
+    const glossaryKey = getGlossaryPhraseKey(candidate);
+    if (glossaryKey) return glossaryKey;
+  }
   const prevWord = getWordByOffset(buttonEl, -1);
   const prevPrevWord = getWordByOffset(buttonEl, -2);
   const nextWord = getWordByOffset(buttonEl, 1);

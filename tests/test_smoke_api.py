@@ -229,6 +229,101 @@ def test_word_detail_saved_words_and_quiz_roundtrip(client):
     assert result["word"] == question["word"]
 
 
+def test_lexical_engine_prefers_phrases_over_split_words(app_module):
+    text = (
+        "After two weeks, the routine turned out to work well. "
+        "Instead of eating fast food, people chose home-cooked meals. "
+        "The pilot said take off before the storm arrived."
+    )
+
+    glossary = app_module.build_library_glossary(text)
+
+    assert glossary["turned out"]["turkish"] == "sonuçlanmak / ortaya çıkmak"
+    assert glossary["turned out"]["kind"] == "phrase"
+    assert glossary["turn out"]["surface"] == "turned out"
+    assert glossary["home-cooked"]["turkish"] == "ev yapımı"
+    assert glossary["take off"]["turkish"] == "havalanmak / hızla yükselmek"
+    assert "turned" not in glossary
+    assert "out" not in glossary
+
+
+def test_core_academic_terms_are_stable(app_module):
+    text = (
+        "Regardless of their employment status, workers need flexibility. "
+        "Many employees are deeply concerned about burnout."
+    )
+
+    glossary = app_module.build_library_glossary(text)
+
+    assert glossary["regardless of"]["turkish"] == "...den bağımsız olarak / ...e bakılmaksızın"
+    assert glossary["regardless of"]["kind"] == "phrase"
+    assert "regardless" not in glossary
+    assert "of" not in glossary
+    assert glossary["flexibility"]["turkish"] == "esneklik"
+    assert glossary["deeply"]["turkish"] == "derinden / son derece"
+
+
+def test_word_detail_resolves_inflected_phrase(client):
+    text = "After two weeks, the routine turned out to work well."
+    response = client.post(
+        "/api/word-detail",
+        json={
+            "text": text,
+            "word": "turned out",
+            "content_source": "library",
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    detail = response.json()
+    assert detail["turkish"] == "sonuçlanmak / ortaya çıkmak"
+    assert "Kalıp kökü: turn out" in detail["context"]
+    assert "turned out" in detail["example"]
+
+
+def test_fallback_translation_is_queued_not_written_to_static_map(app_module, monkeypatch):
+    app_module.db_execute("DELETE FROM lexical_review_queue")
+    monkeypatch.setattr(app_module, "GOOGLE_TRANSLATE_API_KEY", "")
+    monkeypatch.setattr(app_module, "request_model", lambda *args, **kwargs: "özenli düzen")
+
+    def fail_static_write(*args, **kwargs):
+        raise AssertionError("fallback translations must not be written into library_word_map.json")
+
+    monkeypatch.setattr(app_module, "save_json_map", fail_static_write)
+
+    translated = app_module.translate_library_word_with_fallback("careful-system", "careful system")
+    row = app_module.db_fetchone(
+        "SELECT term, canonical, meaning, kind, source, status, occurrence_count FROM lexical_review_queue WHERE term = ?",
+        ("careful-system",),
+    )
+
+    assert translated == "özenli düzen"
+    assert row is not None
+    assert row["canonical"] == "careful system"
+    assert row["meaning"] == "özenli düzen"
+    assert row["kind"] == "phrase"
+    assert row["source"] == "ai_fallback"
+    assert row["status"] == "pending"
+    assert int(row["occurrence_count"]) == 1
+
+
+def test_approved_lexical_entries_join_runtime_phrase_map(app_module):
+    timestamp = app_module.now_iso()
+    app_module.db_execute(
+        """
+        INSERT INTO lexical_entries (term, meaning, kind, source, confidence, created_at, updated_at)
+        VALUES (?, ?, 'phrase', 'curated', 1.0, ?, ?)
+        """,
+        ("micro habit", "mikro alışkanlık", timestamp, timestamp),
+    )
+    app_module.get_approved_lexical_map(force=True)
+
+    glossary = app_module.build_library_glossary("A micro habit can make practice easier.")
+
+    assert glossary["micro habit"]["turkish"] == "mikro alışkanlık"
+    assert glossary["micro habit"]["kind"] == "phrase"
+
+
 def test_social_friend_request_accept_and_cheer(client):
     register_user(client, username="socialone")
     client.post("/api/auth/logout")

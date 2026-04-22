@@ -30,9 +30,13 @@ def isolated_db(app_module):
     app_module.db_execute("DELETE FROM saved_words")
     app_module.db_execute("DELETE FROM reading_history")
     app_module.db_execute("DELETE FROM user_progress")
+    app_module.db_execute("DELETE FROM lexical_review_queue")
+    app_module.db_execute("DELETE FROM lexical_entries")
     app_module.db_execute("DELETE FROM users")
     app_module.WORD_DETAIL_CACHE.clear()
     app_module.GENERATE_CACHE.clear()
+    app_module.APPROVED_LEXICAL_MAP.clear()
+    app_module.APPROVED_LEXICAL_MAP_READY = False
     yield
 
 
