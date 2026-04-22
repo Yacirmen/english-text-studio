@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260423pwa3" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260423i18n1" />
 </head>
 <body>
   <div id="welcomeGate" class="welcome-gate">
@@ -57,6 +57,18 @@
       </div>
 
       <div class="welcome-auth">
+        <div class="gate-control-row" aria-label="Welcome screen controls">
+          <button id="gateThemeToggleBtn" class="gate-mini-control gate-theme-control" type="button" aria-label="Toggle dark mode" aria-pressed="false" title="Toggle theme">
+            <span class="theme-icon theme-sun" aria-hidden="true">&#9728;</span>
+            <span class="theme-icon theme-moon" aria-hidden="true">&#9790;</span>
+            <span class="theme-toggle-thumb" aria-hidden="true"></span>
+          </button>
+          <button id="gateLanguageToggleBtn" class="gate-mini-control gate-language-control" type="button" aria-label="Switch language" aria-pressed="false" title="Switch language">
+            <span>EN</span>
+            <span>TR</span>
+            <span class="language-toggle-thumb" aria-hidden="true"></span>
+          </button>
+        </div>
         <div class="auth-toggle welcome-toggle" data-auth-toggle>
           <button id="gateShowLoginBtn" class="auth-tab active" type="button">Log In</button>
           <button id="gateShowRegisterBtn" class="auth-tab" type="button">Sign Up</button>
@@ -106,21 +118,31 @@
   <div class="page-shell">
     <header class="topbar">
       <div class="topbar-left">
-        <div class="brand-lockup">
+        <div class="brand-lockup session-control">
+          <div class="topbar-slogan session-dock" aria-label="ReadLex session dock">
+            <span class="topbar-slogan-mark session-dock-mark" aria-hidden="true">
+              <span class="topbar-slogan-spark">RL</span>
+            </span>
+            <span class="topbar-slogan-copy">
+              <span class="topbar-slogan-kicker">READLEX</span>
+              <strong class="topbar-slogan-main">Session Dock</strong>
+            </span>
+            <span class="session-dock-metrics" aria-hidden="true">
+              <span id="topbarLevelChip">B1</span>
+              <span id="topbarTopicChip">Random</span>
+              <span id="topbarLibraryChip">Library</span>
+            </span>
+          </div>
           <button id="themeToggleBtn" class="theme-toggle" type="button" aria-label="Toggle dark mode" aria-pressed="false" title="Toggle theme">
             <span class="theme-icon theme-sun" aria-hidden="true">&#9728;</span>
             <span class="theme-icon theme-moon" aria-hidden="true">&#9790;</span>
             <span class="theme-toggle-thumb" aria-hidden="true"></span>
           </button>
-          <div class="topbar-slogan" aria-label="App slogan">
-            <span class="topbar-slogan-mark" aria-hidden="true">
-              <span class="topbar-slogan-spark"></span>
-            </span>
-            <span class="topbar-slogan-copy">
-              <span class="topbar-slogan-kicker">READLEX</span>
-              <strong class="topbar-slogan-main">Words that stay with you.</strong>
-            </span>
-          </div>
+          <button id="languageToggleBtn" class="language-toggle" type="button" aria-label="Switch language" aria-pressed="false" title="Switch language">
+            <span>EN</span>
+            <span>TR</span>
+            <span class="language-toggle-thumb" aria-hidden="true"></span>
+          </button>
         </div>
       </div>
       <div class="top-status">
@@ -129,21 +151,21 @@
             id="navMenuTrigger"
             class="menu-trigger"
             type="button"
-            aria-label="Open ReadLex office menu"
+            aria-label="Open ReadLex study hub"
             aria-expanded="false"
             aria-controls="navMenu"
           >
             <span class="menu-trigger-kicker">ReadLex</span>
-            <strong class="menu-trigger-title">Office Desk</strong>
+            <strong class="menu-trigger-title">Study Hub</strong>
             <span class="menu-trigger-icon" aria-hidden="true">+</span>
           </button>
-          <div id="navMenu" class="nav-menu" role="menu" aria-label="ReadLex office menu">
+          <div id="navMenu" class="nav-menu" role="menu" aria-label="ReadLex study hub">
             <div class="nav-menu-topline">
               <div class="nav-menu-overview">
                 <span class="nav-menu-overview-kicker">Workspace</span>
-                <strong class="nav-menu-overview-title">Choose a lane, keep the menu clean.</strong>
+                <strong class="nav-menu-overview-title">Everything important, one tap away.</strong>
               </div>
-              <div class="nav-menu-switcher" role="tablist" aria-label="Office Desk sections">
+              <div class="nav-menu-switcher" role="tablist" aria-label="Study Hub sections">
                 <button class="nav-menu-switch active" type="button" data-menu-category="account" role="tab" aria-selected="true">Account</button>
                 <button class="nav-menu-switch" type="button" data-menu-category="study" role="tab" aria-selected="false">Study</button>
                 <button class="nav-menu-switch" type="button" data-menu-category="company" role="tab" aria-selected="false">Company</button>
@@ -155,14 +177,14 @@
                 <button id="openProgressBtn" class="nav-menu-item nav-menu-item-pink" type="button" role="menuitem">
                   <span class="nav-menu-item-copy">
                     <strong>Progress</strong>
-                    <small>Streak, daily goal, and recent reading rhythm.</small>
+                    <small>Daily streak, reading log, and visible practice momentum.</small>
                   </span>
                   <span class="nav-menu-badge" aria-hidden="true">Stats</span>
                 </button>
                 <button id="openSocialBtn" class="nav-menu-item nav-menu-item-social" type="button" role="menuitem">
                   <span class="nav-menu-item-copy">
                     <strong>Social Circle</strong>
-                    <small>Add friends and compare reading momentum.</small>
+                    <small>Add friends and keep accountability light, not noisy.</small>
                   </span>
                   <span class="nav-menu-badge" aria-hidden="true">Friends</span>
                 </button>
@@ -172,21 +194,21 @@
                 <button id="openSavedWordsBtn" class="nav-menu-item nav-menu-item-green" type="button" role="menuitem">
                   <span class="nav-menu-item-copy">
                     <strong>Saved words</strong>
-                    <small>Jump into your word bank and keep phrases close.</small>
+                    <small>Your saved words and phrases, ready for review.</small>
                   </span>
                   <span class="nav-menu-badge" aria-hidden="true">Words</span>
                 </button>
                 <button id="openQuizBtn" class="nav-menu-item nav-menu-item-blue" type="button" role="menuitem">
                   <span class="nav-menu-item-copy">
                     <strong>Quiz</strong>
-                    <small>Review fast with reading and saved-word practice.</small>
+                    <small>English to Turkish checks from your saved deck.</small>
                   </span>
                   <span class="nav-menu-badge" aria-hidden="true">Review</span>
                 </button>
                 <button id="openManualHelpBtn" class="nav-menu-item nav-menu-item-cream" type="button" role="menuitem">
                   <span class="nav-menu-item-copy">
                     <strong>Translate</strong>
-                    <small>Ask for a quick explanation without leaving the flow.</small>
+                    <small>Get a quick meaning when you need a second look.</small>
                   </span>
                   <span class="nav-menu-badge" aria-hidden="true">Help</span>
                 </button>
@@ -195,15 +217,15 @@
                 <span class="nav-menu-label">Company</span>
                 <button id="openInfoBtn" class="nav-menu-item nav-menu-item-indigo" type="button" role="menuitem">
                   <span class="nav-menu-item-copy">
-                    <strong>ReadLex Office</strong>
-                    <small>See the product overview, contact channel, privacy posture, and launch notes.</small>
+                    <strong>About ReadLex</strong>
+                    <small>Product overview, contact, privacy posture, and launch notes.</small>
                   </span>
                   <span class="nav-menu-badge" aria-hidden="true">Office</span>
                 </button>
               </div>
             </div>
             <div class="nav-menu-foot">
-              <span>ReadLex keeps product, account, and trust details in one polished workspace.</span>
+              <span>Built to stay quiet while you read, then useful when you review.</span>
             </div>
           </div>
         </div>
@@ -232,20 +254,20 @@
       <aside class="tool-rail">
         <div class="rail-intro">
           <span class="rail-kicker">Setup</span>
-          <h2>Pick a lane. Keep the rhythm.</h2>
-          <p>Pick the mode, tune the reading, and keep the rest of the screen focused on the text.</p>
+          <h2>Read first. Review smarter.</h2>
+          <p>Choose a text, tap useful words, and let ReadLex keep the recall loop clean.</p>
         </div>
 
         <section class="rail-panel">
           <div class="section-head">
-            <h3>Reading Setup</h3>
-            <p>Choose a mode, then filter for the kind of reading you want.</p>
+            <h3>Start a session</h3>
+            <p>Pick level and topic. ReadLex opens a curated text with tappable words and phrase-aware meanings.</p>
           </div>
 
           <div id="setupSummary" class="setup-summary">
             <div class="mini-stat">
               <span class="mini-stat-label">Reading tone</span>
-              <strong id="setupLevelBadge">B2 · Richer but still easy to read</strong>
+              <strong id="setupLevelBadge">B2 - Richer but still easy to read</strong>
             </div>
             <div class="mini-stat">
               <span class="mini-stat-label">Target length</span>
@@ -330,15 +352,32 @@
             <button id="generateBtn" class="primary-btn" type="submit">Get Reading</button>
             <div class="setup-footer">
               <div id="libraryCountBadge" class="library-count-badge hidden">Loading library count...</div>
-              <p id="libraryModeHint" class="setup-footer-note hidden">Pick a level and a topic. We will pull a reading from the curated library.</p>
+              <p id="libraryModeHint" class="setup-footer-note hidden">One click opens a ready text. Your taps build saved words, quiz material, and progress history.</p>
             </div>
           </form>
+          <div class="session-flow" aria-label="ReadLex learning flow">
+            <div>
+              <span>01</span>
+              <strong>Read</strong>
+              <small>Open a level-matched text.</small>
+            </div>
+            <div>
+              <span>02</span>
+              <strong>Tap</strong>
+              <small>Explore words and phrases in context.</small>
+            </div>
+            <div>
+              <span>03</span>
+              <strong>Review</strong>
+              <small>Return through saved words and quiz.</small>
+            </div>
+          </div>
         </section>
       </aside>
 
       <section class="reading-stage">
         <div id="previewState" class="preview-state">
-          Ready. Pick a reading first, then tap any word to explore it.
+          Ready. Start with a curated reading, then tap any word to turn the text into a review deck.
         </div>
 
         <div id="readingExperience" class="experience-grid hidden">
@@ -563,7 +602,7 @@
     </section>
 
     <section id="savedWordsPanel" class="library-section hidden">
-      <p class="library-copy">Saved words build up here. Tap one to jump back into the reading flow.</p>
+      <p class="library-copy">Saved words and phrases collect here with Turkish meaning, context, and a path back into the original reading.</p>
       <div id="savedWordsActions" class="saved-words-actions hidden">
         <span id="savedWordsMeta" class="saved-words-meta">0 words ready</span>
         <div class="saved-words-buttons">
@@ -571,16 +610,16 @@
           <button id="clearSavedWordsBtn" class="ghost-btn ghost-btn-inline" type="button">Clear history</button>
         </div>
       </div>
-      <div id="savedWordsEmpty" class="helper-note">Sign in to start building your saved word list.</div>
+      <div id="savedWordsEmpty" class="helper-note">Sign in, open a reading, and tap useful words. Your review deck will build itself here.</div>
       <div id="savedWordsList" class="saved-word-list hidden"></div>
     </section>
 
     <section id="socialPanel" class="library-section hidden">
-      <p class="library-copy">Build a small learning circle. Add friends, see their streak rhythm, and send a quick cheer when they keep going.</p>
+      <p class="library-copy">Build a small learning circle. Add friends by username, compare streak rhythm, and send a quick cheer when they keep going.</p>
       <div class="social-hero-card">
         <div>
-          <span class="mini-label on-dark">Social beta</span>
-          <h3>Progress feels better when it is shared.</h3>
+          <span class="mini-label on-dark">Learning circle</span>
+          <h3>Accountability without a noisy feed.</h3>
           <p>Friends only see lightweight practice stats: streak, total texts, saved words, and today's word count.</p>
         </div>
         <div class="social-hero-meter">
@@ -616,8 +655,8 @@
     </section>
 
     <section id="quizPanel" class="library-section hidden">
-      <p class="library-copy">Review saved words with quick multiple-choice checks.</p>
-      <div id="quizEmpty" class="helper-note">You need at least 4 saved words to start the quiz.</div>
+      <p class="library-copy">Review saved words with quick English-to-Turkish multiple-choice checks.</p>
+      <div id="quizEmpty" class="helper-note">Save at least 4 words to unlock quiz mode. The quiz will use only your own deck.</div>
       <div id="quizCard" class="quiz-card hidden">
         <div class="quiz-topline">
           <span id="quizAnsweredBadge" class="quiz-mini-badge">0 played</span>
@@ -633,7 +672,7 @@
     </section>
 
     <section id="manualHelpPanel" class="library-section hidden">
-      <p class="library-copy">Ask for a quick explanation without leaving the reading flow.</p>
+      <p class="library-copy">Ask for a quick explanation when a word needs a second look.</p>
       <form id="manual-form" class="stack-md">
         <label class="field">
           <span>Type a word</span>
@@ -740,7 +779,7 @@
     </section>
   </aside>
 
-  <script src="/assets/app.js?v=20260423pwa3"></script>
+  <script src="/assets/app.js?v=20260423i18n1"></script>
   <script>
     if ("serviceWorker" in navigator && window.location.protocol !== "capacitor:") {
       window.addEventListener("load", () => {

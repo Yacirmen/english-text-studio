@@ -49,6 +49,7 @@ const TOPIC_ORDER = [
 
 const GUEST_FLAG_KEY = "readlex_guest";
 const THEME_STORAGE_KEY = "readlex_theme";
+const LANGUAGE_STORAGE_KEY = "readlex_ui_language";
 const INSTALL_DISMISSED_KEY = "readlex_install_tip_dismissed";
 
 const state = {
@@ -91,6 +92,7 @@ const state = {
   loggingOut: false,
   hasEnteredApp: window.sessionStorage.getItem(GUEST_FLAG_KEY) === "1",
   viewMode: window.innerWidth < 860 ? "mobile" : "web",
+  uiLanguage: window.localStorage.getItem(LANGUAGE_STORAGE_KEY) === "tr" ? "tr" : "en",
 };
 
 const persistedSelectionKeys = new Set();
@@ -132,6 +134,9 @@ const gateShowLoginBtn = $("#gateShowLoginBtn");
 const gateShowRegisterBtn = $("#gateShowRegisterBtn");
 const continueGuestBtn = $("#continueGuestBtn");
 const themeToggleBtn = $("#themeToggleBtn");
+const gateThemeToggleBtn = $("#gateThemeToggleBtn");
+const languageToggleBtn = $("#languageToggleBtn");
+const gateLanguageToggleBtn = $("#gateLanguageToggleBtn");
 const profileTipTextEl = $("#profileTipText");
 const installCoachEl = $("#installCoach");
 const installCoachTitleEl = $("#installCoachTitle");
@@ -168,6 +173,9 @@ const clearBtn = $("#clearBtn");
 const setupLevelBadgeEl = $("#setupLevelBadge");
 const setupLengthBadgeEl = $("#setupLengthBadge");
 const setupSummaryEl = $("#setupSummary");
+const topbarLevelChipEl = $("#topbarLevelChip");
+const topbarTopicChipEl = $("#topbarTopicChip");
+const topbarLibraryChipEl = $("#topbarLibraryChip");
 const authGuestEl = $("#authGuest");
 const authUserEl = $("#authUser");
 const authLoginForm = $("#authLoginForm");
@@ -290,16 +298,567 @@ if (!mobileWordCollocationsEl && mobileWordExampleEl) {
   }
 }
 
+const UI_COPY = {
+  en: {
+    themeLabel: "Toggle dark mode",
+    languageLabel: "Switch language",
+    welcomeRead: "Read.",
+    welcomeSave: "Save.",
+    welcomeRemember: "Remember.",
+    welcomeNote: "Stop forgetting what you learn.",
+    welcomeSubnote: "Read it once. Keep it forever.",
+    saveOneTap: "Save in one tap",
+    saveOneTapBody: "Catch useful words without leaving the reading flow.",
+    reviewContext: "Review with context",
+    reviewContextBody: "Keep phrases, meanings, and examples tied together.",
+    lessClutter: "Less clutter. Better recall.",
+    lessClutterBody: "A calmer reading space built for retention, not noise.",
+    login: "Log In",
+    signup: "Sign Up",
+    continueGuest: "Continue as Guest",
+    welcomeBack: "Welcome back",
+    welcomeBackBody: "Pick up where your saved words left off.",
+    newAccount: "New account",
+    newAccountBody: "Create your reading space and keep every win.",
+    memberLogin: "Member login",
+    memberLoginBody: "Open your saved words, streak, and recent reads.",
+    startFresh: "Start fresh",
+    startFreshBody: "Build a personal library and turn quick reads into review wins.",
+    username: "Username",
+    password: "Password",
+    usernamePlaceholder: "your_username",
+    passwordPlaceholder: "at least 6 characters",
+    sessionDock: "Session Dock",
+    studyHub: "Study Hub",
+    workspace: "Workspace",
+    workspaceBody: "Everything important, one tap away.",
+    account: "Account",
+    study: "Study",
+    company: "Company",
+    controlRoom: "Control room",
+    progress: "Progress",
+    progressBody: "Daily streak, reading log, and visible practice momentum.",
+    stats: "Stats",
+    socialCircle: "Social Circle",
+    socialBody: "Add friends and keep accountability light, not noisy.",
+    friends: "Friends",
+    studyTools: "Study tools",
+    savedWords: "Saved words",
+    savedWordsBody: "Your saved words and phrases, ready for review.",
+    words: "Words",
+    quiz: "Quiz",
+    quizBody: "English to Turkish checks from your saved deck.",
+    review: "Review",
+    translate: "Translate",
+    translateBody: "Get a quick meaning when you need a second look.",
+    help: "Help",
+    office: "Office",
+    setup: "Setup",
+    setupTitle: "Read first. Review smarter.",
+    setupBody: "Choose a mode, open a level-matched text, and turn useful taps into review material.",
+    readingSetup: "Start a session",
+    setupDescription: "Pick a source, then filter the reading without cluttering the page.",
+    libraryOnly: "Library Only",
+    aiOnly: "AI Only",
+    level: "Level",
+    topic: "Topic",
+    targetWords: "Target word count",
+    keywords: "Keywords",
+    keywordHelp: "Add 2-12 keywords. Repeated words are removed automatically.",
+    keywordPresetHelp: "Topic presets fill in starter keywords, but you can keep your own list.",
+    getReading: "Get Reading",
+    generateText: "Generate Text",
+    anotherReading: "Another Reading",
+    generateAgain: "Generate Again",
+    clearReading: "Clear Reading",
+    libraryHint: "One click opens a ready text. Your taps build saved words, quiz material, and progress history.",
+    flowRead: "Read",
+    flowReadBody: "Open a level-matched text.",
+    flowTap: "Tap",
+    flowTapBody: "Explore words and phrases in context.",
+    flowReview: "Review",
+    flowReviewBody: "Return through saved words and quiz.",
+    previewLibrary: "Ready. Choose a level and topic, then open a curated reading that becomes your review deck.",
+    previewAi: "Ready. Set level, topic, and keywords, then generate a custom text for focused practice.",
+    selectedWord: "Selected Word",
+    word: "Word",
+    flipToMeaning: "Tap anywhere on the card to flip to the Turkish meaning.",
+    turkishMeaning: "Turkish Meaning",
+    flipBack: "Tap anywhere on the card to flip back.",
+    contextTurkish: "Context in Turkish",
+    simpleExample: "Simple Example",
+    contextEmpty: "Context appears here after you choose a word.",
+    exampleEmpty: "A short example appears here after you choose a word.",
+    chooseWord: "Choose a word",
+    preparingContext: "Preparing Turkish context...",
+    preparingExample: "Preparing example sentence...",
+    loadingLibrary: "Loading library count...",
+    curatedInside: "{count} curated readings inside",
+    libraryUnavailable: "Library count unavailable",
+    texts: "{count} texts",
+    curated: "Curated",
+    ai: "AI",
+    aroundWords: "Around {count} words",
+    keywordCount: "{count} words",
+    levelHintA1: "Very simple and everyday",
+    levelHintA2: "Simple, clear, and familiar",
+    levelHintB1: "Natural and comfortably paced",
+    levelHintB2: "Richer but still easy to read",
+    levelHintC1: "Advanced, natural, and detailed",
+    levelHintC2: "Highly advanced and nuanced",
+    signInQuiz: "Sign in first to unlock the quiz.",
+    quizEmptyReading: "Open a reading and tap into the glossary first to start a reading quiz.",
+    quizEmptyHard: "You need at least 4 saved words before hard-word review can begin.",
+    quizEmptySaved: "You need at least 4 saved words to start the quiz.",
+    englishToTurkish: "English to Turkish",
+    nextQuestion: "Next Question",
+    nextIncoming: "Next incoming...",
+    correct: "Correct. \"{word}\" = \"{answer}\".",
+    wrong: "Not this time. Correct answer: {answer}",
+    savedMeta: "{count} words on deck",
+    removeWord: "Remove {word}",
+    savedEmpty: "Sign in, open a reading, and tap useful words. Your review deck will build itself here.",
+    randomize: "Randomize",
+    clearHistory: "Clear history",
+    profileCopy: "Account access lives here. Sign in, create an account, or log out without leaving the reading flow.",
+    accountSave: "Sign in to save words and unlock personal review.",
+    activeAccount: "Active account",
+    savedWordsLabel: "Saved words",
+    mastered: "Mastered",
+    dailyGoal: "Daily goal",
+    streak: "Streak {count}",
+    wordsToday: "{saved} / {goal} words today",
+    hardWords: "{count} hard words ready for review.",
+    readingLog: "Reading log",
+    progressDeskTitle: "Your practice is becoming visible.",
+    progressDeskBody: "Each reading you open and every word you save becomes part of this progress desk.",
+    totalTexts: "Total texts",
+    today: "Today",
+    wordsTodayShort: "Words today",
+    dailyHistory: "Daily history",
+    dailyHistoryBody: "Text and word counts grouped by day, so progress feels concrete.",
+    profileTipActive: "Keep the loop simple: read, save useful phrases, then return through quiz.",
+    profileTipEmpty: "Open your first reading and this desk will start tracking your rhythm.",
+    dailyTotalsEmpty: "Daily totals will appear after your first signed-in reading.",
+    recentReadingsEmpty: "Your recent readings will appear here.",
+    signInTrail: "Sign in to keep your reading trail.",
+    signInProgress: "Sign in to track daily text and word history.",
+    readingPrompt: "Choose any word to activate the meaning panel.",
+    mobileTapTranslation: "Tap Translation",
+    recentReadings: "Recent readings",
+    recentReadingsBody: "Your latest library picks stay here for quick return.",
+    socialPanelBody: "Build a small learning circle. Add friends by username, compare streak rhythm, and send a quick cheer when they keep going.",
+    learningCircle: "Learning circle",
+    socialHeroTitle: "Accountability without a noisy feed.",
+    socialHeroBody: "Friends only see lightweight practice stats: streak, total texts, saved words, and today's word count.",
+    findUsername: "Find by username",
+    friendPlaceholder: "friend_username",
+    socialFieldNote: "Type at least 3 characters. Exact usernames can be added instantly.",
+    sendRequest: "Send request",
+    socialGuest: "Sign in to add friends and unlock your social circle.",
+    suggestions: "Suggestions",
+    suggestionsBody: "Recent learners you can invite into your circle.",
+    manualBody: "Ask for a quick explanation when a word needs a second look.",
+    typeWord: "Type a word",
+    explainWord: "Explain Word",
+    infoBody: "A cleaner company-facing space for understanding the product, its current release posture, and where users can reach the team.",
+    infoHeroLabel: "ReadLex Office",
+    infoHeroTitle: "A calmer reading product with a clearer professional face.",
+    infoHeroBody: "This panel explains what ReadLex does, how the current build should be understood, and where business or support communication should go during launch.",
+  },
+  tr: {
+    themeLabel: "Koyu modu değiştir",
+    languageLabel: "Dili değiştir",
+    welcomeRead: "Oku.",
+    welcomeSave: "Kaydet.",
+    welcomeRemember: "Hatırla.",
+    welcomeNote: "Öğrendiğini unutma.",
+    welcomeSubnote: "Bir kez oku. Kalıcı hale getir.",
+    saveOneTap: "Tek dokunuşla kaydet",
+    saveOneTapBody: "Okuma akışından çıkmadan işe yarayan kelimeleri yakala.",
+    reviewContext: "Bağlamla tekrar et",
+    reviewContextBody: "Kelimeleri, anlamları ve örnekleri birlikte tut.",
+    lessClutter: "Daha az kalabalık. Daha iyi hatırlama.",
+    lessClutterBody: "Akılda kalıcılık için sadeleştirilmiş sakin bir okuma alanı.",
+    login: "Giriş Yap",
+    signup: "Kayıt Ol",
+    continueGuest: "Misafir Olarak Devam Et",
+    welcomeBack: "Tekrar hoş geldin",
+    welcomeBackBody: "Kaldığın yerden kelimelerine dön.",
+    newAccount: "Yeni hesap",
+    newAccountBody: "Kendi okuma alanını oluştur ve her kazanımı sakla.",
+    memberLogin: "Üye girişi",
+    memberLoginBody: "Kayıtlı kelimelerini, serini ve son okumalarını aç.",
+    startFresh: "Yeni başlangıç",
+    startFreshBody: "Kişisel kitaplığını kur ve kısa okumaları tekrara dönüştür.",
+    username: "Kullanıcı adı",
+    password: "Şifre",
+    usernamePlaceholder: "kullanici_adi",
+    passwordPlaceholder: "en az 6 karakter",
+    sessionDock: "Oturum Paneli",
+    studyHub: "Çalışma Merkezi",
+    workspace: "Çalışma alanı",
+    workspaceBody: "Önemli her şey tek dokunuş uzakta.",
+    account: "Hesap",
+    study: "Çalışma",
+    company: "Kurumsal",
+    controlRoom: "Kontrol alanı",
+    progress: "İlerleme",
+    progressBody: "Günlük seri, okuma kaydı ve görünür çalışma ritmi.",
+    stats: "İstatistik",
+    socialCircle: "Sosyal Çevre",
+    socialBody: "Arkadaş ekle, motivasyonu hafif ve düzenli tut.",
+    friends: "Arkadaşlar",
+    studyTools: "Çalışma araçları",
+    savedWords: "Kayıtlı kelimeler",
+    savedWordsBody: "Kaydettiğin kelimeler ve kalıplar tekrar için hazır.",
+    words: "Kelimeler",
+    quiz: "Quiz",
+    quizBody: "Kayıtlı destenden İngilizce-Türkçe hızlı kontrol.",
+    review: "Tekrar",
+    translate: "Çeviri",
+    translateBody: "İkinci bir bakış gerektiğinde hızlı anlam al.",
+    help: "Yardım",
+    office: "Ofis",
+    setup: "Hazırlık",
+    setupTitle: "Önce oku. Daha akıllı tekrar et.",
+    setupBody: "Mod seç, seviyene uygun metin aç ve dokunuşlarını tekrar malzemesine dönüştür.",
+    readingSetup: "Oturum başlat",
+    setupDescription: "Kaynak seç, sonra sayfayı kalabalıklaştırmadan okumayı filtrele.",
+    libraryOnly: "Kitaplık",
+    aiOnly: "Yapay Zeka",
+    level: "Seviye",
+    topic: "Konu",
+    targetWords: "Hedef kelime sayısı",
+    keywords: "Anahtar kelimeler",
+    keywordHelp: "2-12 anahtar kelime ekle. Tekrar edenler otomatik kaldırılır.",
+    keywordPresetHelp: "Konu seçimi başlangıç kelimeleri doldurur; kendi listeni de koruyabilirsin.",
+    getReading: "Okuma Aç",
+    generateText: "Metin Üret",
+    anotherReading: "Başka Okuma",
+    generateAgain: "Tekrar Üret",
+    clearReading: "Okumayı Temizle",
+    libraryHint: "Tek tıkla hazır metin açılır. Dokunuşların kayıtlı kelime, quiz ve ilerleme geçmişi oluşturur.",
+    flowRead: "Oku",
+    flowReadBody: "Seviyene uygun metin aç.",
+    flowTap: "Dokun",
+    flowTapBody: "Kelimeleri ve kalıpları bağlam içinde keşfet.",
+    flowReview: "Tekrar",
+    flowReviewBody: "Kayıtlı kelimeler ve quiz ile geri dön.",
+    previewLibrary: "Hazır. Seviye ve konu seç, sonra tekrar destene dönüşecek hazır bir okuma aç.",
+    previewAi: "Hazır. Seviye, konu ve anahtar kelime seç; odaklı pratik için özel metin üret.",
+    selectedWord: "Seçilen Kelime",
+    word: "Kelime",
+    flipToMeaning: "Türkçe anlamı görmek için karta dokun.",
+    turkishMeaning: "Türkçe Anlam",
+    flipBack: "Geri dönmek için karta dokun.",
+    contextTurkish: "Türkçe Bağlam",
+    simpleExample: "Basit Örnek",
+    contextEmpty: "Kelime seçince bağlam burada görünür.",
+    exampleEmpty: "Kelime seçince kısa örnek burada görünür.",
+    chooseWord: "Bir kelime seç",
+    preparingContext: "Türkçe bağlam hazırlanıyor...",
+    preparingExample: "Örnek cümle hazırlanıyor...",
+    loadingLibrary: "Kitaplık sayısı yükleniyor...",
+    curatedInside: "{count} hazır okuma içeride",
+    libraryUnavailable: "Kitaplık sayısı alınamadı",
+    texts: "{count} metin",
+    curated: "Hazır",
+    ai: "YZ",
+    aroundWords: "Yaklaşık {count} kelime",
+    keywordCount: "{count} kelime",
+    levelHintA1: "Çok basit ve günlük",
+    levelHintA2: "Basit, net ve tanıdık",
+    levelHintB1: "Doğal ve rahat tempolu",
+    levelHintB2: "Daha zengin ama hâlâ okunabilir",
+    levelHintC1: "İleri, doğal ve detaylı",
+    levelHintC2: "Çok ileri ve nüanslı",
+    signInQuiz: "Quizi açmak için önce giriş yap.",
+    quizEmptyReading: "Okuma açıp sözlüğe dokun; sonra okuma quizi başlayabilir.",
+    quizEmptyHard: "Zor kelime tekrarı için en az 4 kayıtlı kelime gerekir.",
+    quizEmptySaved: "Quizi başlatmak için en az 4 kayıtlı kelime gerekir.",
+    englishToTurkish: "İngilizce - Türkçe",
+    nextQuestion: "Sonraki Soru",
+    nextIncoming: "Sonraki geliyor...",
+    correct: "Doğru. \"{word}\" = \"{answer}\".",
+    wrong: "Bu değil. Doğru cevap: {answer}",
+    savedMeta: "Destede {count} kelime",
+    removeWord: "{word} kelimesini kaldır",
+    savedEmpty: "Giriş yap, okuma aç ve işe yarayan kelimelere dokun. Tekrar desten burada oluşacak.",
+    randomize: "Karıştır",
+    clearHistory: "Geçmişi temizle",
+    profileCopy: "Hesap erişimi burada. Okuma akışından çıkmadan giriş yap, hesap oluştur veya çıkış yap.",
+    accountSave: "Kelimeleri kaydetmek ve kişisel tekrarı açmak için giriş yap.",
+    activeAccount: "Aktif hesap",
+    savedWordsLabel: "Kayıtlı kelimeler",
+    mastered: "Öğrenildi",
+    dailyGoal: "Günlük hedef",
+    streak: "Seri {count}",
+    wordsToday: "Bugün {saved} / {goal} kelime",
+    hardWords: "{count} zor kelime tekrar için hazır.",
+    readingLog: "Okuma kaydı",
+    progressDeskTitle: "Pratiğin görünür hale geliyor.",
+    progressDeskBody: "Açtığın her okuma ve kaydettiğin her kelime bu ilerleme masasına eklenir.",
+    totalTexts: "Toplam metin",
+    today: "Bugün",
+    wordsTodayShort: "Bugünkü kelime",
+    dailyHistory: "Günlük geçmiş",
+    dailyHistoryBody: "Metin ve kelime sayıları güne göre gruplanır; ilerleme somutlaşır.",
+    profileTipActive: "Döngüyü sade tut: oku, işe yarayan kalıpları kaydet, sonra quizle geri dön.",
+    profileTipEmpty: "İlk okumayı aç; bu panel ritmini takip etmeye başlayacak.",
+    dailyTotalsEmpty: "Günlük toplamlar ilk giriş yapılmış okumadan sonra görünür.",
+    recentReadingsEmpty: "Son okumaların burada görünecek.",
+    signInTrail: "Okuma izini saklamak için giriş yap.",
+    signInProgress: "Günlük metin ve kelime geçmişi için giriş yap.",
+    readingPrompt: "Anlam panelini açmak için herhangi bir kelime seç.",
+    mobileTapTranslation: "Dokunma Çevirisi",
+    recentReadings: "Son okumalar",
+    recentReadingsBody: "Son kitaplık seçimlerin hızlı dönüş için burada kalır.",
+    socialPanelBody: "Küçük bir öğrenme çevresi kur. Kullanıcı adıyla arkadaş ekle, seri ritmini karşılaştır ve devam edenlere küçük destek gönder.",
+    learningCircle: "Öğrenme çevresi",
+    socialHeroTitle: "Gürültülü akış olmadan sorumluluk hissi.",
+    socialHeroBody: "Arkadaşlar yalnızca hafif pratik verilerini görür: seri, toplam metin, kayıtlı kelime ve bugünkü kelime sayısı.",
+    findUsername: "Kullanıcı adıyla bul",
+    friendPlaceholder: "arkadas_kullanici_adi",
+    socialFieldNote: "En az 3 karakter yaz. Tam kullanıcı adları anında eklenebilir.",
+    sendRequest: "İstek gönder",
+    socialGuest: "Arkadaş eklemek ve sosyal çevreni açmak için giriş yap.",
+    suggestions: "Öneriler",
+    suggestionsBody: "Çevrene davet edebileceğin son öğrenenler.",
+    manualBody: "Bir kelimeye ikinci bakış gerektiğinde hızlı açıklama al.",
+    typeWord: "Kelime yaz",
+    explainWord: "Kelimeyi Açıkla",
+    infoBody: "Ürünü, mevcut yayın durumunu ve ekibe nereden ulaşılacağını anlatan daha temiz kurumsal alan.",
+    infoHeroLabel: "ReadLex Ofis",
+    infoHeroTitle: "Daha sakin ve daha profesyonel yüzü olan bir okuma ürünü.",
+    infoHeroBody: "Bu panel ReadLex'in ne yaptığını, mevcut sürümün nasıl anlaşılması gerektiğini ve lansman sürecinde destek veya iş iletişiminin nereye gideceğini açıklar.",
+  },
+};
+
+const uiText = (key, values = {}) => {
+  const copy = UI_COPY[state.uiLanguage] || UI_COPY.en;
+  let text = copy[key] || UI_COPY.en[key] || key;
+  Object.entries(values).forEach(([name, value]) => {
+    text = text.replaceAll(`{${name}}`, String(value));
+  });
+  return text;
+};
+
+function setText(selector, key, values) {
+  const el = typeof selector === "string" ? $(selector) : selector;
+  if (el) {
+    el.textContent = uiText(key, values);
+    if (el.tagName === "BUTTON") el.dataset.original = el.textContent;
+  }
+}
+
+function setAllText(selector, key, values) {
+  document.querySelectorAll(selector).forEach((el) => {
+    el.textContent = uiText(key, values);
+    if (el.tagName === "BUTTON") el.dataset.original = el.textContent;
+  });
+}
+
+function setPlaceholder(selector, key) {
+  const el = typeof selector === "string" ? $(selector) : selector;
+  if (el) el.setAttribute("placeholder", uiText(key));
+}
+
+function setControlLabel(button, key) {
+  if (!button) return;
+  const label = uiText(key);
+  button.setAttribute("aria-label", label);
+  button.setAttribute("title", label);
+}
+
 function applyTheme(mode) {
   const isDark = mode === "dark";
   document.body.classList.toggle("dark-mode", isDark);
   themeToggleBtn?.setAttribute("aria-pressed", String(isDark));
+  gateThemeToggleBtn?.setAttribute("aria-pressed", String(isDark));
   window.localStorage.setItem(THEME_STORAGE_KEY, isDark ? "dark" : "light");
 }
 
 function toggleTheme() {
   const nextMode = document.body.classList.contains("dark-mode") ? "light" : "dark";
   applyTheme(nextMode);
+}
+
+function applyLanguage(language) {
+  state.uiLanguage = language === "tr" ? "tr" : "en";
+  const isTurkish = state.uiLanguage === "tr";
+  document.documentElement.lang = isTurkish ? "tr" : "en";
+  document.body.dataset.language = state.uiLanguage;
+  window.localStorage.setItem(LANGUAGE_STORAGE_KEY, state.uiLanguage);
+
+  languageToggleBtn?.setAttribute("aria-pressed", String(isTurkish));
+  gateLanguageToggleBtn?.setAttribute("aria-pressed", String(isTurkish));
+  setControlLabel(languageToggleBtn, "languageLabel");
+  setControlLabel(gateLanguageToggleBtn, "languageLabel");
+  setControlLabel(themeToggleBtn, "themeLabel");
+  setControlLabel(gateThemeToggleBtn, "themeLabel");
+
+  setText(".welcome-headline-line-read", "welcomeRead");
+  setText(".welcome-headline-line-save", "welcomeSave");
+  setText(".welcome-headline-line-remember", "welcomeRemember");
+  setText(".welcome-side-note span", "welcomeNote");
+  setText(".welcome-side-note p", "welcomeSubnote");
+  setText(".welcome-feature-card:nth-of-type(1) strong", "saveOneTap");
+  setText(".welcome-feature-card:nth-of-type(1) p", "saveOneTapBody");
+  setText(".welcome-feature-card:nth-of-type(2) strong", "reviewContext");
+  setText(".welcome-feature-card:nth-of-type(2) p", "reviewContextBody");
+  setText(".welcome-feature-card-wide strong", "lessClutter");
+  setText(".welcome-feature-card-wide p", "lessClutterBody");
+
+  [gateShowLoginBtn, showLoginBtn].forEach((button) => setText(button, "login"));
+  [gateShowRegisterBtn, showRegisterBtn].forEach((button) => setText(button, "signup"));
+  setText(continueGuestBtn, "continueGuest");
+  setText(".auth-face-login .auth-face-kicker", "welcomeBack");
+  setText(".auth-face-login .auth-face-title", "welcomeBackBody");
+  setText(".auth-face-register .auth-face-kicker", "newAccount");
+  setText(".auth-face-register .auth-face-title", "newAccountBody");
+  setText("#authCard .auth-face-login .auth-face-kicker", "memberLogin");
+  setText("#authCard .auth-face-login .auth-face-title", "memberLoginBody");
+  setText("#authCard .auth-face-register .auth-face-kicker", "startFresh");
+  setText("#authCard .auth-face-register .auth-face-title", "startFreshBody");
+  [
+    "#gateLoginForm .field:nth-of-type(1) span",
+    "#gateRegisterForm .field:nth-of-type(1) span",
+    "#authLoginForm .field:nth-of-type(1) span",
+    "#authRegisterForm .field:nth-of-type(1) span",
+  ].forEach((selector) => setText(selector, "username"));
+  [
+    "#gateLoginForm .field:nth-of-type(2) span",
+    "#gateRegisterForm .field:nth-of-type(2) span",
+    "#authLoginForm .field:nth-of-type(2) span",
+    "#authRegisterForm .field:nth-of-type(2) span",
+  ].forEach((selector) => setText(selector, "password"));
+  [gateLoginUsernameEl, gateRegisterUsernameEl, authLoginUsernameEl, authRegisterUsernameEl].forEach((el) => setPlaceholder(el, "usernamePlaceholder"));
+  [gateLoginPasswordEl, gateRegisterPasswordEl, authLoginPasswordEl, authRegisterPasswordEl].forEach((el) => setPlaceholder(el, "passwordPlaceholder"));
+  [gateLoginSubmitBtn, authLoginSubmitBtn].forEach((button) => setText(button, "login"));
+  [gateRegisterSubmitBtn, authRegisterSubmitBtn].forEach((button) => setText(button, "signup"));
+
+  setText(".topbar-slogan-main", "sessionDock");
+  setText(".menu-trigger-title", "studyHub");
+  setText(".nav-menu-overview-kicker", "workspace");
+  setText(".nav-menu-overview-title", "workspaceBody");
+  setAllText('[data-menu-category="account"]', "account");
+  setAllText('[data-menu-category="study"]', "study");
+  setAllText('[data-menu-category="company"]', "company");
+  setText('[data-menu-panel="account"] .nav-menu-label', "controlRoom");
+  setText("#openProgressBtn strong", "progress");
+  setText("#openProgressBtn small", "progressBody");
+  setText("#openProgressBtn .nav-menu-badge", "stats");
+  setText("#openSocialBtn strong", "socialCircle");
+  setText("#openSocialBtn small", "socialBody");
+  setText("#openSocialBtn .nav-menu-badge", "friends");
+  setText('[data-menu-panel="study"] .nav-menu-label', "studyTools");
+  setText("#openSavedWordsBtn strong", "savedWords");
+  setText("#openSavedWordsBtn small", "savedWordsBody");
+  setText("#openSavedWordsBtn .nav-menu-badge", "words");
+  setText("#openQuizBtn strong", "quiz");
+  setText("#openQuizBtn small", "quizBody");
+  setText("#openQuizBtn .nav-menu-badge", "review");
+  setText("#openManualHelpBtn strong", "translate");
+  setText("#openManualHelpBtn small", "translateBody");
+  setText("#openManualHelpBtn .nav-menu-badge", "help");
+  setText("#openInfoBtn .nav-menu-badge", "office");
+
+  setText(".rail-kicker", "setup");
+  setText(".rail-intro h2", "setupTitle");
+  setText(".rail-intro p", "setupBody");
+  setText(".rail-panel .section-head h3", "readingSetup");
+  setText(".rail-panel .section-head p", "setupDescription");
+  setText('[data-source="library"]', "libraryOnly");
+  setText('[data-source="ai"]', "aiOnly");
+  setAllText(".compact-filters .field:first-child > span, #aiControls .form-row .field:first-child > span", "level");
+  setAllText(".compact-filters .field:nth-child(2) > span, #topicLabel", "topic");
+  setText("#lengthField > span", "targetWords");
+  setText("#keywordsField .field-head > span:first-child", "keywords");
+  setText("#keywordsField .field-note", "keywordHelp");
+  setText("#keywordsHelper", "keywordPresetHelp");
+  setPlaceholder(keywordsEl, "keywords");
+  setText("#generateBtn", state.contentSource === "library" ? "getReading" : "generateText");
+  setText(regenBtn, state.contentSource === "library" ? "anotherReading" : "generateAgain");
+  setText(clearBtn, "clearReading");
+  setText(libraryModeHintEl, "libraryHint");
+  setText(".session-flow div:nth-child(1) strong", "flowRead");
+  setText(".session-flow div:nth-child(1) small", "flowReadBody");
+  setText(".session-flow div:nth-child(2) strong", "flowTap");
+  setText(".session-flow div:nth-child(2) small", "flowTapBody");
+  setText(".session-flow div:nth-child(3) strong", "flowReview");
+  setText(".session-flow div:nth-child(3) small", "flowReviewBody");
+  setText(".reading-header .muted-copy", "readingPrompt");
+
+  setAllText(".flip-front .mini-label", "selectedWord");
+  setText(selectedWordEl, state.selectedWord || uiText("word"));
+  setText(".flip-front p", "flipToMeaning");
+  setAllText(".flip-back .mini-label, .mobile-word-card .mini-label", "turkishMeaning");
+  setText(".flip-back p", "flipBack");
+  setAllText(".insight-card .insight-block:nth-child(1) .mini-label", "contextTurkish");
+  setAllText(".insight-card .insight-block:nth-child(2) .mini-label", "simpleExample");
+  setText(".mobile-word-head .mini-label", "mobileTapTranslation");
+
+  setText("#profilePanel > .library-copy", "profileCopy");
+  setText("#authGuest .section-head p", "accountSave");
+  setText(".account-card .mini-label", "activeAccount");
+  setAllText(".account-stats div:nth-child(1) span", "savedWordsLabel");
+  setAllText(".account-stats div:nth-child(2) span", "mastered");
+  setText("#progressPanel > .library-copy", "progressBody");
+  setText(".progress-command-card .mini-label", "readingLog");
+  setText(".progress-command-card h3", "progressDeskTitle");
+  setText(".progress-command-card p", "progressDeskBody");
+  setText(".progress-command-stats article:nth-child(1) span", "totalTexts");
+  setText(".progress-command-stats article:nth-child(2) span", "today");
+  setText(".progress-command-stats article:nth-child(3) span", "wordsTodayShort");
+  setText(".progress-goal-panel .mini-label", "dailyGoal");
+  setText(".progress-daily-panel .section-head h3", "dailyHistory");
+  setText(".progress-daily-panel .section-head p", "dailyHistoryBody");
+  setText("#progressPanel .profile-panel:last-child .section-head h3", "recentReadings");
+  setText("#progressPanel .profile-panel:last-child .section-head p", "recentReadingsBody");
+  setText("#savedWordsPanel > .library-copy", "savedWordsBody");
+  setText(randomizeSavedWordsBtn, "randomize");
+  setText(clearSavedWordsBtn, "clearHistory");
+  setText(savedWordsEmptyEl, "savedEmpty");
+  setText("#socialPanel > .library-copy", "socialPanelBody");
+  setText(".social-hero-card .mini-label", "learningCircle");
+  setText(".social-hero-card h3", "socialHeroTitle");
+  setText(".social-hero-card p", "socialHeroBody");
+  setText(".social-hero-meter small", "friends");
+  setText("#socialAddForm .field > span", "findUsername");
+  setPlaceholder(socialUsernameInputEl, "friendPlaceholder");
+  setText("#socialAddForm .field-note", "socialFieldNote");
+  setText(socialAddBtn, "sendRequest");
+  setText(socialGuestNoteEl, "socialGuest");
+  setText(".social-panel-block:nth-of-type(1) .section-head h3", "friends");
+  setText(".social-panel-block:nth-of-type(1) .section-head p", "socialBody");
+  setText(".social-panel-block:nth-of-type(2) .section-head h3", "suggestions");
+  setText(".social-panel-block:nth-of-type(2) .section-head p", "suggestionsBody");
+  const socialBlocks = Array.from(document.querySelectorAll(".social-panel-block"));
+  setText(socialBlocks[0]?.querySelector(".section-head h3"), "friends");
+  setText(socialBlocks[0]?.querySelector(".section-head p"), "socialBody");
+  setText(socialBlocks[1]?.querySelector(".section-head h3"), "suggestions");
+  setText(socialBlocks[1]?.querySelector(".section-head p"), "suggestionsBody");
+  setText("#quizPanel > .library-copy", "quizBody");
+  setText(nextQuizBtn, "nextQuestion");
+  setText("#manualHelpPanel > .library-copy", "manualBody");
+  setText("#manual-form .field > span", "typeWord");
+  setText("#manualBtn", "explainWord");
+  setText("#infoPanel > .library-copy", "infoBody");
+  setText(".info-panel-hero .mini-label", "infoHeroLabel");
+  setText(".info-panel-hero h4", "infoHeroTitle");
+  setText(".info-panel-hero > p", "infoHeroBody");
+
+  updateLevelUi();
+  renderKeywordChips();
+  renderLibraryStats();
+  updateSourceModeUi();
+  renderSelection();
+  renderUserPanel();
+}
+
+function toggleLanguage() {
+  applyLanguage(state.uiLanguage === "tr" ? "en" : "tr");
 }
 
 function isStandaloneApp() {
@@ -327,13 +886,13 @@ function syncInstallCoach() {
   installCoachEl.classList.toggle("hidden", !shouldShow);
   if (!shouldShow) return;
   if (state.deferredInstallPrompt) {
-    installCoachTitleEl.textContent = "Add app";
-    installCoachTextEl.textContent = "Cleaner full-screen reading.";
-    installCoachActionEl.textContent = "Install";
+    installCoachTitleEl.textContent = state.uiLanguage === "tr" ? "Uygulama ekle" : "Add app";
+    installCoachTextEl.textContent = state.uiLanguage === "tr" ? "Daha temiz tam ekran okuma." : "Cleaner full-screen reading.";
+    installCoachActionEl.textContent = state.uiLanguage === "tr" ? "Kur" : "Install";
   } else {
-    installCoachTitleEl.textContent = "Add app";
-    installCoachTextEl.textContent = "iPhone Home Screen shortcut.";
-    installCoachActionEl.textContent = "Steps";
+    installCoachTitleEl.textContent = state.uiLanguage === "tr" ? "Uygulama ekle" : "Add app";
+    installCoachTextEl.textContent = state.uiLanguage === "tr" ? "iPhone ana ekran kısayolu." : "iPhone Home Screen shortcut.";
+    installCoachActionEl.textContent = state.uiLanguage === "tr" ? "Adımlar" : "Steps";
   }
 }
 
@@ -747,8 +1306,9 @@ function clearError() {
 
 function updateSetupSummary() {
   const cfg = LEVEL_CONFIG[levelEl.value];
-  setupLevelBadgeEl.textContent = `${levelEl.value} · ${cfg.hint}`;
-  setupLengthBadgeEl.textContent = `Around ${lengthEl.value} words`;
+  const hintKey = `levelHint${levelEl.value}`;
+  setupLevelBadgeEl.textContent = `${levelEl.value} - ${uiText(hintKey)}`;
+  setupLengthBadgeEl.textContent = uiText("aroundWords", { count: lengthEl.value });
 }
 
 function updateRangeVisual() {
@@ -762,11 +1322,13 @@ function updateRangeVisual() {
 function syncLevelPickers(value) {
   levelEl.value = value;
   if (libraryLevelEl) libraryLevelEl.value = value;
+  updateTopbarSessionDock();
 }
 
 function syncTopicPickers(value) {
   topicEl.value = value;
   if (libraryTopicEl) libraryTopicEl.value = value;
+  updateTopbarSessionDock();
 }
 
 function updateLevelUi() {
@@ -777,7 +1339,7 @@ function updateLevelUi() {
     lengthEl.value = Math.round((cfg.min + cfg.max) / 20) * 10;
   }
   lengthValueEl.textContent = lengthEl.value;
-  levelHintEl.textContent = cfg.hint;
+  levelHintEl.textContent = uiText(`levelHint${levelEl.value}`) || cfg.hint;
   updateSetupSummary();
   updateRangeVisual();
   syncLevelPickers(levelEl.value);
@@ -793,7 +1355,7 @@ function updateTopicDefaults() {
 function renderKeywordChips() {
   const keywords = parseKeywords(keywordsEl.value);
   keywordChipsEl.innerHTML = keywords.map((word) => `<span class="chip">${escapeHtml(word)}</span>`).join("");
-  keywordCountEl.textContent = `${keywords.length} words`;
+  keywordCountEl.textContent = uiText("keywordCount", { count: keywords.length });
 }
 
 function updateSourceModeUi() {
@@ -805,16 +1367,15 @@ function updateSourceModeUi() {
   libraryCountBadgeEl?.classList.toggle("hidden", !isLibrary);
   libraryControlsEl.classList.toggle("hidden", !isLibrary);
   aiControlsEl.classList.toggle("hidden", isLibrary);
-  $("#generateBtn").textContent = isLibrary ? "Get Reading" : "Generate Text";
-  regenBtn.textContent = isLibrary ? "Another Reading" : "Generate Again";
-  previewStateEl.textContent = isLibrary
-    ? "Ready. Pick a level and topic, then load a curated reading."
-    : "Ready. Set your level, topic, and keywords, then generate a custom reading.";
+  $("#generateBtn").textContent = uiText(isLibrary ? "getReading" : "generateText");
+  regenBtn.textContent = uiText(isLibrary ? "anotherReading" : "generateAgain");
+  previewStateEl.textContent = uiText(isLibrary ? "previewLibrary" : "previewAi");
   renderMeta(
     state.lastPayload?.level || levelEl.value,
     state.lastPayload?.resolved_topic || state.lastPayload?.topic || topicEl.value,
     state.text || ""
   );
+  updateTopbarSessionDock();
 }
 
 function isMobilePreview() {
@@ -872,7 +1433,19 @@ function syncViewModeFromViewport() {
 
 function renderLibraryStats() {
   if (!libraryCountBadgeEl || !state.libraryStats) return;
-  libraryCountBadgeEl.textContent = `${Number(state.libraryStats.total || 0)} curated readings inside`;
+  const total = Number(state.libraryStats.total || 0);
+  libraryCountBadgeEl.textContent = uiText("curatedInside", { count: total });
+  if (topbarLibraryChipEl) topbarLibraryChipEl.textContent = total ? uiText("texts", { count: total }) : uiText("curated");
+}
+
+function updateTopbarSessionDock() {
+  const level = state.contentSource === "library" ? libraryLevelEl?.value : levelEl?.value;
+  const topic = state.contentSource === "library" ? libraryTopicEl?.value : topicEl?.value;
+  if (topbarLevelChipEl) topbarLevelChipEl.textContent = level || "B1";
+  if (topbarTopicChipEl) topbarTopicChipEl.textContent = topic || "Random";
+  if (topbarLibraryChipEl && !state.libraryStats) {
+    topbarLibraryChipEl.textContent = state.contentSource === "library" ? uiText("curated") : uiText("ai");
+  }
 }
 
 function buildTopicListFromStats() {
@@ -908,34 +1481,34 @@ function renderMeta(level, topic, text) {
     return;
   }
   const count = text.split(/\s+/).filter(Boolean).length;
-  const sourceLabel = state.lastPayload?.content_source === "library" ? "Library" : "AI";
+  const sourceLabel = state.lastPayload?.content_source === "library" ? uiText("curated") : uiText("ai");
   metaTagsEl.innerHTML = `
-    <span class="tag">Level ${escapeHtml(level)}</span>
+    <span class="tag">${escapeHtml(uiText("level"))} ${escapeHtml(level)}</span>
     <span class="tag">${escapeHtml(topic)}</span>
-    <span class="tag">${count} words</span>
+    <span class="tag">${escapeHtml(uiText("keywordCount", { count }))}</span>
     <span class="tag">${sourceLabel}</span>
   `;
 }
 
 function renderSelection() {
   const item = state.glossary[state.selectedWord] || {};
-  const meaning = item.turkish || "Choose a word";
+  const meaning = item.turkish || uiText("chooseWord");
   const contextHtml = state.loadingWord
-    ? "Preparing Turkish context..."
+    ? uiText("preparingContext")
     : buildInsightHtml(item.context, state.selectedWord, {
-        emptyText: "Context appears here after you choose a word.",
+        emptyText: uiText("contextEmpty"),
         collapsedLines: 3,
         maxLines: 14,
       });
   const exampleHtml = state.loadingWord
-    ? "Preparing example sentence..."
+    ? uiText("preparingExample")
     : buildInsightHtml(item.example, state.selectedWord, {
-        emptyText: "A short example appears here after you choose a word.",
+        emptyText: uiText("exampleEmpty"),
         collapsedLines: 2,
         maxLines: 10,
       });
 
-  selectedWordEl.textContent = state.selectedWord || "Word";
+  selectedWordEl.textContent = state.selectedWord || uiText("word");
   selectedMeaningEl.textContent = meaning;
   selectedContextEl.innerHTML = contextHtml;
   selectedExampleEl.innerHTML = exampleHtml;
@@ -944,7 +1517,7 @@ function renderSelection() {
   flipCardEl.classList.toggle("clickable", !state.loadingWord && Boolean(state.selectedWord));
   pronounceWordBtn?.classList.toggle("hidden", !state.selectedWord);
 
-  if (mobileWordTitleEl) mobileWordTitleEl.textContent = state.selectedWord || "Word";
+  if (mobileWordTitleEl) mobileWordTitleEl.textContent = state.selectedWord || uiText("word");
   if (mobileWordMeaningEl) mobileWordMeaningEl.textContent = meaning;
   if (mobileWordContextEl) mobileWordContextEl.innerHTML = contextHtml;
   if (mobileWordExampleEl) mobileWordExampleEl.innerHTML = exampleHtml;
@@ -970,7 +1543,7 @@ function renderSavedWords() {
   savedWordsListEl.classList.remove("hidden");
   savedWordsActionsEl?.classList.remove("hidden");
   if (savedWordsMetaEl) {
-    savedWordsMetaEl.textContent = `${state.recentWords.length} words on deck`;
+    savedWordsMetaEl.textContent = uiText("savedMeta", { count: state.recentWords.length });
   }
   savedWordsListEl.innerHTML = state.recentWords
     .map(
@@ -980,7 +1553,7 @@ function renderSavedWords() {
             <strong>${escapeHtml(item.word)}</strong>
             <span>${escapeHtml(item.turkish)}</span>
           </button>
-          <button class="saved-word-remove" type="button" data-word-id="${item.id}" aria-label="Remove ${escapeHtml(item.word)}">×</button>
+          <button class="saved-word-remove" type="button" data-word-id="${item.id}" aria-label="${escapeHtml(uiText("removeWord", { word: item.word }))}">×</button>
         </div>
       `
     )
@@ -1030,23 +1603,23 @@ async function fetchSavedWords(mode = "recent") {
 }
 
 function renderQuiz() {
-  if (quizAnsweredBadgeEl) quizAnsweredBadgeEl.textContent = `${state.quizStats.answered} played`;
-  if (quizStreakBadgeEl) quizStreakBadgeEl.textContent = `Streak ${state.quizStats.streak}`;
+  if (quizAnsweredBadgeEl) quizAnsweredBadgeEl.textContent = state.uiLanguage === "tr" ? `${state.quizStats.answered} çözüldü` : `${state.quizStats.answered} played`;
+  if (quizStreakBadgeEl) quizStreakBadgeEl.textContent = uiText("streak", { count: state.quizStats.streak });
   quizModeSavedBtn?.classList.toggle("active", state.quizMode === "saved");
   quizModeHardBtn?.classList.toggle("active", state.quizMode === "hard");
   quizModeReadingBtn?.classList.toggle("active", state.quizMode === "reading");
   if (state.quizMode !== "reading" && !state.user) {
-    quizEmptyEl.textContent = "Sign in first to unlock the quiz.";
+    quizEmptyEl.textContent = uiText("signInQuiz");
     quizEmptyEl.classList.remove("hidden");
     quizCardEl.classList.add("hidden");
     return;
   }
   if (!state.quiz) {
     quizEmptyEl.textContent = state.quizMode === "reading"
-      ? "Open a reading and tap into the glossary first to start a reading quiz."
+      ? uiText("quizEmptyReading")
       : state.quizMode === "hard"
-        ? "You need at least 4 saved words before hard-word review can begin."
-        : "You need at least 4 saved words to start the quiz.";
+        ? uiText("quizEmptyHard")
+        : uiText("quizEmptySaved");
     quizEmptyEl.classList.remove("hidden");
     quizCardEl.classList.add("hidden");
     return;
@@ -1058,7 +1631,7 @@ function renderQuiz() {
   quizCardEl.classList.add("quiz-refresh");
   quizPromptEl.textContent = state.quiz.question;
   if (quizTypeBadgeEl) {
-    quizTypeBadgeEl.textContent = "English to Turkish";
+    quizTypeBadgeEl.textContent = uiText("englishToTurkish");
   }
   if (quizSentenceEl) {
     quizSentenceEl.textContent = "";
@@ -1077,8 +1650,8 @@ function renderQuiz() {
         state.quizStats.correct += isCorrect ? 1 : 0;
         state.quizStats.streak = isCorrect ? state.quizStats.streak + 1 : 0;
         quizFeedbackEl.textContent = isCorrect
-          ? `Correct. "${state.quiz.word}" = "${state.quiz.answer}".`
-          : `Not this time. Correct answer: ${state.quiz.answer}`;
+          ? uiText("correct", { word: state.quiz.word, answer: state.quiz.answer })
+          : uiText("wrong", { answer: state.quiz.answer });
         quizFeedbackEl.classList.remove("hidden");
         quizOptionsEl.querySelectorAll(".quiz-option").forEach((optionButton) => {
           optionButton.disabled = true;
@@ -1088,15 +1661,15 @@ function renderQuiz() {
             optionButton.dataset.answer === button.dataset.answer && button.dataset.answer !== state.quiz.answer
           );
         });
-        if (quizAnsweredBadgeEl) quizAnsweredBadgeEl.textContent = `${state.quizStats.answered} played`;
-        if (quizStreakBadgeEl) quizStreakBadgeEl.textContent = `Streak ${state.quizStats.streak}`;
+        if (quizAnsweredBadgeEl) quizAnsweredBadgeEl.textContent = state.uiLanguage === "tr" ? `${state.quizStats.answered} çözüldü` : `${state.quizStats.answered} played`;
+        if (quizStreakBadgeEl) quizStreakBadgeEl.textContent = uiText("streak", { count: state.quizStats.streak });
         if (!isCorrect) {
           nextQuizBtn.disabled = true;
-          nextQuizBtn.textContent = "Next incoming...";
+          nextQuizBtn.textContent = uiText("nextIncoming");
           window.setTimeout(async () => {
             await loadQuiz(state.quiz?.word || null);
             nextQuizBtn.disabled = false;
-            nextQuizBtn.textContent = "Next Question";
+            nextQuizBtn.textContent = uiText("nextQuestion");
           }, 3000);
         }
         return;
@@ -1122,8 +1695,8 @@ function renderQuiz() {
         state.quizStats.streak = 0;
       }
         quizFeedbackEl.textContent = parsed.data.correct
-          ? `Correct. "${parsed.data.word}" = "${parsed.data.answer}".`
-          : `Not this time. Correct answer: ${parsed.data.answer}`;
+          ? uiText("correct", { word: parsed.data.word, answer: parsed.data.answer })
+          : uiText("wrong", { answer: parsed.data.answer });
       quizFeedbackEl.classList.remove("hidden");
       state.stats = parsed.data.stats;
       updateAccountStatsOnly();
@@ -1140,15 +1713,15 @@ function renderQuiz() {
           context: parsed.data.context,
           example: parsed.data.example,
         };
-        if (quizAnsweredBadgeEl) quizAnsweredBadgeEl.textContent = `${state.quizStats.answered} played`;
-        if (quizStreakBadgeEl) quizStreakBadgeEl.textContent = `Streak ${state.quizStats.streak}`;
+        if (quizAnsweredBadgeEl) quizAnsweredBadgeEl.textContent = state.uiLanguage === "tr" ? `${state.quizStats.answered} çözüldü` : `${state.quizStats.answered} played`;
+        if (quizStreakBadgeEl) quizStreakBadgeEl.textContent = uiText("streak", { count: state.quizStats.streak });
         if (!parsed.data.correct) {
           nextQuizBtn.disabled = true;
-          nextQuizBtn.textContent = "Next incoming...";
+          nextQuizBtn.textContent = uiText("nextIncoming");
           window.setTimeout(async () => {
             await loadQuiz(state.quiz?.word_id || null);
             nextQuizBtn.disabled = false;
-            nextQuizBtn.textContent = "Next Question";
+            nextQuizBtn.textContent = uiText("nextQuestion");
           }, 2200);
         }
       });
@@ -1171,26 +1744,26 @@ function setLibraryView(view) {
   infoPanelEl.classList.toggle("hidden", view !== "info");
   if (libraryPanelScrollEl) libraryPanelScrollEl.style.transform = "";
   if (view === "profile") {
-    libraryKickerEl.textContent = "Profile";
-    libraryTitleEl.textContent = "Account access";
+    libraryKickerEl.textContent = state.uiLanguage === "tr" ? "Profil" : "Profile";
+    libraryTitleEl.textContent = state.uiLanguage === "tr" ? "Hesap erişimi" : "Account access";
   } else if (view === "progress") {
-    libraryKickerEl.textContent = "Progress";
-    libraryTitleEl.textContent = "Your streak and history";
+    libraryKickerEl.textContent = uiText("progress");
+    libraryTitleEl.textContent = state.uiLanguage === "tr" ? "Serin ve geçmişin" : "Your streak and history";
   } else if (view === "social") {
-    libraryKickerEl.textContent = "Social";
-    libraryTitleEl.textContent = "Friends and momentum";
+    libraryKickerEl.textContent = state.uiLanguage === "tr" ? "Sosyal" : "Social";
+    libraryTitleEl.textContent = state.uiLanguage === "tr" ? "Arkadaşlar ve motivasyon" : "Friends and momentum";
   } else if (view === "saved") {
-    libraryKickerEl.textContent = "Saved Words";
-    libraryTitleEl.textContent = "Your saved words";
+    libraryKickerEl.textContent = uiText("savedWords");
+    libraryTitleEl.textContent = state.uiLanguage === "tr" ? "Kayıtlı kelimelerin" : "Your saved words";
   } else if (view === "quiz") {
     libraryKickerEl.textContent = "Mini Quiz";
-    libraryTitleEl.textContent = "Quick review";
+    libraryTitleEl.textContent = state.uiLanguage === "tr" ? "Hızlı tekrar" : "Quick review";
   } else if (view === "manual") {
-    libraryKickerEl.textContent = "Translate";
-    libraryTitleEl.textContent = "Quick translation";
+    libraryKickerEl.textContent = uiText("translate");
+    libraryTitleEl.textContent = state.uiLanguage === "tr" ? "Hızlı çeviri" : "Quick translation";
   } else if (view === "info") {
-    libraryKickerEl.textContent = "Office";
-    libraryTitleEl.textContent = "ReadLex company and trust notes";
+    libraryKickerEl.textContent = uiText("office");
+    libraryTitleEl.textContent = state.uiLanguage === "tr" ? "ReadLex şirket ve güven notları" : "ReadLex company and trust notes";
   }
   setNavMenuOpen(false);
 }
@@ -1486,8 +2059,10 @@ function renderUserPanel() {
     profileAvatarBtn.setAttribute(
       "aria-label",
       loggedIn
-        ? `Open profile panel. ${state.stats.fire_label || "Cold start"} streak ${state.stats.login_streak || state.stats.streak || 0}.`
-        : "Open profile panel"
+        ? state.uiLanguage === "tr"
+          ? `Profil panelini aç. ${state.stats.fire_label || "Cold start"} seri ${state.stats.login_streak || state.stats.streak || 0}.`
+          : `Open profile panel. ${state.stats.fire_label || "Cold start"} streak ${state.stats.login_streak || state.stats.streak || 0}.`
+        : state.uiLanguage === "tr" ? "Profil panelini aç" : "Open profile panel"
     );
   }
   if (loggedIn) {
@@ -1518,11 +2093,11 @@ function renderUserPanel() {
     if (profileTipTextEl) {
       profileTipTextEl.textContent =
         (state.stats.total_readings || 0) > 0
-          ? "Keep the loop simple: read, save useful phrases, then return through quiz."
-          : "Open your first reading and this desk will start tracking your rhythm.";
+          ? uiText("profileTipActive")
+          : uiText("profileTipEmpty");
     }
     if (dailyGoalTextEl) {
-      dailyGoalTextEl.textContent = `${state.stats.saved_today || 0} / ${state.stats.daily_goal || 5} words today`;
+      dailyGoalTextEl.textContent = uiText("wordsToday", { saved: state.stats.saved_today || 0, goal: state.stats.daily_goal || 5 });
     }
     if (streakBadgeEl) {
       const streak = state.stats.login_streak || state.stats.streak || 0;
@@ -1537,12 +2112,12 @@ function renderUserPanel() {
       goalBarFillEl.style.width = `${ratio}%`;
     }
     if (hardWordsTextEl) {
-      hardWordsTextEl.textContent = `${state.stats.hard_words || 0} hard words ready for review.`;
+      hardWordsTextEl.textContent = uiText("hardWords", { count: state.stats.hard_words || 0 });
     }
     if (progressHistoryListEl) {
       const rows = Array.isArray(state.progressHistory) ? state.progressHistory : [];
       if (!rows.length) {
-        progressHistoryListEl.innerHTML = `<p class="history-empty">Daily totals will appear after your first signed-in reading.</p>`;
+        progressHistoryListEl.innerHTML = `<p class="history-empty">${escapeHtml(uiText("dailyTotalsEmpty"))}</p>`;
       } else {
         progressHistoryListEl.innerHTML = rows
           .map((item) => {
@@ -1552,9 +2127,9 @@ function renderUserPanel() {
               <article class="progress-history-item">
                 <div>
                   <span>${escapeHtml(formatProgressDate(item.date))}</span>
-                  <strong>${texts} Text${texts === 1 ? "" : "s"}</strong>
+                  <strong>${texts} ${state.uiLanguage === "tr" ? "Metin" : `Text${texts === 1 ? "" : "s"}`}</strong>
                 </div>
-                <em>${words} Word${words === 1 ? "" : "s"}</em>
+                <em>${words} ${state.uiLanguage === "tr" ? "Kelime" : `Word${words === 1 ? "" : "s"}`}</em>
               </article>
             `;
           })
@@ -1563,7 +2138,7 @@ function renderUserPanel() {
     }
     if (readingHistoryListEl) {
       if (!uniqueReadingHistory.length) {
-        readingHistoryListEl.innerHTML = `<p class="history-empty">Your recent readings will appear here.</p>`;
+        readingHistoryListEl.innerHTML = `<p class="history-empty">${escapeHtml(uiText("recentReadingsEmpty"))}</p>`;
       } else {
         readingHistoryListEl.innerHTML = uniqueReadingHistory
           .map((item) => `
@@ -1595,15 +2170,15 @@ function renderUserPanel() {
       }
     }
   } else {
-    if (readingHistoryListEl) readingHistoryListEl.innerHTML = `<p class="history-empty">Sign in to keep your reading trail.</p>`;
-    if (progressHistoryListEl) progressHistoryListEl.innerHTML = `<p class="history-empty">Sign in to track daily text and word history.</p>`;
+    if (readingHistoryListEl) readingHistoryListEl.innerHTML = `<p class="history-empty">${escapeHtml(uiText("signInTrail"))}</p>`;
+    if (progressHistoryListEl) progressHistoryListEl.innerHTML = `<p class="history-empty">${escapeHtml(uiText("signInProgress"))}</p>`;
     if (totalReadingsTextEl) totalReadingsTextEl.textContent = "0";
     if (todayReadingsTextEl) todayReadingsTextEl.textContent = "0";
     if (todayWordsTextEl) todayWordsTextEl.textContent = "0";
-    if (dailyGoalTextEl) dailyGoalTextEl.textContent = "0 / 5 today";
-    if (streakBadgeEl) streakBadgeEl.textContent = "Streak 0";
+    if (dailyGoalTextEl) dailyGoalTextEl.textContent = state.uiLanguage === "tr" ? "Bugün 0 / 5" : "0 / 5 today";
+    if (streakBadgeEl) streakBadgeEl.textContent = uiText("streak", { count: 0 });
     if (goalBarFillEl) goalBarFillEl.style.width = "0%";
-    if (hardWordsTextEl) hardWordsTextEl.textContent = "0 hard words ready for review.";
+    if (hardWordsTextEl) hardWordsTextEl.textContent = uiText("hardWords", { count: 0 });
   }
   renderSocialPanel();
   renderSavedWords();
@@ -1710,8 +2285,19 @@ async function submitAuthForm({
   mirrorPasswordEls = [],
 }) {
   const formatAuthError = (detail) => {
-    if (!detail) return "Authentication failed.";
-    if (typeof detail === "string") return detail;
+    const translateAuthMessage = (message) => {
+      const clean = String(message || "").trim();
+      if (state.uiLanguage !== "tr") return clean || "Authentication failed.";
+      const lower = clean.toLowerCase();
+      if (!clean) return "Kimlik doğrulama başarısız.";
+      if (lower.includes("already in use")) return "Bu kullanıcı adı zaten kullanılıyor.";
+      if (lower.includes("invalid username") || lower.includes("invalid password")) return "Kullanıcı adı veya şifre hatalı.";
+      if (lower.includes("at least 6")) return "Şifre en az 6 karakter olmalı.";
+      if (lower.includes("authentication failed")) return "Kimlik doğrulama başarısız.";
+      return clean;
+    };
+    if (!detail) return translateAuthMessage("Authentication failed.");
+    if (typeof detail === "string") return translateAuthMessage(detail);
     if (Array.isArray(detail)) {
       const parts = detail
         .map((item) => {
@@ -1725,23 +2311,25 @@ async function submitAuthForm({
           return msg || String(item.message || item.error || item.title || "") || "";
         })
         .filter(Boolean);
-      return parts.join("\n") || "Authentication failed.";
+      return translateAuthMessage(parts.join("\n") || "Authentication failed.");
     }
     if (typeof detail === "object") {
       if (Array.isArray(detail.detail)) return formatAuthError(detail.detail);
-      if (typeof detail.message === "string") return detail.message;
-      if (typeof detail.error === "string") return detail.error;
-      if (typeof detail.title === "string") return detail.title;
-      if (typeof detail.msg === "string") return detail.msg;
+      if (typeof detail.message === "string") return translateAuthMessage(detail.message);
+      if (typeof detail.error === "string") return translateAuthMessage(detail.error);
+      if (typeof detail.title === "string") return translateAuthMessage(detail.title);
+      if (typeof detail.msg === "string") return translateAuthMessage(detail.msg);
     }
-    return "Authentication failed.";
+    return translateAuthMessage("Authentication failed.");
   };
 
   if (errorEl) {
     errorEl.textContent = "";
     errorEl.classList.add("hidden");
   }
-  setLoading(submitBtn, endpoint.includes("/login") ? "Logging in..." : "Creating account...", true);
+  setLoading(submitBtn, endpoint.includes("/login")
+    ? (state.uiLanguage === "tr" ? "Giriş yapılıyor..." : "Logging in...")
+    : (state.uiLanguage === "tr" ? "Hesap oluşturuluyor..." : "Creating account..."), true);
   try {
     const payload = {
       username: usernameEl.value.trim(),
@@ -1784,7 +2372,7 @@ async function submitAuthForm({
           ? error
           : error && typeof error === "object" && typeof error.message === "string"
             ? error.message
-            : "Authentication failed.";
+            : (state.uiLanguage === "tr" ? "Kimlik doğrulama başarısız." : "Authentication failed.");
       errorEl.textContent = message;
       errorEl.classList.add("hidden");
       showAuthToast(message, errorEl);
@@ -1948,7 +2536,7 @@ async function loadLibraryStats() {
     populateTopicOptions();
     renderLibraryStats();
   } else if (libraryCountBadgeEl) {
-    libraryCountBadgeEl.textContent = "Library count unavailable";
+    libraryCountBadgeEl.textContent = uiText("libraryUnavailable");
   }
 }
 
@@ -2067,9 +2655,9 @@ function renderReadingText() {
     button.addEventListener("click", async () => {
       const nextWord = resolvePreferredPhrase(button);
       if (state.selectedWord !== nextWord) {
-        selectedMeaningEl.textContent = "Loading...";
-        selectedContextEl.textContent = "Preparing Turkish context...";
-        selectedExampleEl.textContent = "Preparing example sentence...";
+        selectedMeaningEl.textContent = state.uiLanguage === "tr" ? "Yükleniyor..." : "Loading...";
+        selectedContextEl.textContent = uiText("preparingContext");
+        selectedExampleEl.textContent = uiText("preparingExample");
       }
       state.selectedWord = nextWord;
       state.dismissedMobileWord = "";
@@ -2112,14 +2700,18 @@ function renderExperience() {
     state.quiz = buildReadingQuizQuestion();
   }
   renderSelection();
-  selectedContextEl.textContent = "The reading is ready. Tap a word to open its Turkish context.";
-  selectedExampleEl.textContent = "A short example will appear here after you choose a word.";
+  selectedContextEl.textContent = state.uiLanguage === "tr"
+    ? "Okuma hazır. Türkçe bağlamı açmak için bir kelimeye dokun."
+    : "The reading is ready. Tap a word to open its Turkish context.";
+  selectedExampleEl.textContent = uiText("exampleEmpty");
   renderQuiz();
 }
 
 async function generateExperience(payload, triggerButton) {
   clearError();
-  setLoading(triggerButton, payload.source === "library" ? "Loading..." : "Generating...", true);
+  setLoading(triggerButton, payload.source === "library"
+    ? (state.uiLanguage === "tr" ? "Yükleniyor..." : "Loading...")
+    : (state.uiLanguage === "tr" ? "Üretiliyor..." : "Generating..."), true);
   try {
     const parsed = await apiFetch("/api/generate", {
       method: "POST",
@@ -2208,15 +2800,15 @@ manualForm.addEventListener("submit", async (event) => {
     }
     manualResultEl.innerHTML = `
       <div class="manual-result-block">
-        <span class="mini-label">Turkish Meaning</span>
+        <span class="mini-label">${escapeHtml(uiText("turkishMeaning"))}</span>
         <strong>${escapeHtml(parsed.data.turkish || "No match")}</strong>
       </div>
       <div class="manual-result-block">
-        <span class="mini-label">Context in Turkish</span>
+        <span class="mini-label">${escapeHtml(uiText("contextTurkish"))}</span>
         <p>${highlightSelectedWord(parsed.data.context || "No context available.", word.toLowerCase())}</p>
       </div>
       <div class="manual-result-block">
-        <span class="mini-label">Simple Example</span>
+        <span class="mini-label">${escapeHtml(uiText("simpleExample"))}</span>
         <p>${highlightSelectedWord(parsed.data.example || "No example sentence available.", word.toLowerCase())}</p>
       </div>
     `;
@@ -2532,6 +3124,9 @@ registerSheetDrag(mobileWordHandleBtn, mobileWordPanelEl, closeMobileWordSheet, 
 registerSheetDrag(libraryHandleBtn, libraryPanelScrollEl, () => setLibraryView(null), () => !libraryPanelEl?.classList.contains("hidden"));
 
 themeToggleBtn?.addEventListener("click", toggleTheme);
+gateThemeToggleBtn?.addEventListener("click", toggleTheme);
+languageToggleBtn?.addEventListener("click", toggleLanguage);
+gateLanguageToggleBtn?.addEventListener("click", toggleLanguage);
 
 flipCardEl.addEventListener("click", () => {
   if (state.loadingWord || !state.selectedWord) return;
@@ -2574,6 +3169,7 @@ libraryLevelEl?.addEventListener("change", () => {
 libraryTopicEl?.addEventListener("change", () => {
   topicEl.value = libraryTopicEl.value;
   syncTopicPickers(libraryTopicEl.value);
+  updateTopbarSessionDock();
 });
 
 bindPointerGlow();
@@ -2586,6 +3182,7 @@ setLibraryView(null);
 updateSourceModeUi();
 const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
 applyTheme(savedTheme === "dark" ? "dark" : "light");
+applyLanguage(state.uiLanguage);
 syncAppModeClasses();
 syncInstallCoach();
 syncViewModeFromViewport();
