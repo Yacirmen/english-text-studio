@@ -327,13 +327,13 @@ function syncInstallCoach() {
   installCoachEl.classList.toggle("hidden", !shouldShow);
   if (!shouldShow) return;
   if (state.deferredInstallPrompt) {
-    installCoachTitleEl.textContent = "Install ReadLex";
-    installCoachTextEl.textContent = "Install the app shell for a cleaner full-screen reading flow.";
+    installCoachTitleEl.textContent = "Add app";
+    installCoachTextEl.textContent = "Cleaner full-screen reading.";
     installCoachActionEl.textContent = "Install";
   } else {
-    installCoachTitleEl.textContent = "Add ReadLex to your Home Screen";
-    installCoachTextEl.textContent = "On iPhone: tap Share in Safari, then choose Add to Home Screen.";
-    installCoachActionEl.textContent = "Show steps";
+    installCoachTitleEl.textContent = "Add app";
+    installCoachTextEl.textContent = "iPhone Home Screen shortcut.";
+    installCoachActionEl.textContent = "Steps";
   }
 }
 

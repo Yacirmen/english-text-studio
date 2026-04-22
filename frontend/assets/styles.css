@@ -279,24 +279,28 @@ body::before{
 }
 .welcome-gate.hidden{display:none}
 .install-coach{
-  display:grid;
-  grid-template-columns:auto minmax(0,1fr) auto;
+  display:inline-flex;
   align-items:center;
-  gap:14px;
-  margin:14px 0 18px;
-  padding:14px 16px;
-  border-radius:24px;
+  gap:9px;
+  flex:0 0 auto;
+  max-width:360px;
+  margin:0;
+  padding:7px 8px 7px 10px;
+  border-radius:999px;
   background:
-    radial-gradient(circle at 6% 20%, rgba(221,248,170,.42), transparent 30%),
-    linear-gradient(135deg, rgba(255,255,255,.92), rgba(232,242,255,.86));
-  border:1px solid rgba(171,194,222,.46);
-  box-shadow:0 18px 34px rgba(24,49,83,.12);
+    radial-gradient(circle at 12% 18%, rgba(221,248,170,.48), transparent 34%),
+    linear-gradient(135deg, rgba(255,255,255,.94), rgba(229,240,255,.9));
+  border:1px solid rgba(171,194,222,.58);
+  box-shadow:
+    0 12px 26px rgba(24,49,83,.12),
+    inset 0 1px 0 rgba(255,255,255,.72);
 }
 .install-coach.hidden{display:none}
 .install-coach-icon{
-  width:48px;
-  height:48px;
-  border-radius:17px;
+  width:34px;
+  height:34px;
+  border-radius:14px;
+  flex:0 0 auto;
   background:
     radial-gradient(circle at 50% 50%, #17395f 0 34%, transparent 35%),
     radial-gradient(circle at 35% 35%, #f7c94b 0 8%, transparent 9%),
@@ -304,37 +308,51 @@ body::before{
     radial-gradient(circle at 35% 65%, #f7c94b 0 8%, transparent 9%),
     radial-gradient(circle at 65% 65%, #f7c94b 0 8%, transparent 9%),
     linear-gradient(145deg,#e9ffc7,#92c7ff);
-  box-shadow:0 10px 20px rgba(24,49,83,.14);
+  box-shadow:0 8px 16px rgba(24,49,83,.14);
 }
 .install-coach-copy{
   min-width:0;
+  max-width:132px;
 }
 .install-coach-copy strong{
   display:block;
   color:#183153;
-  font-size:1rem;
+  font-size:.86rem;
+  line-height:1.05;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 .install-coach-copy p{
-  margin:2px 0 0;
+  margin:1px 0 0;
   color:#5f748f;
-  line-height:1.45;
+  font-size:.72rem;
+  line-height:1.15;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 .install-coach-actions{
   display:flex;
   align-items:center;
-  gap:8px;
+  gap:6px;
+  flex:0 0 auto;
 }
 .install-coach-action{
   white-space:nowrap;
-  background:#17304f;
+  min-height:32px;
+  padding:0 13px;
+  border-radius:999px;
+  background:linear-gradient(180deg,#17304f,#223f67);
   color:#fff;
   border:0;
+  box-shadow:0 8px 16px rgba(24,49,83,.14);
 }
 .install-coach-dismiss{
-  width:38px;
-  height:38px;
+  width:32px;
+  height:32px;
   border:0;
-  border-radius:15px;
+  border-radius:50%;
   background:rgba(24,49,83,.08);
   color:#183153;
   font-weight:900;
@@ -4750,17 +4768,30 @@ body.dark-mode .menu-trigger-icon{
 
 @media (max-width: 768px){
   .install-coach{
-    grid-template-columns:auto minmax(0,1fr);
-    align-items:start;
-    margin:10px 0 14px;
-    padding:12px;
+    grid-column:2;
+    grid-row:1;
+    justify-self:end;
+    align-self:center;
+    max-width:none;
+    padding:5px;
+    gap:5px;
+    border-radius:999px;
   }
+  .install-coach-icon,
+  .install-coach-copy{display:none}
   .install-coach-actions{
-    grid-column:1 / -1;
-    justify-content:space-between;
+    justify-content:flex-end;
+    gap:5px;
   }
   .install-coach-action{
-    flex:1;
+    min-height:34px;
+    padding:0 12px;
+    font-size:.74rem;
+    letter-spacing:.03em;
+  }
+  .install-coach-dismiss{
+    width:30px;
+    height:30px;
   }
   .menu-trigger{
     padding:9px 14px 9px 15px;
