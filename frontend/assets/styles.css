@@ -913,6 +913,10 @@ body.dark-mode .nav-menu-foot{
   background:linear-gradient(180deg,#e3f6ff 0%,#cfeeff 100%);
   color:#0a78b4;
 }
+.nav-menu-item-social .nav-menu-badge{
+  background:linear-gradient(180deg,#eef0ff 0%,#dfe5ff 100%);
+  color:#4a5cb2;
+}
 .nav-menu-item-cream .nav-menu-badge{
   background:linear-gradient(180deg,#fff6e7 0%,#ffedc9 100%);
   color:#9b6200;
@@ -1205,6 +1209,131 @@ body.dark-mode .nav-menu-foot{
 }
 .progress-tip{
   margin-top:12px;
+}
+.social-hero-card{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 86px;
+  align-items:center;
+  gap:14px;
+  padding:16px;
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(151,174,255,.22), transparent 34%),
+    linear-gradient(145deg, rgba(255,255,255,.10), rgba(255,255,255,.045));
+  border:1px solid rgba(203,222,247,.14);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 18px 34px rgba(7,18,32,.14);
+}
+.social-hero-card h3{
+  margin:7px 0 6px;
+  color:#f8fbff;
+  font-size:1.18rem;
+  line-height:1.18;
+}
+.social-hero-card p{
+  margin:0;
+  color:#c6d8eb;
+  font-size:.86rem;
+  font-weight:700;
+  line-height:1.48;
+}
+.social-hero-meter{
+  min-height:82px;
+  border-radius:22px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:rgba(10,27,47,.24);
+  border:1px solid rgba(202,221,247,.12);
+}
+.social-hero-meter span{
+  color:#f8fbff;
+  font-size:2rem;
+  font-weight:900;
+  line-height:1;
+}
+.social-hero-meter small{
+  margin-top:5px;
+  color:#a9bfd7;
+  font-size:.66rem;
+  font-weight:900;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.social-add-form{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  align-items:end;
+  margin:12px 0;
+}
+.social-add-form .primary-btn{
+  min-height:54px;
+  padding:0 18px;
+}
+.social-stack,
+.social-list{
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+}
+.social-stack{
+  margin:10px 0 12px;
+}
+.social-panel-block{
+  margin-top:12px;
+}
+.social-card{
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr) auto;
+  align-items:center;
+  gap:11px;
+  padding:11px;
+  border-radius:18px;
+  background:rgba(255,255,255,.075);
+  border:1px solid rgba(203,222,247,.10);
+}
+.social-avatar{
+  width:42px;
+  height:42px;
+  border-radius:15px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(180deg,#edf0ff 0%,#dfe5ff 100%);
+  color:#3e50a0;
+  font-weight:900;
+}
+.social-card-copy{
+  min-width:0;
+}
+.social-card-copy strong{
+  display:block;
+  color:#f8fbff;
+  font-size:.95rem;
+}
+.social-card-copy span{
+  display:block;
+  margin-top:3px;
+  color:#b7cbe0;
+  font-size:.75rem;
+  font-weight:800;
+  line-height:1.35;
+}
+.social-actions{
+  display:flex;
+  gap:7px;
+  align-items:center;
+}
+.social-pending{
+  padding:8px 11px;
+  border-radius:999px;
+  background:rgba(255,255,255,.10);
+  color:#d8e6f6;
+  font-size:.7rem;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.08em;
 }
 .history-list{
   display:flex;
@@ -3076,6 +3205,11 @@ body.dark-mode .progress-command-card{
     radial-gradient(circle at 8% 0%, rgba(214,246,149,.18), transparent 34%),
     linear-gradient(145deg, rgba(255,255,255,.10), rgba(255,255,255,.045));
 }
+body.dark-mode .social-hero-card{
+  background:
+    radial-gradient(circle at 8% 0%, rgba(151,174,255,.24), transparent 34%),
+    linear-gradient(145deg, rgba(255,255,255,.10), rgba(255,255,255,.045));
+}
 body.dark-mode .mobile-word-card{
   box-shadow:0 18px 34px rgba(255,109,59,.18);
 }
@@ -4055,6 +4189,8 @@ body:not(.dark-mode) .profile-panel .history-item span,
 body:not(.dark-mode) .profile-panel .saved-words-meta,
 body:not(.dark-mode) .profile-progress-topline,
 body:not(.dark-mode) .progress-command-card p,
+body:not(.dark-mode) .social-hero-card p,
+body:not(.dark-mode) .social-card-copy span,
 body:not(.dark-mode) .progress-history-item span,
 body:not(.dark-mode) .profile-tip p,
 body:not(.dark-mode) .topbar-slogan-kicker,
@@ -4067,13 +4203,19 @@ body:not(.dark-mode) .profile-panel h3,
 body:not(.dark-mode) .profile-panel h4,
 body:not(.dark-mode) .profile-panel .history-item strong,
 body:not(.dark-mode) .progress-command-card h3,
+body:not(.dark-mode) .social-hero-card h3,
+body:not(.dark-mode) .social-hero-meter span,
+body:not(.dark-mode) .social-card-copy strong,
 body:not(.dark-mode) .progress-command-stats strong,
 body:not(.dark-mode) .progress-history-item strong{
   color:#ffffff !important;
 }
 body:not(.dark-mode) .progress-command-card,
 body:not(.dark-mode) .progress-command-stats article,
-body:not(.dark-mode) .progress-history-item{
+body:not(.dark-mode) .progress-history-item,
+body:not(.dark-mode) .social-hero-card,
+body:not(.dark-mode) .social-hero-meter,
+body:not(.dark-mode) .social-card{
   border-color:rgba(198,219,245,.16);
 }
 body:not(.dark-mode) .auth-face .field input::placeholder{
@@ -4100,6 +4242,8 @@ body.dark-mode .profile-panel .history-item span,
 body.dark-mode .profile-panel .saved-words-meta,
 body.dark-mode .profile-progress-topline,
 body.dark-mode .progress-command-card p,
+body.dark-mode .social-hero-card p,
+body.dark-mode .social-card-copy span,
 body.dark-mode .progress-history-item span,
 body.dark-mode .profile-tip p{
   color:#e7f0fb !important;
@@ -4116,6 +4260,9 @@ body.dark-mode .profile-panel h3,
 body.dark-mode .profile-panel h4,
 body.dark-mode .profile-panel .history-item strong,
 body.dark-mode .progress-command-card h3,
+body.dark-mode .social-hero-card h3,
+body.dark-mode .social-hero-meter span,
+body.dark-mode .social-card-copy strong,
 body.dark-mode .progress-command-stats strong,
 body.dark-mode .progress-history-item strong{
   color:#ffffff !important;
@@ -4305,6 +4452,32 @@ body:not(.dark-mode) .rail-panel .setup-footer-note{
 }
 
 @media (max-width: 860px){
+  .social-hero-card{
+    grid-template-columns:1fr;
+    padding:14px;
+    border-radius:21px;
+  }
+  .social-hero-meter{
+    min-height:70px;
+    align-items:flex-start;
+    padding:0 14px;
+  }
+  .social-add-form{
+    grid-template-columns:1fr;
+  }
+  .social-card{
+    grid-template-columns:38px minmax(0,1fr);
+  }
+  .social-avatar{
+    width:38px;
+    height:38px;
+  }
+  .social-card .social-actions,
+  .social-card .social-pending,
+  .social-card > .ghost-btn{
+    grid-column:1 / -1;
+    justify-content:flex-start;
+  }
   .progress-command-card{
     padding:14px;
     border-radius:21px;

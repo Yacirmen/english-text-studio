@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260421progress1" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260422social1" />
 </head>
 <body>
   <div id="welcomeGate" class="welcome-gate">
@@ -149,6 +149,13 @@
                     <small>Streak, daily goal, and recent reading rhythm.</small>
                   </span>
                   <span class="nav-menu-badge" aria-hidden="true">Stats</span>
+                </button>
+                <button id="openSocialBtn" class="nav-menu-item nav-menu-item-social" type="button" role="menuitem">
+                  <span class="nav-menu-item-copy">
+                    <strong>Social Circle</strong>
+                    <small>Add friends and compare reading momentum.</small>
+                  </span>
+                  <span class="nav-menu-badge" aria-hidden="true">Friends</span>
                 </button>
               </div>
               <div class="nav-menu-section" data-menu-panel="study">
@@ -547,6 +554,44 @@
       <div id="savedWordsList" class="saved-word-list hidden"></div>
     </section>
 
+    <section id="socialPanel" class="library-section hidden">
+      <p class="library-copy">Build a small learning circle. Add friends, see their streak rhythm, and send a quick cheer when they keep going.</p>
+      <div class="social-hero-card">
+        <div>
+          <span class="mini-label on-dark">Social beta</span>
+          <h3>Progress feels better when it is shared.</h3>
+          <p>Friends only see lightweight practice stats: streak, total texts, saved words, and today's word count.</p>
+        </div>
+        <div class="social-hero-meter">
+          <span id="socialFriendCount">0</span>
+          <small>friends</small>
+        </div>
+      </div>
+      <form id="socialAddForm" class="social-add-form">
+        <label class="field">
+          <span>Find by username</span>
+          <input id="socialUsernameInput" type="text" placeholder="friend_username" autocomplete="off" />
+        </label>
+        <button id="socialAddBtn" class="primary-btn" type="submit">Add friend</button>
+      </form>
+      <div id="socialGuestNote" class="helper-note hidden">Sign in to add friends and unlock your social circle.</div>
+      <div id="socialIncomingList" class="social-stack"></div>
+      <div class="profile-panel social-panel-block">
+        <div class="section-head compact">
+          <h3>Friends</h3>
+          <p>Compare streaks without turning the product into a noisy feed.</p>
+        </div>
+        <div id="socialFriendsList" class="social-list"></div>
+      </div>
+      <div class="profile-panel social-panel-block">
+        <div class="section-head compact">
+          <h3>Suggestions</h3>
+          <p>Recent learners you can invite into your circle.</p>
+        </div>
+        <div id="socialSuggestionsList" class="social-list"></div>
+      </div>
+    </section>
+
     <section id="quizPanel" class="library-section hidden">
       <p class="library-copy">Review saved words with quick multiple-choice checks.</p>
       <div id="quizEmpty" class="helper-note">You need at least 4 saved words to start the quiz.</div>
@@ -672,6 +717,6 @@
     </section>
   </aside>
 
-  <script src="/assets/app.js?v=20260421progress1"></script>
+  <script src="/assets/app.js?v=20260422social1"></script>
 </body>
 </html>

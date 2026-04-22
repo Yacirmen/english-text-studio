@@ -74,6 +74,7 @@ const state = {
   recentWords: [],
   readingHistory: [],
   progressHistory: [],
+  social: { friends: [], incoming: [], outgoing: [], suggestions: [], cheers_received: 0 },
   quiz: null,
   quizMode: "saved",
   libraryView: null,
@@ -176,6 +177,14 @@ const todayReadingsTextEl = $("#todayReadingsText");
 const todayWordsTextEl = $("#todayWordsText");
 const progressHistoryListEl = $("#progressHistoryList");
 const readingHistoryListEl = $("#readingHistoryList");
+const socialAddFormEl = $("#socialAddForm");
+const socialUsernameInputEl = $("#socialUsernameInput");
+const socialAddBtn = $("#socialAddBtn");
+const socialGuestNoteEl = $("#socialGuestNote");
+const socialFriendCountEl = $("#socialFriendCount");
+const socialIncomingListEl = $("#socialIncomingList");
+const socialFriendsListEl = $("#socialFriendsList");
+const socialSuggestionsListEl = $("#socialSuggestionsList");
 const savedWordsEmptyEl = $("#savedWordsEmpty");
 const savedWordsListEl = $("#savedWordsList");
 const clearSavedWordsBtn = $("#clearSavedWordsBtn");
@@ -204,6 +213,7 @@ const openProfileBtn = $("#openProfileBtn");
 const profileAvatarBtn = $("#profileAvatarBtn");
 const profileTriggerInitialsEl = $("#profileTriggerInitials");
 const openProgressBtn = $("#openProgressBtn");
+const openSocialBtn = $("#openSocialBtn");
 const openSavedWordsBtn = $("#openSavedWordsBtn");
 const openQuizBtn = $("#openQuizBtn");
 const openManualHelpBtn = $("#openManualHelpBtn");
@@ -212,6 +222,7 @@ const libraryOverlayEl = $("#libraryOverlay");
 const libraryPanelEl = $("#libraryPanel");
 const profilePanelEl = $("#profilePanel");
 const progressPanelEl = $("#progressPanel");
+const socialPanelEl = $("#socialPanel");
 const savedWordsPanelEl = $("#savedWordsPanel");
 const quizPanelEl = $("#quizPanel");
 const manualHelpPanelEl = $("#manualHelpPanel");
@@ -1090,6 +1101,7 @@ function setLibraryView(view) {
   profileAvatarBtn?.setAttribute("aria-expanded", view === "profile" ? "true" : "false");
   profilePanelEl.classList.toggle("hidden", view !== "profile");
   progressPanelEl.classList.toggle("hidden", view !== "progress");
+  socialPanelEl?.classList.toggle("hidden", view !== "social");
   savedWordsPanelEl.classList.toggle("hidden", view !== "saved");
   quizPanelEl.classList.toggle("hidden", view !== "quiz");
   manualHelpPanelEl.classList.toggle("hidden", view !== "manual");
@@ -1101,6 +1113,9 @@ function setLibraryView(view) {
   } else if (view === "progress") {
     libraryKickerEl.textContent = "Progress";
     libraryTitleEl.textContent = "Your streak and history";
+  } else if (view === "social") {
+    libraryKickerEl.textContent = "Social";
+    libraryTitleEl.textContent = "Friends and momentum";
   } else if (view === "saved") {
     libraryKickerEl.textContent = "Saved Words";
     libraryTitleEl.textContent = "Your saved words";
@@ -1145,6 +1160,9 @@ async function openLibraryPanel(view) {
   if (view === "saved" && state.user) {
     await fetchSavedWords("recent");
   }
+  if (view === "social" && state.user) {
+    await loadSocial();
+  }
   if (view === "quiz" && !state.quiz && state.user) {
     await loadQuiz();
   }
@@ -1158,6 +1176,147 @@ function bindNavMenuAction(button, view) {
     event.stopPropagation();
     await openLibraryPanel(view);
   });
+}
+
+function renderSocialCard(user, { action = "", requestId = "", friendshipId = "" } = {}) {
+  const badge = user.streak > 0 ? `Streak ${user.streak}` : `${user.total_readings || 0} texts`;
+  const actionHtml =
+    action === "accept"
+      ? `<div class="social-actions">
+          <button class="ghost-btn ghost-btn-inline social-accept" type="button" data-request-id="${requestId}">Accept</button>
+          <button class="ghost-btn ghost-btn-inline social-decline" type="button" data-request-id="${requestId}">Decline</button>
+        </div>`
+      : action === "add"
+        ? `<button class="ghost-btn ghost-btn-inline social-add-suggested" type="button" data-username="${escapeHtml(user.username)}">Add</button>`
+        : action === "friend"
+          ? `<div class="social-actions">
+              <button class="ghost-btn ghost-btn-inline social-cheer" type="button" data-friendship-id="${friendshipId}">Cheer</button>
+              <button class="ghost-btn ghost-btn-inline social-remove" type="button" data-friendship-id="${friendshipId}">Remove</button>
+            </div>`
+          : `<span class="social-pending">Pending</span>`;
+  return `
+    <article class="social-card">
+      <div class="social-avatar">${escapeHtml(String(user.username || "U").charAt(0).toUpperCase())}</div>
+      <div class="social-card-copy">
+        <strong>${escapeHtml(user.username || "user")}</strong>
+        <span>${escapeHtml(badge)} · ${Number(user.saved_words || 0)} saved · ${Number(user.words_today || 0)} today</span>
+      </div>
+      ${actionHtml}
+    </article>
+  `;
+}
+
+function bindSocialActions() {
+  socialIncomingListEl?.querySelectorAll(".social-accept, .social-decline").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const action = button.classList.contains("social-accept") ? "accept" : "decline";
+      await respondSocialRequest(button.dataset.requestId, action);
+    });
+  });
+  socialSuggestionsListEl?.querySelectorAll(".social-add-suggested").forEach((button) => {
+    button.addEventListener("click", async () => {
+      if (socialUsernameInputEl) socialUsernameInputEl.value = button.dataset.username || "";
+      await sendFriendRequest(button.dataset.username || "");
+    });
+  });
+  socialFriendsListEl?.querySelectorAll(".social-cheer").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const parsed = await apiFetch(`/api/social/friends/${button.dataset.friendshipId}/cheer`, { method: "POST" });
+      if (!parsed.ok) {
+        showToast(parsed.data.detail || "Cheer could not be sent.", { variant: "error", scope: "social" });
+        return;
+      }
+      state.social = parsed.data;
+      renderSocialPanel();
+      showToast("Cheer sent. Tiny win, good energy.", { variant: "info", scope: "social" });
+    });
+  });
+  socialFriendsListEl?.querySelectorAll(".social-remove").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const parsed = await apiFetch(`/api/social/friends/${button.dataset.friendshipId}`, { method: "DELETE" });
+      if (!parsed.ok) return;
+      state.social = parsed.data;
+      renderSocialPanel();
+    });
+  });
+}
+
+function renderSocialPanel() {
+  const loggedIn = Boolean(state.user);
+  socialAddFormEl?.classList.toggle("hidden", !loggedIn);
+  socialGuestNoteEl?.classList.toggle("hidden", loggedIn);
+  if (socialFriendCountEl) socialFriendCountEl.textContent = String(state.social.friends?.length || 0);
+  if (!loggedIn) {
+    if (socialIncomingListEl) socialIncomingListEl.innerHTML = "";
+    if (socialFriendsListEl) socialFriendsListEl.innerHTML = `<p class="history-empty">Sign in to compare streaks with friends.</p>`;
+    if (socialSuggestionsListEl) socialSuggestionsListEl.innerHTML = "";
+    return;
+  }
+  const incoming = state.social.incoming || [];
+  const outgoing = state.social.outgoing || [];
+  const friends = state.social.friends || [];
+  const suggestions = state.social.suggestions || [];
+  if (socialIncomingListEl) {
+    socialIncomingListEl.innerHTML = [
+      ...incoming.map((item) => renderSocialCard(item.user, { action: "accept", requestId: item.request_id })),
+      ...outgoing.map((item) => renderSocialCard(item.user, { action: "pending" })),
+    ].join("");
+  }
+  if (socialFriendsListEl) {
+    socialFriendsListEl.innerHTML = friends.length
+      ? friends.map((user) => renderSocialCard(user, { action: "friend", friendshipId: user.friendship_id })).join("")
+      : `<p class="history-empty">No friends yet. Add a username to start your circle.</p>`;
+  }
+  if (socialSuggestionsListEl) {
+    socialSuggestionsListEl.innerHTML = suggestions.length
+      ? suggestions.map((user) => renderSocialCard(user, { action: "add" })).join("")
+      : `<p class="history-empty">Suggestions will appear when more learners join.</p>`;
+  }
+  bindSocialActions();
+}
+
+async function loadSocial() {
+  if (!state.user) {
+    renderSocialPanel();
+    return;
+  }
+  const parsed = await apiFetch("/api/social");
+  if (!parsed.ok) {
+    showToast(parsed.data.detail || "Social panel could not load.", { variant: "error", scope: "social" });
+    return;
+  }
+  state.social = parsed.data;
+  renderSocialPanel();
+}
+
+async function sendFriendRequest(username) {
+  const targetUsername = String(username || socialUsernameInputEl?.value || "").trim();
+  if (!targetUsername) return;
+  setLoading(socialAddBtn, "Adding...", true);
+  try {
+    const parsed = await apiFetch("/api/social/request", {
+      method: "POST",
+      body: JSON.stringify({ username: targetUsername }),
+    });
+    if (!parsed.ok) throw new Error(parsed.data.detail || "Friend request failed.");
+    state.social = parsed.data;
+    if (socialUsernameInputEl) socialUsernameInputEl.value = "";
+    renderSocialPanel();
+  } catch (error) {
+    showToast(error.message || "Friend request failed.", { variant: "error", scope: "social" });
+  } finally {
+    setLoading(socialAddBtn, "", false);
+  }
+}
+
+async function respondSocialRequest(requestId, action) {
+  const parsed = await apiFetch(`/api/social/requests/${requestId}`, {
+    method: "POST",
+    body: JSON.stringify({ action }),
+  });
+  if (!parsed.ok) return;
+  state.social = parsed.data;
+  renderSocialPanel();
 }
 
 function formatProgressDate(isoDate) {
@@ -1286,6 +1445,7 @@ function renderUserPanel() {
     if (goalBarFillEl) goalBarFillEl.style.width = "0%";
     if (hardWordsTextEl) hardWordsTextEl.textContent = "0 hard words ready for review.";
   }
+  renderSocialPanel();
   renderSavedWords();
   renderQuiz();
 }
@@ -1575,12 +1735,16 @@ async function refreshSession() {
     state.recentWords = parsed.data.recent_words || [];
     state.readingHistory = parsed.data.history || [];
     state.progressHistory = parsed.data.progress_history || [];
+    if (state.libraryView === "social") {
+      await loadSocial();
+    }
   } else {
     state.user = null;
     state.stats = emptyStats();
     state.recentWords = [];
     state.readingHistory = [];
     state.progressHistory = [];
+    state.social = { friends: [], incoming: [], outgoing: [], suggestions: [], cheers_received: 0 };
   }
   renderUserPanel();
 }
@@ -2027,6 +2191,7 @@ async function handleLogout(event) {
     state.recentWords = [];
     state.readingHistory = [];
     state.progressHistory = [];
+    state.social = { friends: [], incoming: [], outgoing: [], suggestions: [], cheers_received: 0 };
     state.quiz = null;
     state.hasEnteredApp = false;
     window.sessionStorage.removeItem(GUEST_FLAG_KEY);
@@ -2131,6 +2296,7 @@ navMenuShellEl?.addEventListener("focusout", () => {
 });
 bindNavMenuAction(openProfileBtn, "profile");
 bindNavMenuAction(openProgressBtn, "progress");
+bindNavMenuAction(openSocialBtn, "social");
 bindNavMenuAction(openSavedWordsBtn, "saved");
 bindNavMenuAction(openQuizBtn, "quiz");
 bindNavMenuAction(openManualHelpBtn, "manual");
@@ -2141,6 +2307,10 @@ navMenuSwitchEls.forEach((button) => {
     event.stopPropagation();
     setNavMenuCategory(button.dataset.menuCategory || "account");
   });
+});
+socialAddFormEl?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await sendFriendRequest();
 });
 closeMobileWordBtn?.addEventListener("click", closeMobileWordSheet);
 mobileWordHandleBtn?.addEventListener("click", closeMobileWordSheet);

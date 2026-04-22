@@ -227,3 +227,34 @@ def test_word_detail_saved_words_and_quiz_roundtrip(client):
     result = check_response.json()
     assert result["correct"] is True
     assert result["word"] == question["word"]
+
+
+def test_social_friend_request_accept_and_cheer(client):
+    register_user(client, username="socialone")
+    client.post("/api/auth/logout")
+    register_user(client, username="socialtwo")
+    client.post("/api/auth/logout")
+
+    login_user(client, username="socialone")
+    request_response = client.post("/api/social/request", json={"username": "socialtwo"})
+    assert request_response.status_code == 200, request_response.text
+    assert len(request_response.json()["outgoing"]) == 1
+    client.post("/api/auth/logout")
+
+    login_user(client, username="socialtwo")
+    overview_response = client.get("/api/social")
+    assert overview_response.status_code == 200, overview_response.text
+    incoming = overview_response.json()["incoming"]
+    assert len(incoming) == 1
+
+    accept_response = client.post(
+        f"/api/social/requests/{incoming[0]['request_id']}",
+        json={"action": "accept"},
+    )
+    assert accept_response.status_code == 200, accept_response.text
+    friends = accept_response.json()["friends"]
+    assert len(friends) == 1
+    assert friends[0]["username"] == "socialone"
+
+    cheer_response = client.post(f"/api/social/friends/{friends[0]['friendship_id']}/cheer")
+    assert cheer_response.status_code == 200, cheer_response.text
