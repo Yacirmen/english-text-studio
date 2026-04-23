@@ -1,8 +1,8 @@
-const READLEX_CACHE = "readlex-shell-v21";
+const READLEX_CACHE = "readlex-shell-v35";
 const SHELL_ASSETS = [
   "/",
-  "/assets/styles.css?v=20260423mobilehubscroll1",
-  "/assets/app.js?v=20260423mobilehubscroll1",
+  "/assets/styles.css?v=20260423mobilesheetfix1",
+  "/assets/app.js?v=20260423mobilesheetfix1",
   "/assets/readlex-icon.svg",
   "/assets/readlex-icon-180.png",
   "/assets/readlex-icon-192.png",

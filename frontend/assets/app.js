@@ -139,6 +139,7 @@ const languageToggleBtn = $("#languageToggleBtn");
 const gateLanguageToggleBtn = $("#gateLanguageToggleBtn");
 const profileTipTextEl = $("#profileTipText");
 const installCoachEl = $("#installCoach");
+const installCoachLabelEl = $("#installCoachLabel");
 const installCoachTitleEl = $("#installCoachTitle");
 const installCoachTextEl = $("#installCoachText");
 const installCoachActionEl = $("#installCoachAction");
@@ -907,12 +908,13 @@ function syncInstallCoach() {
   const shouldShow = !dismissed && !isStandaloneApp() && (isIosDevice() || state.deferredInstallPrompt);
   installCoachEl.classList.toggle("hidden", !shouldShow);
   if (!shouldShow) return;
+  installCoachLabelEl.textContent = state.uiLanguage === "tr" ? "Uygulama modu" : "App mode";
   if (state.deferredInstallPrompt) {
-    installCoachTitleEl.textContent = state.uiLanguage === "tr" ? "Uygulama ekle" : "Add app";
+    installCoachTitleEl.textContent = state.uiLanguage === "tr" ? "Download" : "Download";
     installCoachTextEl.textContent = state.uiLanguage === "tr" ? "Daha temiz tam ekran okuma." : "Cleaner full-screen reading.";
     installCoachActionEl.textContent = state.uiLanguage === "tr" ? "Kur" : "Install";
   } else {
-    installCoachTitleEl.textContent = state.uiLanguage === "tr" ? "Uygulama ekle" : "Add app";
+    installCoachTitleEl.textContent = state.uiLanguage === "tr" ? "Download" : "Download";
     installCoachTextEl.textContent = state.uiLanguage === "tr" ? "iPhone ana ekran kısayolu." : "iPhone Home Screen shortcut.";
     installCoachActionEl.textContent = state.uiLanguage === "tr" ? "Adımlar" : "Steps";
   }
