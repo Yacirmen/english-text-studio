@@ -7249,3 +7249,333 @@ body:not(.dark-mode) .mobile-insight-card .insight-list li{
     min-width:66px !important;
   }
 }
+
+/* Mobile dock no-overlap layout */
+@media (max-width: 768px){
+  .brand-lockup.session-control{
+    grid-template-columns:60px 76px minmax(0,1fr) !important;
+    grid-template-areas:
+      "dock dock dock"
+      "theme lang ." !important;
+    gap:7px !important;
+    align-items:center !important;
+    overflow:hidden !important;
+  }
+
+  .topbar-slogan.session-dock{
+    grid-area:dock !important;
+    width:100% !important;
+    grid-template-columns:42px minmax(0,1fr) !important;
+    grid-template-rows:40px 28px !important;
+    gap:5px 8px !important;
+  }
+
+  .topbar-slogan-copy{
+    display:flex !important;
+    align-items:center !important;
+    min-width:0 !important;
+  }
+
+  .topbar-slogan-kicker{
+    width:100% !important;
+    font-size:.66rem !important;
+    letter-spacing:.2em !important;
+  }
+
+  .session-dock-metrics{
+    grid-template-columns:44px minmax(72px,1fr) 72px !important;
+    width:100% !important;
+    min-width:0 !important;
+  }
+
+  .session-dock-metrics span{
+    height:26px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+  }
+
+  .theme-toggle{
+    grid-area:theme !important;
+    width:60px !important;
+    min-width:60px !important;
+  }
+
+  .language-toggle{
+    grid-area:lang !important;
+    width:76px !important;
+    min-width:76px !important;
+  }
+
+  .nav-menu{
+    top:142px !important;
+  }
+}
+
+@media (max-width: 380px){
+  .brand-lockup.session-control{
+    grid-template-columns:56px 70px minmax(0,1fr) !important;
+  }
+
+  .topbar-slogan.session-dock{
+    grid-template-columns:40px minmax(0,1fr) !important;
+  }
+
+  .topbar-slogan-mark{
+    width:40px !important;
+    min-width:40px !important;
+    height:40px !important;
+  }
+
+  .session-dock-metrics{
+    grid-template-columns:42px minmax(64px,1fr) 64px !important;
+  }
+
+  .theme-toggle{
+    width:56px !important;
+    min-width:56px !important;
+  }
+
+  .language-toggle{
+    width:70px !important;
+    min-width:70px !important;
+  }
+}
+
+/* Mobile theme thumb correction */
+@media (max-width: 768px){
+  body:not(.dark-mode) .brand-lockup.session-control .theme-toggle-thumb{
+    transform:translateX(0) !important;
+  }
+
+  body.dark-mode .brand-lockup.session-control .theme-toggle-thumb{
+    transform:translateX(28px) !important;
+  }
+
+  .brand-lockup.session-control .theme-toggle-thumb{
+    top:4px !important;
+    left:4px !important;
+    right:auto !important;
+    bottom:auto !important;
+  }
+}
+
+@media (max-width: 380px){
+  body.dark-mode .brand-lockup.session-control .theme-toggle-thumb{
+    transform:translateX(24px) !important;
+  }
+}
+
+/* Mobile control buttons: fixed geometry, no drift */
+@media (max-width: 768px){
+  .brand-lockup.session-control .theme-toggle,
+  .brand-lockup.session-control .language-toggle{
+    align-self:center !important;
+    transform:none !important;
+    box-sizing:border-box !important;
+    border-radius:999px !important;
+    overflow:hidden !important;
+  }
+
+  .brand-lockup.session-control .theme-toggle{
+    --theme-toggle-width:60px !important;
+    --theme-toggle-height:32px !important;
+    --theme-thumb-size:24px !important;
+    width:60px !important;
+    min-width:60px !important;
+    max-width:60px !important;
+    height:32px !important;
+    min-height:32px !important;
+    padding:4px !important;
+  }
+
+  .brand-lockup.session-control .theme-toggle-thumb{
+    width:24px !important;
+    height:24px !important;
+    top:4px !important;
+    left:4px !important;
+  }
+
+  body.dark-mode .brand-lockup.session-control .theme-toggle-thumb{
+    transform:translateX(28px) !important;
+  }
+
+  .brand-lockup.session-control .theme-icon{
+    width:24px !important;
+    height:24px !important;
+    font-size:.62rem !important;
+    line-height:1 !important;
+  }
+
+  .brand-lockup.session-control .language-toggle{
+    width:76px !important;
+    min-width:76px !important;
+    max-width:76px !important;
+    height:32px !important;
+    min-height:32px !important;
+    padding:4px !important;
+    gap:4px !important;
+  }
+
+  .brand-lockup.session-control .language-toggle span:not(.language-toggle-thumb){
+    height:24px !important;
+    min-height:24px !important;
+    border-radius:999px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    padding:0 !important;
+    font-size:.58rem !important;
+    letter-spacing:.05em !important;
+    line-height:1 !important;
+  }
+}
+
+@media (max-width: 380px){
+  .brand-lockup.session-control .theme-toggle{
+    --theme-toggle-width:56px !important;
+    width:56px !important;
+    min-width:56px !important;
+    max-width:56px !important;
+  }
+
+  body.dark-mode .brand-lockup.session-control .theme-toggle-thumb{
+    transform:translateX(24px) !important;
+  }
+
+  .brand-lockup.session-control .language-toggle{
+    width:70px !important;
+    min-width:70px !important;
+    max-width:70px !important;
+  }
+}
+
+/* Mobile-only dock simplification */
+@media (max-width: 768px){
+  .topbar-slogan-copy{
+    display:none !important;
+  }
+
+  .topbar-slogan.session-dock{
+    grid-template-columns:44px minmax(0,1fr) !important;
+    grid-template-rows:42px 28px !important;
+  }
+
+  .topbar-slogan-mark{
+    grid-column:1 !important;
+    grid-row:1 !important;
+  }
+
+  .hub-mark-plus{
+    display:none !important;
+  }
+
+  .session-dock-metrics{
+    grid-column:1 / -1 !important;
+    grid-row:2 !important;
+    grid-template-columns:42px minmax(0,1fr) 72px !important;
+    margin-top:0 !important;
+  }
+}
+
+/* Mobile dock final: RL only, no text chips */
+@media (max-width: 768px){
+  .brand-lockup.session-control{
+    grid-template-columns:48px 60px 76px minmax(0,1fr) !important;
+    grid-template-areas:"dock theme lang ." !important;
+    min-height:58px !important;
+    padding:8px !important;
+    align-items:center !important;
+  }
+
+  .topbar-slogan.session-dock{
+    grid-area:dock !important;
+    display:flex !important;
+    width:48px !important;
+    min-width:48px !important;
+    max-width:48px !important;
+    height:42px !important;
+    padding:0 !important;
+    background:transparent !important;
+    border:0 !important;
+    box-shadow:none !important;
+    overflow:visible !important;
+  }
+
+  .topbar-slogan.session-dock::before,
+  .topbar-slogan.session-dock::after,
+  .topbar-slogan-mark::before,
+  .topbar-slogan-mark::after{
+    display:none !important;
+    content:none !important;
+  }
+
+  .topbar-slogan-mark{
+    width:42px !important;
+    height:42px !important;
+    min-width:42px !important;
+    margin:0 !important;
+    border-radius:16px !important;
+    z-index:2 !important;
+  }
+
+  .topbar-slogan-copy,
+  .session-dock-metrics{
+    display:none !important;
+  }
+
+  .hub-mark-plus{
+    display:grid !important;
+    top:auto !important;
+    right:-5px !important;
+    bottom:-5px !important;
+    width:17px !important;
+    height:17px !important;
+    border-radius:999px !important;
+    font-size:.82rem !important;
+    line-height:1 !important;
+    z-index:4 !important;
+    box-shadow:
+      0 6px 10px rgba(91,156,7,.22),
+      0 0 0 3px rgba(22,43,70,.86),
+      inset 0 1px 0 rgba(255,255,255,.58) !important;
+  }
+
+  .theme-toggle{
+    grid-area:theme !important;
+    width:60px !important;
+    min-width:60px !important;
+  }
+
+  .language-toggle{
+    grid-area:lang !important;
+    width:76px !important;
+    min-width:76px !important;
+  }
+
+  .nav-menu{
+    top:88px !important;
+  }
+}
+
+@media (max-width: 380px){
+  .brand-lockup.session-control{
+    grid-template-columns:46px 56px 70px minmax(0,1fr) !important;
+  }
+
+  .topbar-slogan.session-dock{
+    width:46px !important;
+    min-width:46px !important;
+    max-width:46px !important;
+  }
+
+  .theme-toggle{
+    width:56px !important;
+    min-width:56px !important;
+  }
+
+  .language-toggle{
+    width:70px !important;
+    min-width:70px !important;
+  }
+}
