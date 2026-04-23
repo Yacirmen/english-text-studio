@@ -985,7 +985,7 @@ def seed_readings() -> None:
 
 
 CURATED_HEADER_PATTERN = re.compile(
-    r"^\[(A1|A2|B1|B2|C1|C2)-(\d+)(?: \| Topic: ([^|\]]+) \| Words: (\d+))?\]$",
+    r"^\[(A1|A2|B1|B2|C1|C2)-(\d+)(?: \| Topic: ([^|\]]+))?(?: \| Words: (\d+))?(?: \| Title: ([^\]]+))?\]$",
     re.MULTILINE,
 )
 CURATED_TITLE_OVERRIDES: dict[str, dict[int, str]] = {
@@ -1297,6 +1297,7 @@ def parse_curated_readings_file() -> list[dict[str, Any]]:
         level = match.group(1)
         entry_number = int(match.group(2))
         topic = (match.group(3) or "").strip()
+        header_title = (match.group(5) or "").strip()
         start = match.end()
         end = headers[index + 1].start() if index + 1 < len(headers) else len(text)
         body = text[start:end].strip()
@@ -1306,7 +1307,7 @@ def parse_curated_readings_file() -> list[dict[str, Any]]:
         if not topic:
             topic = derive_curated_topic(level, body)
         topic = normalize_library_topic(topic)
-        title = CURATED_TITLE_OVERRIDES.get(level, {}).get(entry_number, f"{topic} Reading {entry_number}")
+        title = header_title or CURATED_TITLE_OVERRIDES.get(level, {}).get(entry_number, f"{topic} Reading {entry_number}")
         keywords = derive_curated_keywords(body, topic)
         word_count = len(re.findall(r"[A-Za-z]+(?:'[A-Za-z]+)?", body))
         items.append(
