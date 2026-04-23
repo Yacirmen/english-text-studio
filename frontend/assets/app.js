@@ -233,6 +233,7 @@ const quizModeHardBtn = $("#quizModeHardBtn");
 const quizModeReadingBtn = $("#quizModeReadingBtn");
 const navMenuShellEl = $("#navMenuShell");
 const navMenuTriggerEl = $("#navMenuTrigger");
+const navMenuMarkTriggerEl = $("#navMenuMarkTrigger");
 const navMenuEl = $("#navMenu");
 const navMenuSwitchEls = Array.from(document.querySelectorAll("[data-menu-category]"));
 const navMenuPanelEls = Array.from(document.querySelectorAll("[data-menu-panel]"));
@@ -1779,6 +1780,7 @@ function setNavMenuOpen(isOpen) {
   }
   navMenuShellEl?.classList.toggle("is-open", Boolean(isOpen));
   navMenuTriggerEl?.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  navMenuMarkTriggerEl?.setAttribute("aria-expanded", isOpen ? "true" : "false");
 }
 
 function setNavMenuCategory(category = "account") {
@@ -3041,6 +3043,27 @@ navMenuTriggerEl?.addEventListener("click", (event) => {
     return;
   }
   setNavMenuOpen(!navMenuShellEl?.classList.contains("is-open"));
+});
+navMenuMarkTriggerEl?.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  if (isDesktopMenuMode()) {
+    setNavMenuOpen(true);
+    return;
+  }
+  setNavMenuOpen(!navMenuShellEl?.classList.contains("is-open"));
+});
+navMenuMarkTriggerEl?.addEventListener("mouseenter", () => {
+  if (isDesktopMenuMode()) setNavMenuOpen(true);
+});
+navMenuMarkTriggerEl?.addEventListener("mouseleave", () => {
+  if (!isDesktopMenuMode()) return;
+  navMenuCloseTimer = window.setTimeout(() => {
+    setNavMenuOpen(false);
+  }, 160);
+});
+navMenuMarkTriggerEl?.addEventListener("focus", () => {
+  if (isDesktopMenuMode()) setNavMenuOpen(true);
 });
 navMenuShellEl?.addEventListener("mouseenter", () => {
   if (isDesktopMenuMode()) setNavMenuOpen(true);

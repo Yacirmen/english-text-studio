@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260423i18n1" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260423aurora2" />
 </head>
 <body>
   <div id="welcomeGate" class="welcome-gate">
@@ -120,9 +120,18 @@
       <div class="topbar-left">
         <div class="brand-lockup session-control">
           <div class="topbar-slogan session-dock" aria-label="ReadLex session dock">
-            <span class="topbar-slogan-mark session-dock-mark" aria-hidden="true">
+            <button
+              id="navMenuMarkTrigger"
+              class="topbar-slogan-mark session-dock-mark hub-mark-trigger"
+              type="button"
+              aria-label="Open ReadLex study hub"
+              aria-expanded="false"
+              aria-controls="navMenu"
+              title="Open Study Hub"
+            >
               <span class="topbar-slogan-spark">RL</span>
-            </span>
+              <span class="hub-mark-plus" aria-hidden="true">+</span>
+            </button>
             <span class="topbar-slogan-copy">
               <span class="topbar-slogan-kicker">READLEX</span>
               <strong class="topbar-slogan-main">Session Dock</strong>
@@ -779,7 +788,7 @@
     </section>
   </aside>
 
-  <script src="/assets/app.js?v=20260423i18n1"></script>
+  <script src="/assets/app.js?v=20260423hubmark1"></script>
   <script>
     if ("serviceWorker" in navigator && window.location.protocol !== "capacitor:") {
       window.addEventListener("load", () => {
