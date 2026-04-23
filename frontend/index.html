@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260423aurora2" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260423usagecoach1" />
 </head>
 <body>
   <div id="welcomeGate" class="welcome-gate">
@@ -419,12 +419,25 @@
               </div>
             </div>
 
-            <div class="insight-card">
-              <div class="insight-block">
+            <div id="insightCoach" class="insight-card usage-coach is-empty">
+              <div class="insight-lab-head">
+                <div>
+                  <span class="mini-label insight-lab-kicker">Usage Coach</span>
+                  <strong id="insightCoachTitle">Pick a word to start.</strong>
+                  <p id="insightCoachBody">Tap a highlighted word. ReadLex will turn it into meaning, context, and a usable example.</p>
+                </div>
+                <span id="insightCoachState" class="insight-status">Ready</span>
+              </div>
+              <div class="insight-steps" aria-hidden="true">
+                <span>01 Meaning</span>
+                <span>02 Context</span>
+                <span>03 Use</span>
+              </div>
+              <div class="insight-block insight-context-block">
                 <span class="mini-label">Context in Turkish</span>
                 <div id="selectedContext" class="insight-content">Context appears here after you choose a word.</div>
               </div>
-              <div class="insight-block">
+              <div class="insight-block insight-example-block">
                 <span class="mini-label">Simple Example</span>
                 <div id="selectedExample" class="insight-content">A short example appears here after you choose a word.</div>
               </div>
@@ -788,7 +801,7 @@
     </section>
   </aside>
 
-  <script src="/assets/app.js?v=20260423hubmark1"></script>
+  <script src="/assets/app.js?v=20260423usagecoach1"></script>
   <script>
     if ("serviceWorker" in navigator && window.location.protocol !== "capacitor:") {
       window.addEventListener("load", () => {

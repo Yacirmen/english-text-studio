@@ -165,6 +165,10 @@ const selectedWordEl = $("#selectedWord");
 const selectedMeaningEl = $("#selectedMeaning");
 const selectedContextEl = $("#selectedContext");
 const selectedExampleEl = $("#selectedExample");
+const insightCoachEl = $("#insightCoach");
+const insightCoachTitleEl = $("#insightCoachTitle");
+const insightCoachBodyEl = $("#insightCoachBody");
+const insightCoachStateEl = $("#insightCoachState");
 const selectedCollocationsEl = $("#selectedCollocations");
 const manualResultEl = $("#manualResult");
 const manualWordEl = $("#manualWord");
@@ -390,6 +394,14 @@ const UI_COPY = {
     simpleExample: "Simple Example",
     contextEmpty: "Context appears here after you choose a word.",
     exampleEmpty: "A short example appears here after you choose a word.",
+    usageCoach: "Usage Coach",
+    usageCoachReady: "Ready",
+    usageCoachLoading: "Building",
+    usageCoachActive: "Active",
+    usageCoachEmptyTitle: "Pick a word to start.",
+    usageCoachEmptyBody: "Tap a highlighted word. ReadLex will turn it into meaning, context, and a usable example.",
+    usageCoachLoadingBody: "Reading the sentence, finding the sense, and preparing a clean example.",
+    usageCoachActiveBody: "Use the meaning card first, then read the context and example together.",
     chooseWord: "Choose a word",
     preparingContext: "Preparing Turkish context...",
     preparingExample: "Preparing example sentence...",
@@ -557,6 +569,14 @@ const UI_COPY = {
     simpleExample: "Basit Örnek",
     contextEmpty: "Kelime seçince bağlam burada görünür.",
     exampleEmpty: "Kelime seçince kısa örnek burada görünür.",
+    usageCoach: "Kullanım Koçu",
+    usageCoachReady: "Hazır",
+    usageCoachLoading: "Hazırlanıyor",
+    usageCoachActive: "Aktif",
+    usageCoachEmptyTitle: "Başlamak için bir kelime seç.",
+    usageCoachEmptyBody: "Vurgulu bir kelimeye dokun. ReadLex onu anlam, bağlam ve kullanılabilir örneğe çevirir.",
+    usageCoachLoadingBody: "Cümle okunuyor, doğru anlam bulunuyor ve temiz bir örnek hazırlanıyor.",
+    usageCoachActiveBody: "Önce anlam kartını kullan, sonra bağlam ve örneği birlikte oku.",
     chooseWord: "Bir kelime seç",
     preparingContext: "Türkçe bağlam hazırlanıyor...",
     preparingExample: "Örnek cümle hazırlanıyor...",
@@ -796,8 +816,9 @@ function applyLanguage(language) {
   setText(".flip-front p", "flipToMeaning");
   setAllText(".flip-back .mini-label, .mobile-word-card .mini-label", "turkishMeaning");
   setText(".flip-back p", "flipBack");
-  setAllText(".insight-card .insight-block:nth-child(1) .mini-label", "contextTurkish");
-  setAllText(".insight-card .insight-block:nth-child(2) .mini-label", "simpleExample");
+  setAllText(".insight-context-block .mini-label, .mobile-insight-card .insight-block:nth-child(1) .mini-label", "contextTurkish");
+  setAllText(".insight-example-block .mini-label, .mobile-insight-card .insight-block:nth-child(2) .mini-label", "simpleExample");
+  setText(".insight-lab-kicker", "usageCoach");
   setText(".mobile-word-head .mini-label", "mobileTapTranslation");
 
   setText("#profilePanel > .library-copy", "profileCopy");
@@ -1513,6 +1534,31 @@ function renderSelection() {
   selectedMeaningEl.textContent = meaning;
   selectedContextEl.innerHTML = contextHtml;
   selectedExampleEl.innerHTML = exampleHtml;
+  const hasSelection = Boolean(state.selectedWord);
+  insightCoachEl?.classList.toggle("is-empty", !hasSelection && !state.loadingWord);
+  insightCoachEl?.classList.toggle("is-loading", Boolean(state.loadingWord));
+  insightCoachEl?.classList.toggle("has-word", hasSelection && !state.loadingWord);
+  if (insightCoachTitleEl) {
+    insightCoachTitleEl.textContent = state.loadingWord
+      ? state.selectedWord || uiText("word")
+      : hasSelection
+        ? state.selectedWord
+        : uiText("usageCoachEmptyTitle");
+  }
+  if (insightCoachBodyEl) {
+    insightCoachBodyEl.textContent = state.loadingWord
+      ? uiText("usageCoachLoadingBody")
+      : hasSelection
+        ? uiText("usageCoachActiveBody")
+        : uiText("usageCoachEmptyBody");
+  }
+  if (insightCoachStateEl) {
+    insightCoachStateEl.textContent = state.loadingWord
+      ? uiText("usageCoachLoading")
+      : hasSelection
+        ? uiText("usageCoachActive")
+        : uiText("usageCoachReady");
+  }
   renderCollocations(selectedCollocationsEl, item.collocations || []);
   flipCardEl.classList.remove("flipped");
   flipCardEl.classList.toggle("clickable", !state.loadingWord && Boolean(state.selectedWord));

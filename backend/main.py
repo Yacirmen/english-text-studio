@@ -1287,6 +1287,34 @@ def derive_curated_keywords(body: str, topic: str) -> list[str]:
     return keywords[:6] or ["reading"]
 
 
+def strip_curated_metadata_blocks(body: str) -> str:
+    """Keep imported glossary notes from being treated as reading text."""
+    cleaned_lines: list[str] = []
+    for line in (body or "").splitlines():
+        stripped = line.strip()
+        lowered = stripped.lower()
+        if (
+            "full extraction" in lowered
+            or stripped.startswith(("\U0001F4D8", "\U0001F539", "\U0001F525"))
+            or "tam liste" in lowered
+            or "elite vocab system" in lowered
+        ):
+            break
+        cleaned_lines.append(line)
+    return "\n".join(cleaned_lines).strip()
+
+
+def repair_curated_body_text(body: str) -> str:
+    return (
+        (body or "")
+        .replace("\u00e2\u20ac\u2122", "'")
+        .replace("\u00e2\u20ac\u0153", '"')
+        .replace("\u00e2\u20ac\u009d", '"')
+        .replace("\u00e2\u20ac\u201c", "-")
+        .replace("\u00e2\u20ac\u201d", "-")
+    )
+
+
 def parse_curated_readings_file() -> list[dict[str, Any]]:
     if not CURATED_READINGS_PATH.exists():
         return []
@@ -1300,7 +1328,7 @@ def parse_curated_readings_file() -> list[dict[str, Any]]:
         header_title = (match.group(5) or "").strip()
         start = match.end()
         end = headers[index + 1].start() if index + 1 < len(headers) else len(text)
-        body = text[start:end].strip()
+        body = strip_curated_metadata_blocks(repair_curated_body_text(text[start:end].strip()))
         if not body:
             continue
         body = re.sub(r"\n{2,}", "\n\n", body)
