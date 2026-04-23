@@ -7128,3 +7128,124 @@ body:not(.dark-mode) .mobile-insight-card .insight-list li{
     top:156px !important;
   }
 }
+
+/* Mobile header final alignment pass */
+@media (max-width: 768px){
+  .topbar{
+    grid-template-columns:minmax(0,1fr) 44px !important;
+    gap:8px !important;
+    padding:9px !important;
+  }
+
+  .brand-lockup.session-control{
+    grid-template-columns:minmax(0,1fr) 58px 72px !important;
+    grid-template-areas:"dock theme lang" !important;
+    gap:7px !important;
+    padding:7px 8px !important;
+    align-items:start !important;
+  }
+
+  .topbar-slogan.session-dock{
+    grid-template-columns:44px minmax(0,1fr) !important;
+    grid-template-rows:42px 28px !important;
+    gap:6px 8px !important;
+    align-items:center !important;
+  }
+
+  .topbar-slogan-mark{
+    width:44px !important;
+    height:42px !important;
+    min-width:44px !important;
+    align-self:start !important;
+  }
+
+  .hub-mark-plus{
+    top:1px !important;
+    right:-4px !important;
+    bottom:auto !important;
+    width:16px !important;
+    height:16px !important;
+    font-size:.82rem !important;
+  }
+
+  .topbar-slogan-copy{
+    align-self:center !important;
+    padding-left:1px !important;
+  }
+
+  .topbar-slogan-kicker{
+    font-size:.68rem !important;
+    letter-spacing:.2em !important;
+  }
+
+  .session-dock-metrics{
+    grid-template-columns:46px minmax(0,1fr) 74px !important;
+    gap:5px !important;
+    align-items:center !important;
+  }
+
+  .session-dock-metrics span{
+    height:26px !important;
+    padding:0 6px !important;
+    font-size:.6rem !important;
+  }
+
+  .theme-toggle{
+    --theme-toggle-width:58px !important;
+    width:58px !important;
+    min-width:58px !important;
+  }
+
+  .language-toggle{
+    width:72px !important;
+    min-width:72px !important;
+  }
+
+  .profile-trigger{
+    width:42px !important;
+    height:42px !important;
+    min-width:42px !important;
+  }
+
+  .nav-menu{
+    top:104px !important;
+  }
+}
+
+@media (max-width: 420px){
+  .brand-lockup.session-control{
+    grid-template-columns:minmax(0,1fr) 54px 66px !important;
+    gap:6px !important;
+    padding:7px !important;
+  }
+
+  .topbar-slogan.session-dock{
+    grid-template-columns:42px minmax(0,1fr) !important;
+  }
+
+  .topbar-slogan-mark{
+    width:42px !important;
+    min-width:42px !important;
+  }
+
+  .session-dock-metrics{
+    grid-template-columns:44px minmax(0,1fr) 66px !important;
+    gap:4px !important;
+  }
+
+  .session-dock-metrics span{
+    font-size:.56rem !important;
+    padding:0 5px !important;
+  }
+
+  .theme-toggle{
+    --theme-toggle-width:54px !important;
+    width:54px !important;
+    min-width:54px !important;
+  }
+
+  .language-toggle{
+    width:66px !important;
+    min-width:66px !important;
+  }
+}
