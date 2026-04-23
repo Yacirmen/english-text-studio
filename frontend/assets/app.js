@@ -181,6 +181,8 @@ const setupSummaryEl = $("#setupSummary");
 const topbarLevelChipEl = $("#topbarLevelChip");
 const topbarTopicChipEl = $("#topbarTopicChip");
 const topbarLibraryChipEl = $("#topbarLibraryChip");
+const topbarSloganCopyEl = document.querySelector(".topbar-slogan-copy");
+const sessionDockMetricsEl = document.querySelector(".session-dock-metrics");
 const authGuestEl = $("#authGuest");
 const authUserEl = $("#authUser");
 const authLoginForm = $("#authLoginForm");
@@ -693,12 +695,32 @@ function setControlLabel(button, key) {
   button.setAttribute("title", label);
 }
 
+function syncLightCompactDock() {
+  const compactLightDock =
+    !document.body.classList.contains("dark-mode") &&
+    (Boolean(window.matchMedia?.("(hover: none), (pointer: coarse)")?.matches) ||
+      /iPhone|iPad|iPod|Android|Mobile/i.test(window.navigator.userAgent || "") ||
+      (window.navigator.maxTouchPoints || 0) > 0);
+  document.body.classList.toggle("light-compact-dock", compactLightDock);
+  if (topbarSloganCopyEl) {
+    topbarSloganCopyEl.hidden = compactLightDock;
+    topbarSloganCopyEl.setAttribute("aria-hidden", compactLightDock ? "true" : "false");
+    topbarSloganCopyEl.style.display = compactLightDock ? "none" : "";
+  }
+  if (sessionDockMetricsEl) {
+    sessionDockMetricsEl.hidden = compactLightDock;
+    sessionDockMetricsEl.setAttribute("aria-hidden", compactLightDock ? "true" : "false");
+    sessionDockMetricsEl.style.display = compactLightDock ? "none" : "";
+  }
+}
+
 function applyTheme(mode) {
   const isDark = mode === "dark";
   document.body.classList.toggle("dark-mode", isDark);
   themeToggleBtn?.setAttribute("aria-pressed", String(isDark));
   gateThemeToggleBtn?.setAttribute("aria-pressed", String(isDark));
   window.localStorage.setItem(THEME_STORAGE_KEY, isDark ? "dark" : "light");
+  syncLightCompactDock();
 }
 
 function toggleTheme() {
@@ -1435,6 +1457,14 @@ function playDesktopFlip(word) {
 function updateViewModeUi() {
   document.body.classList.toggle("mobile-mode", isMobilePreview());
   document.body.classList.toggle("web-mode", !isMobilePreview());
+  const userAgent = window.navigator.userAgent || "";
+  const isMobileUserAgent = /iPhone|iPad|iPod|Android|Mobile/i.test(userAgent);
+  const isTouchDock =
+    isMobileUserAgent ||
+    Boolean(window.matchMedia?.("(hover: none), (pointer: coarse)")?.matches) ||
+    ((window.navigator.maxTouchPoints || 0) > 0 && window.innerWidth < 1180);
+  document.body.classList.toggle("touch-device-dock", isTouchDock);
+  syncLightCompactDock();
   if (!isMobilePreview()) {
     setMobileWordSheetOpen(false);
   } else if (
@@ -1821,6 +1851,29 @@ function isDesktopMenuMode() {
   return Boolean(MENU_DESKTOP_QUERY?.matches) && window.innerWidth > 768;
 }
 
+function syncNavMenuPosition() {
+  if (!navMenuEl) return;
+  if (!isDesktopMenuMode()) {
+    navMenuEl.style.left = "";
+    navMenuEl.style.right = "";
+    navMenuEl.style.top = "";
+    navMenuEl.style.width = "";
+    navMenuEl.style.position = "";
+    return;
+  }
+  const anchorEl = navMenuMarkTriggerEl || navMenuTriggerEl;
+  if (!anchorEl) return;
+  const anchorRect = anchorEl.getBoundingClientRect();
+  const menuWidth = Math.min(360, window.innerWidth - 24);
+  const left = Math.min(Math.max(12, anchorRect.left), Math.max(12, window.innerWidth - menuWidth - 12));
+  const top = anchorRect.bottom + 12;
+  navMenuEl.style.position = "fixed";
+  navMenuEl.style.left = `${Math.round(left)}px`;
+  navMenuEl.style.right = "auto";
+  navMenuEl.style.top = `${Math.round(top)}px`;
+  navMenuEl.style.width = `${Math.round(menuWidth)}px`;
+}
+
 function setNavMenuOpen(isOpen) {
   if (navMenuCloseTimer) {
     window.clearTimeout(navMenuCloseTimer);
@@ -1829,6 +1882,17 @@ function setNavMenuOpen(isOpen) {
   navMenuShellEl?.classList.toggle("is-open", Boolean(isOpen));
   navMenuTriggerEl?.setAttribute("aria-expanded", isOpen ? "true" : "false");
   navMenuMarkTriggerEl?.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  if (isOpen) {
+    syncNavMenuPosition();
+    window.requestAnimationFrame(syncNavMenuPosition);
+    window.setTimeout(syncNavMenuPosition, 24);
+  } else if (navMenuEl && !isDesktopMenuMode()) {
+    navMenuEl.style.left = "";
+    navMenuEl.style.right = "";
+    navMenuEl.style.top = "";
+    navMenuEl.style.width = "";
+    navMenuEl.style.position = "";
+  }
 }
 
 function setNavMenuCategory(category = "account") {
@@ -3260,7 +3324,13 @@ syncViewModeFromViewport();
 renderKeywordChips();
 renderWelcomeGate();
 setNavMenuCategory("account");
-window.addEventListener("resize", syncViewModeFromViewport);
+window.addEventListener("resize", () => {
+  syncViewModeFromViewport();
+  if (navMenuShellEl?.classList.contains("is-open")) syncNavMenuPosition();
+});
+window.addEventListener("scroll", () => {
+  if (navMenuShellEl?.classList.contains("is-open")) syncNavMenuPosition();
+}, { passive: true });
 refreshSession().then(async () => {
   if (state.user) completeAppEntry(false);
   renderWelcomeGate();
