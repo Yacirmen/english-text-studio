@@ -7016,3 +7016,115 @@ body:not(.dark-mode) .mobile-insight-card .insight-list li{
     padding:0 5px !important;
   }
 }
+
+/* Mobile study hub sheet: never overlap the product dock */
+@media (max-width: 768px){
+  .menu-shell{
+    position:static !important;
+    display:block !important;
+    width:0 !important;
+    height:0 !important;
+    overflow:visible !important;
+  }
+
+  .menu-trigger{
+    display:none !important;
+  }
+
+  .nav-menu{
+    position:fixed !important;
+    top:106px !important;
+    left:14px !important;
+    right:14px !important;
+    width:auto !important;
+    max-width:none !important;
+    max-height:calc(100dvh - 128px) !important;
+    overflow:auto !important;
+    padding:14px !important;
+    border-radius:24px !important;
+    z-index:80 !important;
+    transform:translateY(-8px) scale(.98) !important;
+  }
+
+  .menu-shell.is-open .nav-menu{
+    transform:translateY(0) scale(1) !important;
+  }
+
+  .nav-menu-topline{
+    gap:10px !important;
+    margin-bottom:12px !important;
+  }
+
+  .nav-menu-overview{
+    padding:0 2px !important;
+  }
+
+  .nav-menu-overview-title{
+    font-size:.96rem !important;
+    line-height:1.15 !important;
+  }
+
+  .nav-menu-switcher{
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:6px !important;
+    padding:5px !important;
+    border-radius:17px !important;
+  }
+
+  .nav-menu-switch{
+    min-height:34px !important;
+    border-radius:12px !important;
+    font-size:.62rem !important;
+    letter-spacing:.08em !important;
+  }
+
+  .nav-menu-section{
+    gap:7px !important;
+  }
+
+  .nav-menu-item{
+    min-height:64px !important;
+    padding:12px !important;
+    border-radius:17px !important;
+  }
+
+  .nav-menu-item-copy strong{
+    font-size:.9rem !important;
+  }
+
+  .nav-menu-item-copy small{
+    font-size:.75rem !important;
+    line-height:1.35 !important;
+  }
+
+  .nav-menu-badge{
+    min-height:30px !important;
+    padding:0 10px !important;
+    font-size:.62rem !important;
+  }
+
+  .nav-menu-foot{
+    margin-top:10px !important;
+    padding-top:10px !important;
+    font-size:.72rem !important;
+  }
+}
+
+@media (max-width: 380px){
+  .brand-lockup.session-control{
+    grid-template-columns:1fr !important;
+    grid-template-areas:
+      "dock"
+      "theme"
+      "lang" !important;
+  }
+
+  .theme-toggle,
+  .language-toggle{
+    justify-self:start !important;
+  }
+
+  .nav-menu{
+    top:156px !important;
+  }
+}

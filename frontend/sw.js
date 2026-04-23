@@ -1,8 +1,8 @@
-const READLEX_CACHE = "readlex-shell-v2";
+const READLEX_CACHE = "readlex-shell-v10";
 const SHELL_ASSETS = [
   "/",
-  "/assets/styles.css?v=20260423pwa2",
-  "/assets/app.js?v=20260423pwa2",
+  "/assets/styles.css?v=20260423mobileheader4",
+  "/assets/app.js?v=20260423mobileheader4",
   "/assets/readlex-icon.svg",
   "/assets/readlex-icon-180.png",
   "/assets/readlex-icon-192.png",
