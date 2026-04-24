@@ -961,27 +961,9 @@ def db_insert(query: str, params: tuple[Any, ...] = ()) -> int:
 
 
 def seed_readings() -> None:
-    # Keep the shipped library deterministic: clear previous generated/manual
-    # readings and rebuild the catalog from the current seed list.
+    # Legacy manual seeds are no longer part of the product library. Keep the DB
+    # clean so the curated 150-text set is the only shipped reading source.
     db_execute("DELETE FROM readings WHERE source = ?", ("manual",))
-    for item in READING_SEEDS:
-        payload = (
-            item["title"],
-            item["text"],
-            item["level"],
-            item["topic"],
-            json.dumps(item["keywords"], ensure_ascii=False),
-            len(item["text"].split()),
-            "manual",
-            1,
-        )
-        insert_query = (
-            "INSERT INTO readings (title, text, level, topic, keywords, word_count, source, is_published) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-        )
-        if USE_POSTGRES:
-            insert_query += " RETURNING id"
-        db_insert(insert_query, payload)
 
 
 CURATED_HEADER_PATTERN = re.compile(
@@ -1531,6 +1513,20 @@ def ensure_learning_tables() -> None:
         db_execute(statement.strip())
 
 
+def ensure_performance_indexes() -> None:
+    index_statements = [
+        "CREATE INDEX IF NOT EXISTS idx_readings_public_source_level ON readings (is_published, source, level, topic)",
+        "CREATE INDEX IF NOT EXISTS idx_reading_history_user_viewed ON reading_history (user_id, viewed_at)",
+        "CREATE INDEX IF NOT EXISTS idx_saved_words_user_updated ON saved_words (user_id, updated_at)",
+        "CREATE INDEX IF NOT EXISTS idx_saved_words_user_result_clicks ON saved_words (user_id, last_result, click_count)",
+        "CREATE INDEX IF NOT EXISTS idx_friendships_requester_status ON friendships (requester_id, status)",
+        "CREATE INDEX IF NOT EXISTS idx_friendships_addressee_status ON friendships (addressee_id, status)",
+        "CREATE INDEX IF NOT EXISTS idx_social_events_receiver_type ON social_events (receiver_id, event_type)",
+    ]
+    for statement in index_statements:
+        db_execute(statement)
+
+
 def init_db() -> None:
     schema_sqlite = """
         CREATE TABLE IF NOT EXISTS users (
@@ -1670,6 +1666,7 @@ def ensure_auth_columns() -> None:
 init_db()
 ensure_auth_columns()
 ensure_learning_tables()
+ensure_performance_indexes()
 seed_readings()
 import_curated_readings()
 
@@ -3869,6 +3866,69 @@ def build_library_glossary(text: str) -> dict[str, dict[str, str]]:
     return glossary
 
 
+def build_library_glossary_index(text: str) -> dict[str, dict[str, Any]]:
+    """Fast first-pass glossary used when opening a reading.
+
+    Full context/example/collocation details are intentionally loaded lazily from
+    /api/word-detail after the learner taps a word.
+    """
+    glossary: dict[str, dict[str, Any]] = {}
+    phrase_matches = match_phrases(text, *runtime_lexical_maps())
+    covered_tokens = covered_token_indexes(phrase_matches)
+    for phrase_match in phrase_matches:
+        key = sanitize_word(phrase_match.key)
+        canonical = sanitize_word(phrase_match.canonical)
+        meaning = repair_mojibake(str(phrase_match.meaning or ""))
+        if key and key not in glossary:
+            glossary[key] = {
+                "turkish": meaning,
+                "context": "",
+                "example": "",
+                "collocations": [],
+                "canonical": canonical,
+                "kind": "phrase",
+                "partial": True,
+            }
+        if canonical and canonical != key and canonical not in glossary:
+            glossary[canonical] = {
+                "turkish": meaning,
+                "context": "",
+                "example": "",
+                "collocations": [],
+                "surface": key,
+                "kind": "phrase",
+                "partial": True,
+            }
+    word_seen: set[str] = set()
+    for index, token in enumerate(token_records(text)):
+        if index in covered_tokens:
+            continue
+        word = sanitize_word(str(token.get("key") or ""))
+        if not word or word in word_seen:
+            continue
+        word_seen.add(word)
+        profile = resolve_cefr_entry(word)
+        lemma = str(profile.get("lemma") or word) if profile else word
+        meaning = repair_mojibake(str(
+            WORD_MEANING_OVERRIDES.get(word)
+            or WORD_MEANING_OVERRIDES.get(lemma)
+            or lookup_word_map_value(word)
+            or lookup_word_map_value(lemma)
+            or LIBRARY_WORD_MAP.get(word)
+            or LIBRARY_WORD_MAP.get(lemma, "")
+            or infer_turkish_meaning(lemma)
+            or "bağlama göre kullanılan ifade"
+        ))
+        glossary[word] = {
+            "turkish": meaning,
+            "context": "",
+            "example": "",
+            "collocations": [],
+            "partial": True,
+        }
+    return glossary
+
+
 def build_local_reading(level: str, topic: str, keywords: list[str], length_target: int) -> str:
     topic_key = topic if topic in TOPIC_SENTENCE_BANK else "Serbest"
     base_sentences = TOPIC_SENTENCE_BANK[topic_key][:]
@@ -4482,7 +4542,7 @@ def reading_history_item(
     )
     if not row:
         raise HTTPException(status_code=404, detail="Reading history item not found.")
-    glossary = build_library_glossary(str(row["text"])) if str(row["content_source"]) == "library" else {}
+    glossary = build_library_glossary_index(str(row["text"])) if str(row["content_source"]) == "library" else {}
     return {
         "reading": {
             "id": row["id"],
@@ -4595,7 +4655,7 @@ def generate(payload: GenerateRequest, session_token: str | None = Cookie(defaul
                 "title": library_match["title"],
                 "topic": library_match["topic"],
                 "content_source": "library",
-                "glossary": build_library_glossary(library_match["text"]),
+                "glossary": build_library_glossary_index(library_match["text"]),
             }
         raise HTTPException(status_code=404, detail=repair_mojibake("Bu filtreler için library içinde uygun bir metin bulunamadı."))
     prompt = build_text_prompt(payload.level, payload.topic, keywords, payload.length_target)

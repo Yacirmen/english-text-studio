@@ -1907,16 +1907,16 @@ function setNavMenuCategory(category = "account") {
 }
 
 async function openLibraryPanel(view) {
+  setLibraryView(view);
   if (view === "saved" && state.user) {
-    await fetchSavedWords("recent");
+    void fetchSavedWords("recent");
   }
   if (view === "social" && state.user) {
-    await loadSocial();
+    void loadSocial();
   }
   if (view === "quiz" && !state.quiz && state.user) {
-    await loadQuiz();
+    void loadQuiz();
   }
-  setLibraryView(view);
 }
 
 function bindNavMenuAction(button, view) {
@@ -2697,7 +2697,9 @@ async function saveWordSelection(word) {
 
 async function loadWordDetail(word) {
   if (!word) return;
-  if (state.glossary[word]) {
+  const cachedDetail = state.glossary[word];
+  const hasFullDetail = cachedDetail && cachedDetail.partial !== true && cachedDetail.context && cachedDetail.example;
+  if (hasFullDetail) {
     if (state.user && (state.lastPayload?.content_source || state.contentSource) === "library") {
       void saveWordSelection(word);
     }
@@ -2720,7 +2722,7 @@ async function loadWordDetail(word) {
       }),
     });
     if (!parsed.ok) throw new Error(parsed.data.detail || "Word detail could not be loaded.");
-    state.glossary[word] = parsed.data;
+    state.glossary[word] = { ...parsed.data, partial: false };
     if (state.user) {
       persistedSelectionKeys.add(buildSelectionPersistenceKey(word));
       await scheduleSessionRefresh({ includeQuiz: true });
@@ -2847,7 +2849,6 @@ async function generateExperience(payload, triggerButton) {
       await refreshSession();
     }
     renderExperience();
-    void fillMissingLibraryWords();
   } catch (error) {
     showError(error.message);
   } finally {
