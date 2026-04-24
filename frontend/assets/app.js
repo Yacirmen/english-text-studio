@@ -347,21 +347,21 @@ const UI_COPY = {
     welcomeRead: "Read.",
     welcomeSave: "Save.",
     welcomeRemember: "Remember.",
-    welcomeNote: "Stop forgetting what you learn.",
-    welcomeSubnote: "Read it once. Keep it forever.",
+    welcomeNote: "Read short English. Save what matters.",
+    welcomeSubnote: "Tap useful words, keep their context, and review them later.",
     saveOneTap: "Save in one tap",
-    saveOneTapBody: "Catch useful words without leaving the reading flow.",
+    saveOneTapBody: "Capture useful words without breaking your focus.",
     reviewContext: "Review with context",
-    reviewContextBody: "Keep phrases, meanings, and examples tied together.",
+    reviewContextBody: "Keep meanings, sentence context, and examples together.",
     lessClutter: "Less clutter. Better recall.",
-    lessClutterBody: "A calmer reading space built for retention, not noise.",
+    lessClutterBody: "A focused reading loop that stays quiet until it can help.",
     login: "Log In",
     signup: "Sign Up",
     continueGuest: "Continue as Guest",
     welcomeBack: "Welcome back",
-    welcomeBackBody: "Pick up where your saved words left off.",
+    welcomeBackBody: "Return to your saved words, reading trail, and review rhythm.",
     newAccount: "New account",
-    newAccountBody: "Create your reading space and keep every win.",
+    newAccountBody: "Create a private space for the words and phrases you notice.",
     memberLogin: "Member login",
     memberLoginBody: "Open your saved words, streak, and recent reads.",
     startFresh: "Start fresh",
@@ -373,16 +373,16 @@ const UI_COPY = {
     sessionDock: "Session Dock",
     studyHub: "Study Hub",
     workspace: "Workspace",
-    workspaceBody: "Everything important, one tap away.",
+    workspaceBody: "Your reading tools, progress, and account in one quiet hub.",
     account: "Account",
     study: "Study",
     company: "Company",
     controlRoom: "Control room",
     progress: "Progress",
-    progressBody: "Daily streak, reading log, and visible practice momentum.",
+    progressBody: "See your reading rhythm, saved words, and daily practice.",
     stats: "Stats",
     socialCircle: "Social Circle",
-    socialBody: "Add friends and keep accountability light, not noisy.",
+    socialBody: "A quiet circle for streaks, saved words, and small cheers.",
     friends: "Friends",
     studyTools: "Study tools",
     savedWords: "Saved words",
@@ -413,7 +413,7 @@ const UI_COPY = {
     anotherReading: "Another Reading",
     generateAgain: "Generate Again",
     clearReading: "Clear Reading",
-    libraryHint: "One click opens a ready text. Your taps build saved words, quiz material, and progress history.",
+    libraryHint: "Open a curated text instantly. Useful taps become saved words, quiz material, and progress.",
     flowRead: "Read",
     flowReadBody: "Open a level-matched text.",
     flowTap: "Tap",
@@ -424,13 +424,14 @@ const UI_COPY = {
     previewAi: "Ready. Set level, topic, and keywords, then generate a custom text for focused practice.",
     selectedWord: "Selected Word",
     word: "Word",
-    flipToMeaning: "Tap anywhere on the card to flip to the Turkish meaning.",
+    flipToMeaning: "Tap the card to see the Turkish meaning.",
     turkishMeaning: "Turkish Meaning",
-    flipBack: "Tap anywhere on the card to flip back.",
+    flipBack: "Tap again to return to the English word.",
     contextTurkish: "Context in Turkish",
     simpleExample: "Simple Example",
     contextEmpty: "Choose a word and its Turkish context will appear here.",
     exampleEmpty: "A short learner-friendly example will appear here.",
+    preparingMeaning: "Loading meaning...",
     usageCoach: "Usage Coach",
     usageCoachReady: "Ready",
     usageCoachLoading: "Building",
@@ -501,24 +502,47 @@ const UI_COPY = {
     recentReadingsEmpty: "Your recent readings will appear here.",
     signInTrail: "Sign in to keep your reading trail.",
     signInProgress: "Sign in to track daily text and word history.",
-    readingPrompt: "Choose any word to activate the meaning panel.",
+    readingPrompt: "Tap a useful word to open meaning, context, and example.",
     mobileTapTranslation: "Tap Translation",
     recentReadings: "Recent readings",
     recentReadingsBody: "Your latest library picks stay here for quick return.",
-    socialPanelBody: "Build a small learning circle. Add friends by username, compare streak rhythm, and send a quick cheer when they keep going.",
+    socialPanelBody: "Build a calm study circle. Invite friends by username, keep the rhythm visible, and nudge each other without turning reading into a feed.",
     learningCircle: "Learning circle",
-    socialHeroTitle: "Accountability without a noisy feed.",
-    socialHeroBody: "Friends only see lightweight practice stats: streak, total texts, saved words, and today's word count.",
+    socialHeroTitle: "Quiet accountability for people who read.",
+    socialHeroBody: "Friends see only the useful signals: streak, total readings, saved words, and today's practice count.",
     findUsername: "Find by username",
     friendPlaceholder: "friend_username",
     socialFieldNote: "Type at least 3 characters. Exact usernames can be added instantly.",
     sendRequest: "Send request",
-    socialGuest: "Sign in to add friends and unlock your social circle.",
+    socialGuest: "Sign in to add friends and open your quiet study circle.",
     suggestions: "Suggestions",
-    suggestionsBody: "Recent learners you can invite into your circle.",
+    suggestionsBody: "People you can invite into your reading rhythm.",
     requests: "Requests",
     cheers: "Cheers",
     pending: "Pending",
+    acceptRequest: "Accept",
+    declineRequest: "Pass",
+    addFriend: "Invite",
+    cheerFriend: "Cheer",
+    removeFriend: "Remove",
+    friendStatus: "Friend",
+    pendingStatus: "Pending",
+    socialSearching: "Looking for learners...",
+    socialSearchResults: "Search results",
+    socialNoLearner: "No learner found with that username yet.",
+    socialSignInCompare: "Sign in to compare streaks with friends.",
+    socialNoFriends: "No friends yet. Add one username and make the loop less lonely.",
+    socialNoSuggestions: "Search a username above to invite your first friend.",
+    socialCheerFailed: "Cheer could not be sent.",
+    socialCheerSent: "Cheer sent. A small nudge goes a long way.",
+    friendRequestSent: "Friend request sent.",
+    friendRequestFailed: "Friend request failed.",
+    socialColdStart: "Just starting",
+    socialTexts: "texts",
+    socialSaved: "saved",
+    socialToday: "today",
+    socialStreak: "Streak {count}",
+    socialReadingPulse: "Reading pulse",
     manualBody: "Ask for a quick explanation when a word needs a second look.",
     typeWord: "Type a word",
     explainWord: "Explain Word",
@@ -528,190 +552,214 @@ const UI_COPY = {
     infoHeroBody: "This panel explains what ReadLex does, how the current build should be understood, and where business or support communication should go during launch.",
   },
   tr: {
-    themeLabel: "Koyu modu değiştir",
+    themeLabel: "Koyu modu aç/kapat",
     languageLabel: "Dili değiştir",
     welcomeRead: "Oku.",
     welcomeSave: "Kaydet.",
     welcomeRemember: "Hatırla.",
-    welcomeNote: "Öğrendiğini unutma.",
-    welcomeSubnote: "Bir kez oku. Kalıcı hale getir.",
+    welcomeNote: "Kısa İngilizce oku. İşine yarayanı yanında tut.",
+    welcomeSubnote: "Dokunduğun kelime bağlamıyla kalsın, sonra geri dön.",
     saveOneTap: "Tek dokunuşla kaydet",
-    saveOneTapBody: "Okuma akışından çıkmadan işe yarayan kelimeleri yakala.",
-    reviewContext: "Bağlamla tekrar et",
-    reviewContextBody: "Kelimeleri, anlamları ve örnekleri birlikte tut.",
-    lessClutter: "Daha az kalabalık. Daha iyi hatırlama.",
-    lessClutterBody: "Akılda kalıcılık için sadeleştirilmiş sakin bir okuma alanı.",
+    saveOneTapBody: "Okurken dikkatini dağıtmadan iyi kelimeleri yakala.",
+    reviewContext: "Cümlesiyle tekrar et",
+    reviewContextBody: "Anlam, bağlam ve örnek aynı yerde kalsın.",
+    lessClutter: "Az kalabalık. Daha çok akılda kalma.",
+    lessClutterBody: "Okurken sessiz, tekrar ederken yanında olan bir alan.",
     login: "Giriş Yap",
     signup: "Kayıt Ol",
-    continueGuest: "Misafir Olarak Devam Et",
-    welcomeBack: "Tekrar hoş geldin",
-    welcomeBackBody: "Kaldığın yerden kelimelerine dön.",
-    newAccount: "Yeni hesap",
-    newAccountBody: "Kendi okuma alanını oluştur ve her kazanımı sakla.",
+    continueGuest: "Misafir olarak dene",
+    welcomeBack: "Hoş geldin",
+    welcomeBackBody: "Kaldığın yerden devam et; kelimelerin ve okuma izin burada.",
+    newAccount: "Yeni alanını aç",
+    newAccountBody: "Fark ettiğin kelime ve kalıplar için kendine küçük bir yer kur.",
     memberLogin: "Üye girişi",
-    memberLoginBody: "Kayıtlı kelimelerini, serini ve son okumalarını aç.",
-    startFresh: "Yeni başlangıç",
-    startFreshBody: "Kişisel kitaplığını kur ve kısa okumaları tekrara dönüştür.",
+    memberLoginBody: "Kayıtlı kelimelerine, serine ve son okumalarına dön.",
+    startFresh: "Yeni başla",
+    startFreshBody: "Kendi kelime desteni kur; kısa okumaları kalıcı tekrara çevir.",
     username: "Kullanıcı adı",
     password: "Şifre",
     usernamePlaceholder: "kullanici_adi",
     passwordPlaceholder: "en az 6 karakter",
-    sessionDock: "Oturum Paneli",
-    studyHub: "Çalışma Merkezi",
-    workspace: "Çalışma alanı",
-    workspaceBody: "Önemli her şey tek dokunuş uzakta.",
+    sessionDock: "Okuma paneli",
+    studyHub: "Çalışma alanı",
+    workspace: "Merkez",
+    workspaceBody: "Okuma, tekrar ve hesabın burada; dağılmadan devam et.",
     account: "Hesap",
     study: "Çalışma",
-    company: "Kurumsal",
-    controlRoom: "Kontrol alanı",
+    company: "Hakkımızda",
+    controlRoom: "Hesap ve ilerleme",
     progress: "İlerleme",
-    progressBody: "Günlük seri, okuma kaydı ve görünür çalışma ritmi.",
-    stats: "İstatistik",
-    socialCircle: "Sosyal Çevre",
-    socialBody: "Arkadaş ekle, motivasyonu hafif ve düzenli tut.",
+    progressBody: "Okuma ritmini, kaydettiğin kelimeleri ve bugünkü pratiğini gör.",
+    stats: "Özet",
+    socialCircle: "Yakın çevre",
+    socialBody: "Seri, kelime ve küçük destekler için sakin bir çevre.",
     friends: "Arkadaşlar",
-    studyTools: "Çalışma araçları",
-    savedWords: "Kayıtlı kelimeler",
-    savedWordsBody: "Kaydettiğin kelimeler ve kalıplar tekrar için hazır.",
+    studyTools: "Tekrar araçları",
+    savedWords: "Kelime destem",
+    savedWordsBody: "Kaydettiğin kelimeler ve kalıplar tekrar için seni bekliyor.",
     words: "Kelimeler",
     quiz: "Quiz",
-    quizBody: "Kayıtlı destenden İngilizce-Türkçe hızlı kontrol.",
+    quizBody: "Kendi destenden kısa İngilizce-Türkçe yoklamalar.",
     review: "Tekrar",
     translate: "Çeviri",
-    translateBody: "İkinci bir bakış gerektiğinde hızlı anlam al.",
+    translateBody: "Takıldığın kelimeye hızlıca ikinci bir göz at.",
     help: "Yardım",
-    office: "Ofis",
-    setup: "Hazırlık",
-    setupTitle: "Önce oku. Daha akıllı tekrar et.",
-    setupBody: "Mod seç, seviyene uygun metin aç ve dokunuşlarını tekrar malzemesine dönüştür.",
-    readingSetup: "Oturum başlat",
-    setupDescription: "Kaynak seç, sonra sayfayı kalabalıklaştırmadan okumayı filtrele.",
-    libraryOnly: "Kitaplık",
-    aiOnly: "Yapay Zeka",
+    office: "ReadLex",
+    setup: "Başlangıç",
+    setupTitle: "Önce oku, sonra akıllıca geri dön.",
+    setupBody: "Seviyeni seç, kısa bir metin aç; dokunduğun kelimeler tekrarına dönüşsün.",
+    readingSetup: "Okumayı hazırla",
+    setupDescription: "Kaynağı seç, seviyeyi ayarla; gerisini sade tutalım.",
+    libraryOnly: "Hazır metin",
+    aiOnly: "Özel metin",
     level: "Seviye",
     topic: "Konu",
-    targetWords: "Hedef kelime sayısı",
-    keywords: "Anahtar kelimeler",
-    keywordHelp: "2-12 anahtar kelime ekle. Tekrar edenler otomatik kaldırılır.",
-    keywordPresetHelp: "Konu seçimi başlangıç kelimeleri doldurur; kendi listeni de koruyabilirsin.",
-    getReading: "Okuma Aç",
-    generateText: "Metin Üret",
-    anotherReading: "Başka Okuma",
-    generateAgain: "Tekrar Üret",
-    clearReading: "Okumayı Temizle",
-    libraryHint: "Tek tıkla hazır metin açılır. Dokunuşların kayıtlı kelime, quiz ve ilerleme geçmişi oluşturur.",
+    targetWords: "Yaklaşık uzunluk",
+    keywords: "Odak kelimeleri",
+    keywordHelp: "2-12 kelime yaz; tekrar edenleri biz ayıklarız.",
+    keywordPresetHelp: "Konu seçince birkaç başlangıç kelimesi gelir; istersen kendi kelimelerini de ekle.",
+    getReading: "Okumayı aç",
+    generateText: "Metin üret",
+    anotherReading: "Yeni okuma",
+    generateAgain: "Yeniden üret",
+    clearReading: "Okumayı kapat",
+    libraryHint: "Hazır metni aç; dokunduğun iyi kelimeler destene, quize ve ilerlemene aksın.",
     flowRead: "Oku",
-    flowReadBody: "Seviyene uygun metin aç.",
+    flowReadBody: "Seviyene uygun kısa bir metin aç.",
     flowTap: "Dokun",
-    flowTapBody: "Kelimeleri ve kalıpları bağlam içinde keşfet.",
+    flowTapBody: "İşe yarayan kelime ve kalıpları cümlenin içinde yakala.",
     flowReview: "Tekrar",
-    flowReviewBody: "Kayıtlı kelimeler ve quiz ile geri dön.",
-    previewLibrary: "Hazır. Seviye ve konu seç, sonra tekrar destene dönüşecek hazır bir okuma aç.",
-    previewAi: "Hazır. Seviye, konu ve anahtar kelime seç; odaklı pratik için özel metin üret.",
-    selectedWord: "Seçilen Kelime",
+    flowReviewBody: "Kaydettiklerine sonra quiz ve tekrar ile dön.",
+    previewLibrary: "Hazırız. Seviye ve konu seç; sana uygun kısa bir metin açalım.",
+    previewAi: "Hazırız. Seviye, konu ve odak kelimelerini seç; sana özel bir metin hazırlayalım.",
+    selectedWord: "Seçtiğin kelime",
     word: "Kelime",
-    flipToMeaning: "Türkçe anlamı görmek için karta dokun.",
-    turkishMeaning: "Türkçe Anlam",
-    flipBack: "Geri dönmek için karta dokun.",
-    contextTurkish: "Türkçe Bağlam",
-    simpleExample: "Basit Örnek",
-    contextEmpty: "Bir kelime seç; Türkçe bağlam burada görünsün.",
-    exampleEmpty: "Kısa, öğrenici dostu örnek burada görünsün.",
-    usageCoach: "Kullanım Koçu",
+    flipToMeaning: "Anlamı görmek için karta dokun.",
+    turkishMeaning: "Türkçe karşılığı",
+    flipBack: "Kelimeye dönmek için karta tekrar dokun.",
+    contextTurkish: "Cümledeki anlamı",
+    simpleExample: "Basit örnek",
+    contextEmpty: "Bir kelime seç; anlamı cümlenin içinden birlikte çıkaralım.",
+    exampleEmpty: "Kısa ve anlaşılır bir örnek burada görünecek.",
+    preparingMeaning: "Anlam hazırlanıyor...",
+    usageCoach: "Kullanım rehberi",
     usageCoachReady: "Hazır",
-    usageCoachLoading: "Hazırlanıyor",
-    usageCoachActive: "Aktif",
-    usageCoachEmptyTitle: "Başlamak için bir kelime seç.",
-    usageCoachEmptyBody: "Vurgulu bir kelimeye dokun. ReadLex onu anlam, bağlam ve kullanılabilir örneğe çevirir.",
-    usageCoachLoadingBody: "Cümle okunuyor, doğru anlam bulunuyor ve temiz bir örnek hazırlanıyor.",
-    usageCoachActiveBody: "Önce anlam kartını kullan, sonra bağlam ve örneği birlikte oku.",
+    usageCoachLoading: "Bakıyorum",
+    usageCoachActive: "Hazır",
+    usageCoachEmptyTitle: "Bir kelimeye dokun, başlayalım.",
+    usageCoachEmptyBody: "Okurken takıldığın ya da saklamak istediğin kelimeye dokun; anlamı, bağlamı ve örneği burada toparlayalım.",
+    usageCoachLoadingBody: "Cümleyi okuyorum, en uygun anlamı hazırlıyorum.",
+    usageCoachActiveBody: "Önce anlamı gör, sonra bağlam ve örnekle pekiştir.",
     chooseWord: "Bir kelime seç",
-    preparingContext: "Türkçe bağlam hazırlanıyor...",
-    preparingExample: "Örnek cümle hazırlanıyor...",
-    loadingLibrary: "Kitaplık sayısı yükleniyor...",
-    curatedInside: "{count} hazır okuma içeride",
-    libraryUnavailable: "Kitaplık sayısı alınamadı",
+    preparingContext: "Bağlam hazırlanıyor...",
+    preparingExample: "Örnek hazırlanıyor...",
+    loadingLibrary: "Hazır okumalar sayılıyor...",
+    curatedInside: "{count} hazır metin var",
+    libraryUnavailable: "Hazır metin sayısını alamadım",
     texts: "{count} metin",
-    curated: "Hazır",
-    ai: "YZ",
+    curated: "Hazır metin",
+    ai: "AI",
     aroundWords: "Yaklaşık {count} kelime",
     keywordCount: "{count} kelime",
     levelHintA1: "Çok basit ve günlük",
     levelHintA2: "Basit, net ve tanıdık",
-    levelHintB1: "Doğal ve rahat tempolu",
-    levelHintB2: "Daha zengin ama hâlâ okunabilir",
+    levelHintB1: "Doğal, akıcı ve rahat",
+    levelHintB2: "Biraz daha zengin ama hâlâ okunur",
     levelHintC1: "İleri, doğal ve detaylı",
-    levelHintC2: "Çok ileri ve nüanslı",
-    signInQuiz: "Quizi açmak için önce giriş yap.",
-    quizEmptyReading: "Okuma açıp sözlüğe dokun; sonra okuma quizi başlayabilir.",
-    quizEmptyHard: "Zor kelime tekrarı için en az 4 kayıtlı kelime gerekir.",
-    quizEmptySaved: "Quizi başlatmak için en az 4 kayıtlı kelime gerekir.",
+    levelHintC2: "Çok ileri, nüanslı ve yoğun",
+    signInQuiz: "Quiz için önce giriş yapman gerekiyor.",
+    quizEmptyReading: "Bir okuma açıp birkaç kelimeye dokun; sonra okuma quizi hazır olur.",
+    quizEmptyHard: "Zor kelime tekrarı için destende en az 4 kelime olmalı.",
+    quizEmptySaved: "Quiz için destende en az 4 kelime olmalı.",
     englishToTurkish: "İngilizce - Türkçe",
     nextQuestion: "Sonraki Soru",
-    nextIncoming: "Sonraki geliyor...",
+    nextIncoming: "Sıradaki hazırlanıyor...",
     correct: "Doğru. \"{word}\" = \"{answer}\".",
-    wrong: "Bu değil. Doğru cevap: {answer}",
-    savedMeta: "Destede {count} kelime",
-    removeWord: "{word} kelimesini kaldır",
-    savedEmpty: "Giriş yap, okuma aç ve işe yarayan kelimelere dokun. Tekrar desten burada oluşacak.",
+    wrong: "Yakındı ama değil. Doğru cevap: {answer}",
+    savedMeta: "Destende {count} kelime var",
+    removeWord: "{word} kelimesini çıkar",
+    savedEmpty: "Giriş yap, bir okuma aç ve işine yarayan kelimelere dokun. Kendi tekrar desten burada birikecek.",
     randomize: "Karıştır",
     clearHistory: "Geçmişi temizle",
-    profileCopy: "Hesap erişimi burada. Okuma akışından çıkmadan giriş yap, hesap oluştur veya çıkış yap.",
-    accountSave: "Kelimeleri kaydetmek ve kişisel tekrarı açmak için giriş yap.",
-    activeAccount: "Aktif hesap",
+    profileCopy: "Hesabın burada. Okumadan kopmadan giriş yapabilir, hesap açabilir veya çıkış yapabilirsin.",
+    accountSave: "Kelimelerin kaybolmasın diye giriş yap.",
+    activeAccount: "Açık hesap",
     savedWordsLabel: "Kayıtlı kelimeler",
-    mastered: "Öğrenildi",
-    dailyGoal: "Günlük hedef",
-    streak: "Seri {count}",
+    mastered: "Pekişti",
+    dailyGoal: "Bugünkü hedef",
+    streak: "Seri: {count}",
     wordsToday: "Bugün {saved} / {goal} kelime",
-    hardWords: "{count} zor kelime tekrar için hazır.",
+    hardWords: "{count} zor kelime tekrar bekliyor.",
     readingLog: "Okuma kaydı",
-    progressDeskTitle: "Pratiğin görünür hale geliyor.",
-    progressDeskBody: "Açtığın her okuma ve kaydettiğin her kelime bu ilerleme masasına eklenir.",
-    totalTexts: "Toplam metin",
+    progressDeskTitle: "Emeğin görünür oluyor.",
+    progressDeskBody: "Açtığın her okuma ve kaydettiğin her kelime burada küçük bir iz bırakıyor.",
+    totalTexts: "Toplam okuma",
     today: "Bugün",
-    wordsTodayShort: "Bugünkü kelime",
-    dailyHistory: "Günlük geçmiş",
-    dailyHistoryBody: "Metin ve kelime sayıları güne göre gruplanır; ilerleme somutlaşır.",
-    profileTipActive: "Döngüyü sade tut: oku, işe yarayan kalıpları kaydet, sonra quizle geri dön.",
-    profileTipEmpty: "İlk okumayı aç; bu panel ritmini takip etmeye başlayacak.",
+    wordsTodayShort: "Bugünkü kelimeler",
+    dailyHistory: "Günlük iz",
+    dailyHistoryBody: "Metin ve kelime sayıları gün gün birikir; ne yaptığını net görürsün.",
+    profileTipActive: "Sade döngü: oku, iyi kelimeleri kaydet, sonra quizle geri dön.",
+    profileTipEmpty: "İlk okumayı aç; ritmin burada görünmeye başlayacak.",
     memberSince: "{date} tarihinden beri üye",
     profilePoints: "{count} puan",
-    profileToNext: "{label} için %{percent}",
+    profileToNext: "%{percent} kaldı: {label}",
     profileMaxLevel: "En üst ritim seviyesi",
-    profileNextRead: "Bugünkü hedef için bir okuma aç ve {count} kelime daha kaydet.",
-    profileNextQuiz: "Kayıtlı kelimeleri hafızaya çevirmek için bir quiz turu başlat.",
-    profileNextSocial: "Pratiği daha az yalnız hissettirmek için bir arkadaş ekle.",
-    profileNextSteady: "Ritim iyi. Bugün bir okuma daha açıp döngüyü canlı tut.",
-    dailyTotalsEmpty: "Günlük toplamlar ilk giriş yapılmış okumadan sonra görünür.",
-    recentReadingsEmpty: "Son okumaların burada görünecek.",
+    profileNextRead: "Bugünkü hedef için bir okuma daha aç ve {count} kelime kaydet.",
+    profileNextQuiz: "Kaydettiklerini hafızaya almak için kısa bir quiz çöz.",
+    profileNextSocial: "İstersen bir arkadaş ekle; pratik biraz daha canlı gelsin.",
+    profileNextSteady: "Güzel gidiyorsun. Bugün bir kısa okuma daha ritmi korur.",
+    dailyTotalsEmpty: "Günlük özet, ilk kayıtlı okumadan sonra dolacak.",
+    recentReadingsEmpty: "Son okumaların burada birikecek.",
     signInTrail: "Okuma izini saklamak için giriş yap.",
-    signInProgress: "Günlük metin ve kelime geçmişi için giriş yap.",
-    readingPrompt: "Anlam panelini açmak için herhangi bir kelime seç.",
-    mobileTapTranslation: "Dokunma Çevirisi",
+    signInProgress: "Günlük ilerlemeni saklamak için giriş yap.",
+    readingPrompt: "Anlam, bağlam ve örnek için merak ettiğin kelimeye dokun.",
+    mobileTapTranslation: "Dokun, anlamını gör",
     recentReadings: "Son okumalar",
-    recentReadingsBody: "Son kitaplık seçimlerin hızlı dönüş için burada kalır.",
-    socialPanelBody: "Küçük bir öğrenme çevresi kur. Kullanıcı adıyla arkadaş ekle, seri ritmini karşılaştır ve devam edenlere küçük destek gönder.",
+    recentReadingsBody: "Son seçtiğin metinler hızlıca geri dönmen için burada kalır.",
+    socialPanelBody: "Sakin bir çalışma çevresi kur. Kullanıcı adıyla arkadaş ekle, ritminiz görünür kalsın ve birbirinize küçük destekler bırakın.",
     learningCircle: "Öğrenme çevresi",
-    socialHeroTitle: "Gürültülü akış olmadan sorumluluk hissi.",
-    socialHeroBody: "Arkadaşlar yalnızca hafif pratik verilerini görür: seri, toplam metin, kayıtlı kelime ve bugünkü kelime sayısı.",
+    socialHeroTitle: "Okuyan insanlar için sessiz bir devam hissi.",
+    socialHeroBody: "Arkadaşların yalnızca işe yarayan sinyalleri görür: seri, toplam okuma, kayıtlı kelime ve bugünkü pratik.",
     findUsername: "Kullanıcı adıyla bul",
     friendPlaceholder: "arkadas_kullanici_adi",
-    socialFieldNote: "En az 3 karakter yaz. Tam kullanıcı adları anında eklenebilir.",
+    socialFieldNote: "En az 3 karakter yaz. Tam kullanıcı adını biliyorsan hemen ekleyebilirsin.",
     sendRequest: "İstek gönder",
-    socialGuest: "Arkadaş eklemek ve sosyal çevreni açmak için giriş yap.",
+    socialGuest: "Arkadaş eklemek için giriş yap; sakin çalışma çevren burada açılacak.",
     suggestions: "Öneriler",
-    suggestionsBody: "Çevrene davet edebileceğin son öğrenenler.",
+    suggestionsBody: "Okuma ritmine davet edebileceğin kişiler.",
     requests: "İstekler",
-    cheers: "Destekler",
+    cheers: "Tebrikler",
     pending: "Bekleyen",
-    manualBody: "Bir kelimeye ikinci bakış gerektiğinde hızlı açıklama al.",
+    acceptRequest: "Kabul et",
+    declineRequest: "Geç",
+    addFriend: "Davet et",
+    cheerFriend: "Destekle",
+    removeFriend: "Çıkar",
+    friendStatus: "Arkadaş",
+    pendingStatus: "Bekliyor",
+    socialSearching: "Öğrenenler aranıyor...",
+    socialSearchResults: "Arama sonucu",
+    socialNoLearner: "Bu kullanıcı adıyla biri görünmüyor.",
+    socialSignInCompare: "Arkadaşlarınla ritmini karşılaştırmak için giriş yap.",
+    socialNoFriends: "Henüz arkadaş yok. Bir kullanıcı adı ekle; çalışma biraz daha canlı gelsin.",
+    socialNoSuggestions: "İlk arkadaşını davet etmek için yukarıdan kullanıcı adı ara.",
+    socialCheerFailed: "Destek gönderilemedi.",
+    socialCheerSent: "Destek gitti. Küçük bir işaret bazen iyi gelir.",
+    friendRequestSent: "Arkadaşlık isteği gönderildi.",
+    friendRequestFailed: "Arkadaşlık isteği gönderilemedi.",
+    socialColdStart: "Yeni başlıyor",
+    socialTexts: "okuma",
+    socialSaved: "kayıtlı",
+    socialToday: "bugün",
+    socialStreak: "{count} gün seri",
+    socialReadingPulse: "Okuma ritmi",
+    manualBody: "Bir kelime aklına takıldıysa burada hızlıca açıklayalım.",
     typeWord: "Kelime yaz",
-    explainWord: "Kelimeyi Açıkla",
-    infoBody: "Ürünü, mevcut yayın durumunu ve ekibe nereden ulaşılacağını anlatan daha temiz kurumsal alan.",
-    infoHeroLabel: "ReadLex Ofis",
-    infoHeroTitle: "Daha sakin ve daha profesyonel yüzü olan bir okuma ürünü.",
-    infoHeroBody: "Bu panel ReadLex'in ne yaptığını, mevcut sürümün nasıl anlaşılması gerektiğini ve lansman sürecinde destek veya iş iletişiminin nereye gideceğini açıklar.",
+    explainWord: "Kelimeyi açıkla",
+    infoBody: "ReadLex'i, şu anki sürümü ve bize nereden ulaşacağını anlatan sade bir alan.",
+    infoHeroLabel: "ReadLex",
+    infoHeroTitle: "Okumayı merkeze alan, sakin bir İngilizce çalışma alanı.",
+    infoHeroBody: "ReadLex; kısa okumaları, kelime kaydetmeyi ve bağlamla tekrar etmeyi tek akışta toplar. Geri bildirim, destek veya iş iletişimi için bize buradan ulaşabilirsin.",
   },
 };
 
@@ -1605,7 +1653,10 @@ function renderMeta(level, topic, text) {
 
 function renderSelection() {
   const item = state.glossary[state.selectedWord] || {};
-  const meaning = item.turkish || uiText("chooseWord");
+  const hasSelection = Boolean(state.selectedWord);
+  const meaning = state.loadingWord && hasSelection
+    ? uiText("preparingMeaning")
+    : item.turkish || uiText("chooseWord");
   const contextHtml = state.loadingWord
     ? uiText("preparingContext")
     : buildInsightHtml(item.context, state.selectedWord, {
@@ -1625,7 +1676,6 @@ function renderSelection() {
   selectedMeaningEl.textContent = meaning;
   selectedContextEl.innerHTML = contextHtml;
   selectedExampleEl.innerHTML = exampleHtml;
-  const hasSelection = Boolean(state.selectedWord);
   insightCoachEl?.classList.toggle("is-empty", !hasSelection && !state.loadingWord);
   insightCoachEl?.classList.toggle("is-loading", Boolean(state.loadingWord));
   insightCoachEl?.classList.toggle("has-word", hasSelection && !state.loadingWord);
@@ -1651,8 +1701,14 @@ function renderSelection() {
         : uiText("usageCoachReady");
   }
   renderCollocations(selectedCollocationsEl, item.collocations || []);
-  flipCardEl.classList.remove("flipped");
-  flipCardEl.classList.toggle("clickable", !state.loadingWord && Boolean(state.selectedWord));
+  flipCardEl.classList.toggle("clickable", !state.loadingWord && hasSelection);
+  if (hasSelection && !isMobilePreview()) {
+    flipCardEl.classList.add("instant-flip");
+    flipCardEl.classList.add("flipped");
+    window.requestAnimationFrame(() => flipCardEl.classList.remove("instant-flip"));
+  } else if (!hasSelection) {
+    flipCardEl.classList.remove("instant-flip", "flipped");
+  }
   pronounceWordBtn?.classList.toggle("hidden", !state.selectedWord);
 
   if (mobileWordTitleEl) mobileWordTitleEl.textContent = state.selectedWord || uiText("word");
@@ -1700,7 +1756,7 @@ function renderSavedWords() {
     button.addEventListener("click", async () => {
       if (!state.text) return;
       state.selectedWord = button.dataset.word;
-      state.pendingFlip = true;
+      state.pendingFlip = false;
       renderSelection();
       renderReadingText();
       await loadWordDetail(button.dataset.word);
@@ -1979,11 +2035,18 @@ function bindNavMenuAction(button, view) {
   });
 }
 
+function socialEmptyState(key) {
+  return `<p class="history-empty social-empty-state">${escapeHtml(uiText(key))}</p>`;
+}
+
 function renderSocialCard(user, { action = "", requestId = "", friendshipId = "" } = {}) {
   const relationship = user.relationship || "";
-  const badge = user.reason || (user.streak > 0 ? `Streak ${user.streak}` : `${user.total_readings || 0} texts`);
+  const totalReadings = Number(user.total_readings || 0);
+  const savedWords = Number(user.saved_words || 0);
+  const wordsToday = Number(user.words_today || 0);
+  const badge = user.reason || (user.streak > 0 ? uiText("socialStreak", { count: user.streak }) : `${totalReadings} ${uiText("socialTexts")}`);
   const fireLevel = Number(user.fire_level || 0);
-  const fireText = fireLevel > 0 ? `${user.fire_icon || "🔥"} ${user.fire_label || "On fire"}` : "Cold start";
+  const fireText = fireLevel > 0 ? user.fire_label || uiText("socialReadingPulse") : uiText("socialColdStart");
   const resolvedAction =
     relationship === "friend"
       ? "friend-label"
@@ -1995,27 +2058,38 @@ function renderSocialCard(user, { action = "", requestId = "", friendshipId = ""
   const actionHtml =
     resolvedAction === "accept"
       ? `<div class="social-actions">
-          <button class="ghost-btn ghost-btn-inline social-accept" type="button" data-request-id="${requestId}">Accept</button>
-          <button class="ghost-btn ghost-btn-inline social-decline" type="button" data-request-id="${requestId}">Decline</button>
+          <button class="ghost-btn ghost-btn-inline social-accept" type="button" data-request-id="${requestId}">${escapeHtml(uiText("acceptRequest"))}</button>
+          <button class="ghost-btn ghost-btn-inline social-decline" type="button" data-request-id="${requestId}">${escapeHtml(uiText("declineRequest"))}</button>
         </div>`
       : resolvedAction === "add"
-        ? `<button class="ghost-btn ghost-btn-inline social-add-suggested" type="button" data-username="${escapeHtml(user.username)}">Add</button>`
+        ? `<button class="ghost-btn ghost-btn-inline social-add-suggested" type="button" data-username="${escapeHtml(user.username)}">${escapeHtml(uiText("addFriend"))}</button>`
         : resolvedAction === "friend"
           ? `<div class="social-actions">
-              <button class="ghost-btn ghost-btn-inline social-cheer" type="button" data-friendship-id="${friendshipId}">Cheer</button>
-              <button class="ghost-btn ghost-btn-inline social-remove" type="button" data-friendship-id="${friendshipId}">Remove</button>
+              <button class="ghost-btn ghost-btn-inline social-cheer" type="button" data-friendship-id="${friendshipId}">${escapeHtml(uiText("cheerFriend"))}</button>
+              <button class="ghost-btn ghost-btn-inline social-remove" type="button" data-friendship-id="${friendshipId}">${escapeHtml(uiText("removeFriend"))}</button>
             </div>`
           : resolvedAction === "friend-label"
-            ? `<span class="social-pending social-status-good">Friend</span>`
-            : `<span class="social-pending">Pending</span>`;
+            ? `<span class="social-pending social-status-good">${escapeHtml(uiText("friendStatus"))}</span>`
+            : `<span class="social-pending">${escapeHtml(uiText("pendingStatus"))}</span>`;
   return `
-    <article class="social-card">
-      <div class="social-avatar">${escapeHtml(String(user.username || "U").charAt(0).toUpperCase())}</div>
-      <div class="social-card-copy">
-        <strong>${escapeHtml(user.username || "user")}</strong>
-        <span>${escapeHtml(fireText)} · ${escapeHtml(badge)} · ${Number(user.saved_words || 0)} saved · ${Number(user.words_today || 0)} today</span>
+    <article class="social-card" data-social-action="${escapeHtml(resolvedAction || "neutral")}">
+      <div class="social-avatar-wrap">
+        <div class="social-avatar">${escapeHtml(String(user.username || "U").charAt(0).toUpperCase())}</div>
+        <span class="social-presence-dot" aria-hidden="true"></span>
       </div>
-      ${actionHtml}
+      <div class="social-card-copy">
+        <div class="social-card-head">
+          <strong>@${escapeHtml(user.username || "user")}</strong>
+          <span class="social-card-badge">${escapeHtml(fireText)}</span>
+        </div>
+        <span class="social-card-line">${escapeHtml(badge)}</span>
+        <div class="social-metrics" aria-label="${escapeHtml(uiText("socialReadingPulse"))}">
+          <span><b>${totalReadings}</b>${escapeHtml(uiText("socialTexts"))}</span>
+          <span><b>${savedWords}</b>${escapeHtml(uiText("socialSaved"))}</span>
+          <span><b>${wordsToday}</b>${escapeHtml(uiText("socialToday"))}</span>
+        </div>
+      </div>
+      <div class="social-action-cell">${actionHtml}</div>
     </article>
   `;
 }
@@ -2030,13 +2104,13 @@ function renderSocialSearchResults() {
   }
   socialSearchResultsEl.classList.remove("hidden");
   if (state.socialSearch.loading) {
-    socialSearchResultsEl.innerHTML = `<p class="history-empty">Searching learners...</p>`;
+    socialSearchResultsEl.innerHTML = socialEmptyState("socialSearching");
     return;
   }
   const results = state.socialSearch.results || [];
   socialSearchResultsEl.innerHTML = `
     <div class="social-search-head">
-      <strong>Search results</strong>
+      <strong>${escapeHtml(uiText("socialSearchResults"))}</strong>
       <span>${escapeHtml(query)}</span>
     </div>
     ${
@@ -2050,7 +2124,7 @@ function renderSocialSearchResults() {
               })
             )
             .join("")
-        : `<p class="history-empty">No learner found with that username yet.</p>`
+        : socialEmptyState("socialNoLearner")
     }
   `;
   bindSocialActions(socialSearchResultsEl);
@@ -2074,13 +2148,13 @@ function bindSocialActions(root = document) {
     button.addEventListener("click", async () => {
       const parsed = await apiFetch(`/api/social/friends/${button.dataset.friendshipId}/cheer`, { method: "POST" });
       if (!parsed.ok) {
-        showToast(parsed.data.detail || "Cheer could not be sent.", { variant: "error", scope: "social" });
+        showToast(parsed.data.detail || uiText("socialCheerFailed"), { variant: "error", scope: "social" });
         return;
       }
       state.social = parsed.data;
       renderSocialPanel();
       syncProfileSocialMini();
-      showToast("Cheer sent. Tiny win, good energy.", { variant: "info", scope: "social" });
+      showToast(uiText("socialCheerSent"), { variant: "info", scope: "social" });
     });
   });
   root.querySelectorAll?.(".social-remove").forEach((button) => {
@@ -2105,7 +2179,7 @@ function renderSocialPanel() {
   if (socialPendingCountEl) socialPendingCountEl.textContent = String(summary.outgoing_count || 0);
   if (!loggedIn) {
     if (socialIncomingListEl) socialIncomingListEl.innerHTML = "";
-    if (socialFriendsListEl) socialFriendsListEl.innerHTML = `<p class="history-empty">Sign in to compare streaks with friends.</p>`;
+    if (socialFriendsListEl) socialFriendsListEl.innerHTML = socialEmptyState("socialSignInCompare");
     if (socialSuggestionsListEl) socialSuggestionsListEl.innerHTML = "";
     return;
   }
@@ -2122,12 +2196,12 @@ function renderSocialPanel() {
   if (socialFriendsListEl) {
     socialFriendsListEl.innerHTML = friends.length
       ? friends.map((user) => renderSocialCard(user, { action: "friend", friendshipId: user.friendship_id })).join("")
-      : `<p class="history-empty">No friends yet. Add a username to start your circle.</p>`;
+      : socialEmptyState("socialNoFriends");
   }
   if (socialSuggestionsListEl) {
     socialSuggestionsListEl.innerHTML = suggestions.length
       ? suggestions.map((user) => renderSocialCard(user, { action: "add" })).join("")
-      : `<p class="history-empty">Search a username above to invite your first friend.</p>`;
+      : socialEmptyState("socialNoSuggestions");
   }
   renderSocialSearchResults();
   bindSocialActions(socialIncomingListEl);
@@ -2166,9 +2240,9 @@ async function sendFriendRequest(username) {
     if (socialUsernameInputEl) socialUsernameInputEl.value = "";
     renderSocialPanel();
     syncProfileSocialMini();
-    showToast("Friend request sent.", { variant: "info", scope: "social" });
+    showToast(uiText("friendRequestSent"), { variant: "info", scope: "social" });
   } catch (error) {
-    showToast(error.message || "Friend request failed.", { variant: "error", scope: "social" });
+    showToast(error.message || uiText("friendRequestFailed"), { variant: "error", scope: "social" });
   } finally {
     setLoading(socialAddBtn, "", false);
   }
@@ -2868,9 +2942,9 @@ async function loadWordDetail(word) {
     }
   } catch (error) {
     state.glossary[word] = {
-      turkish: "Türkçe anlam alınamadı.",
-      context: error.message || "Word detail is not available right now.",
-      example: "No example sentence available.",
+      turkish: state.uiLanguage === "tr" ? "Şu an anlamı getiremedim." : "Meaning is not available right now.",
+      context: error.message || (state.uiLanguage === "tr" ? "Bu kelime için bağlamı şu an hazırlayamadım." : "Word detail is not available right now."),
+      example: state.uiLanguage === "tr" ? "Şu an örnek cümle hazırlayamadım." : "No example sentence available.",
       collocations: [],
     };
   } finally {
@@ -2916,7 +2990,7 @@ function renderReadingText() {
       }
       state.selectedWord = nextWord;
       state.dismissedMobileWord = "";
-      state.pendingFlip = true;
+      state.pendingFlip = false;
       renderSelection();
       renderReadingText();
       await loadWordDetail(nextWord);
@@ -2956,7 +3030,7 @@ function renderExperience() {
   }
   renderSelection();
   selectedContextEl.textContent = state.uiLanguage === "tr"
-    ? "Okuma hazır. Türkçe bağlamı açmak için bir kelimeye dokun."
+    ? "Okuma hazır. Merak ettiğin bir kelimeye dokun; anlamı burada birlikte açalım."
     : "The reading is ready. Tap a word to open its Turkish context.";
   selectedExampleEl.textContent = uiText("exampleEmpty");
   renderQuiz();

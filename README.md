@@ -75,6 +75,18 @@ SMTP_USE_TLS=true
 
 This repo includes a Render blueprint in [render.yaml](C:\Users\PC\Desktop\proje\render.yaml).
 
+## Release / Rollback Safety
+
+The 2026-04-25 social panel and recovery UI release is documented in [RELEASE_ROLLBACK_NOTES.md](RELEASE_ROLLBACK_NOTES.md).
+
+- Previous stable main is preserved at commit `d813c85d368423288e72d3253cadaba35e39669c`
+- Backup branch: `backup/main-before-social-release-20260425`
+- Backup tag: `main-before-social-release-20260425`
+- Current release asset version: `20260425social3`
+- Current service worker cache: `readlex-shell-v65`
+
+Do not delete the backup branch or tag until this release has been stable in production. If a rollback is needed, follow the notes in `RELEASE_ROLLBACK_NOTES.md` and avoid force-pushing unless it is explicitly approved.
+
 ### Render staging flow
 
 1. Push this project to GitHub

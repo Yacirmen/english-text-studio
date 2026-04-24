@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260424hubsync" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260425social3" />
 </head>
 <body>
   <div id="welcomeGate" class="welcome-gate">
@@ -29,28 +29,28 @@
           <span class="welcome-headline-line welcome-headline-line-remember">Remember.</span>
         </h1>
         <div class="welcome-side-note welcome-side-note-compact">
-          <span>Stop forgetting what you learn.</span>
-          <p>Read it once. Keep it forever.</p>
+          <span>Read short English. Save what matters.</span>
+          <p>Tap useful words, keep their context, and review them later.</p>
         </div>
         <div class="welcome-feature-list" aria-label="ReadLex benefits">
           <article class="welcome-feature-card">
             <span class="welcome-feature-icon welcome-feature-icon-green" aria-hidden="true"></span>
             <div class="welcome-feature-copy">
               <strong>Save in one tap</strong>
-              <p>Catch useful words without leaving the reading flow.</p>
+              <p>Capture useful words without breaking your focus.</p>
             </div>
           </article>
           <article class="welcome-feature-card">
             <span class="welcome-feature-icon welcome-feature-icon-blue" aria-hidden="true"></span>
             <div class="welcome-feature-copy">
               <strong>Review with context</strong>
-              <p>Keep phrases, meanings, and examples tied together.</p>
+              <p>Keep meanings, sentence context, and examples together.</p>
             </div>
           </article>
           <article class="welcome-feature-card welcome-feature-card-wide">
             <div class="welcome-feature-copy">
               <strong>Less clutter. Better recall.</strong>
-              <p>A calmer reading space built for retention, not noise.</p>
+              <p>A focused reading loop that stays quiet until it can help.</p>
             </div>
           </article>
         </div>
@@ -78,7 +78,7 @@
           <div id="gateAuthCard" class="auth-flip-card" aria-live="polite">
             <section class="auth-face auth-face-login">
               <span class="auth-face-kicker">Welcome back</span>
-              <strong class="auth-face-title">Pick up where your saved words left off.</strong>
+              <strong class="auth-face-title">Return to your saved words, reading trail, and review rhythm.</strong>
               <form id="gateLoginForm" class="stack-md auth-form">
                 <label class="field">
                   <span>Username</span>
@@ -94,7 +94,7 @@
             </section>
             <section class="auth-face auth-face-register">
               <span class="auth-face-kicker">New account</span>
-              <strong class="auth-face-title">Create your reading space and keep every win.</strong>
+              <strong class="auth-face-title">Create a private space for the words and phrases you notice.</strong>
               <form id="gateRegisterForm" class="stack-md auth-form">
                 <label class="field">
                   <span>Username</span>
@@ -172,7 +172,7 @@
             <div class="nav-menu-topline">
               <div class="nav-menu-overview">
                 <span class="nav-menu-overview-kicker">Workspace</span>
-                <strong class="nav-menu-overview-title">Everything important, one tap away.</strong>
+                <strong class="nav-menu-overview-title">Your reading tools, progress, and account in one quiet hub.</strong>
               </div>
               <div class="nav-menu-switcher" role="tablist" aria-label="Study Hub sections">
                 <button class="nav-menu-switch active" type="button" data-menu-category="account" role="tab" aria-selected="true">Account</button>
@@ -186,7 +186,7 @@
                 <button id="openProgressBtn" class="nav-menu-item nav-menu-item-pink" type="button" role="menuitem">
                   <span class="nav-menu-item-copy">
                     <strong>Progress</strong>
-                    <small>Daily streak, reading log, and visible practice momentum.</small>
+                    <small>See your reading rhythm, saved words, and daily practice.</small>
                   </span>
                   <span class="nav-menu-badge" aria-hidden="true">Stats</span>
                 </button>
@@ -363,7 +363,7 @@
             <button id="generateBtn" class="primary-btn" type="submit">Get Reading</button>
             <div class="setup-footer">
               <div id="libraryCountBadge" class="library-count-badge hidden">Loading library count...</div>
-              <p id="libraryModeHint" class="setup-footer-note hidden">One click opens a ready text. Your taps build saved words, quiz material, and progress history.</p>
+              <p id="libraryModeHint" class="setup-footer-note hidden">Open a curated text instantly. Useful taps become saved words, quiz material, and progress.</p>
             </div>
           </form>
           <div class="session-flow" aria-label="ReadLex learning flow">
@@ -388,7 +388,7 @@
 
       <section class="reading-stage">
         <div id="previewState" class="preview-state">
-          Ready. Start with a curated reading, then tap any word to turn the text into a review deck.
+          Choose a level, open a reading, then tap useful words to build your review deck.
         </div>
 
         <div id="readingExperience" class="experience-grid hidden">
@@ -396,7 +396,7 @@
             <div class="reading-header">
               <div id="metaTags" class="tag-row"></div>
               <h3 id="readingTitle" class="reading-title hidden"></h3>
-              <p class="muted-copy">Choose any word to activate the meaning panel.</p>
+              <p class="muted-copy">Tap a useful word to open meaning, context, and example.</p>
             </div>
             <div class="reading-body" id="readingBody"></div>
             <div class="action-row">
@@ -411,12 +411,12 @@
                 <div class="flip-face flip-front">
                   <span class="mini-label">Selected Word</span>
                   <h3 id="selectedWord">Word</h3>
-                  <p>Tap anywhere on the card to flip to the Turkish meaning.</p>
+                  <p>Tap the card to see the Turkish meaning.</p>
                 </div>
                 <div class="flip-face flip-back">
                   <span class="mini-label">Turkish Meaning</span>
                   <h3 id="selectedMeaning">Anlam</h3>
-                  <p>Tap anywhere on the card to flip back.</p>
+                  <p>Tap again to return to the English word.</p>
                 </div>
               </div>
             </div>
@@ -661,12 +661,12 @@
     </section>
 
     <section id="socialPanel" class="library-section hidden">
-      <p class="library-copy">Build a small learning circle. Add friends by username, compare streak rhythm, and send a quick cheer when they keep going.</p>
+      <p class="library-copy">Build a calm study circle. Invite friends by username, keep the rhythm visible, and nudge each other without turning reading into a feed.</p>
       <div class="social-hero-card">
-        <div>
+        <div class="social-hero-copy">
           <span class="mini-label on-dark">Learning circle</span>
-          <h3>Accountability without a noisy feed.</h3>
-          <p>Friends only see lightweight practice stats: streak, total texts, saved words, and today's word count.</p>
+          <h3>Quiet accountability for people who read.</h3>
+          <p>Friends see only the useful signals: streak, total readings, saved words, and today's practice count.</p>
         </div>
         <div class="social-hero-meter">
           <span id="socialFriendCount">0</span>
@@ -698,19 +698,21 @@
       <div id="socialSearchResults" class="social-search-results hidden"></div>
       <div id="socialGuestNote" class="helper-note hidden">Sign in to add friends and unlock your social circle.</div>
       <div id="socialIncomingList" class="social-stack"></div>
-      <div class="profile-panel social-panel-block">
-        <div class="section-head compact">
-          <h3>Friends</h3>
-          <p>Compare streaks without turning the product into a noisy feed.</p>
+      <div class="social-panel-grid">
+        <div class="profile-panel social-panel-block social-panel-block-primary">
+          <div class="section-head compact">
+            <h3>Friends</h3>
+            <p>Your quiet circle for streaks, saved words, and small cheers.</p>
+          </div>
+          <div id="socialFriendsList" class="social-list"></div>
         </div>
-        <div id="socialFriendsList" class="social-list"></div>
-      </div>
-      <div class="profile-panel social-panel-block">
-        <div class="section-head compact">
-          <h3>Suggestions</h3>
-          <p>Recent learners you can invite into your circle.</p>
+        <div class="profile-panel social-panel-block social-panel-block-secondary">
+          <div class="section-head compact">
+            <h3>Suggestions</h3>
+            <p>People you can invite into your reading rhythm.</p>
+          </div>
+          <div id="socialSuggestionsList" class="social-list"></div>
         </div>
-        <div id="socialSuggestionsList" class="social-list"></div>
       </div>
     </section>
 
@@ -839,7 +841,7 @@
     </section>
   </aside>
 
-<script src="/assets/app.js?v=20260424hubsync"></script>
+<script src="/assets/app.js?v=20260425social3"></script>
   <script>
     if ("serviceWorker" in navigator && window.location.protocol !== "capacitor:") {
       window.addEventListener("load", () => {
