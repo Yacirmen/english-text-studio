@@ -1913,11 +1913,7 @@ function isDesktopMenuMode() {
 function syncNavMenuPosition() {
   if (!navMenuEl) return;
   if (!isDesktopMenuMode()) {
-    navMenuEl.style.left = "";
-    navMenuEl.style.right = "";
-    navMenuEl.style.top = "";
-    navMenuEl.style.width = "";
-    navMenuEl.style.position = "";
+    ["left", "right", "top", "width", "position"].forEach((property) => navMenuEl.style.removeProperty(property));
     return;
   }
   const anchorEl = navMenuMarkTriggerEl || navMenuTriggerEl;
@@ -1926,11 +1922,11 @@ function syncNavMenuPosition() {
   const menuWidth = Math.min(360, window.innerWidth - 24);
   const left = Math.min(Math.max(12, anchorRect.left), Math.max(12, window.innerWidth - menuWidth - 12));
   const top = anchorRect.bottom + 12;
-  navMenuEl.style.position = "fixed";
-  navMenuEl.style.left = `${Math.round(left)}px`;
-  navMenuEl.style.right = "auto";
-  navMenuEl.style.top = `${Math.round(top)}px`;
-  navMenuEl.style.width = `${Math.round(menuWidth)}px`;
+  navMenuEl.style.setProperty("position", "fixed", "important");
+  navMenuEl.style.setProperty("left", `${Math.round(left)}px`, "important");
+  navMenuEl.style.setProperty("right", "auto", "important");
+  navMenuEl.style.setProperty("top", `${Math.round(top)}px`, "important");
+  navMenuEl.style.setProperty("width", `${Math.round(menuWidth)}px`, "important");
 }
 
 function setNavMenuOpen(isOpen) {
@@ -1946,11 +1942,7 @@ function setNavMenuOpen(isOpen) {
     window.requestAnimationFrame(syncNavMenuPosition);
     window.setTimeout(syncNavMenuPosition, 24);
   } else if (navMenuEl && !isDesktopMenuMode()) {
-    navMenuEl.style.left = "";
-    navMenuEl.style.right = "";
-    navMenuEl.style.top = "";
-    navMenuEl.style.width = "";
-    navMenuEl.style.position = "";
+    ["left", "right", "top", "width", "position"].forEach((property) => navMenuEl.style.removeProperty(property));
   }
 }
 
