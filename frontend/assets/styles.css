@@ -10747,17 +10747,48 @@ body[data-language="tr"] .welcome-auth .gate-language-control span:nth-child(2){
 }
 
 .account-stats-expanded{
-  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
-  gap:8px !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:10px !important;
   margin-top:0 !important;
 }
 
 .account-stats-expanded div{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
   min-width:0;
-  padding:10px;
+  min-height:76px;
+  padding:12px 10px;
   border-radius:16px;
   background:rgba(255,255,255,.075);
   border:1px solid rgba(203,222,247,.10);
+  text-align:center;
+  overflow:hidden;
+}
+
+.account-stats-expanded span,
+.account-stats-expanded strong{
+  width:100%;
+  max-width:100%;
+  text-align:center;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.account-stats-expanded span{
+  margin:0;
+  white-space:nowrap;
+  font-size:.64rem !important;
+  letter-spacing:.06em !important;
+  line-height:1.15;
+}
+
+.account-stats-expanded strong{
+  margin-top:7px !important;
+  white-space:nowrap;
+  font-size:clamp(1.14rem, 2.8vw, 1.42rem) !important;
+  line-height:1.05 !important;
 }
 
 .profile-next-step{
@@ -10836,6 +10867,12 @@ body:not(.dark-mode) .profile-next-step{
 @media (max-width: 680px){
   .account-stats-expanded{
     grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:9px !important;
+  }
+
+  .account-stats-expanded div{
+    min-height:70px;
+    padding:11px 8px;
   }
 
   .account-rank-strip{
@@ -10860,5 +10897,46 @@ body:not(.dark-mode) .profile-next-step{
 
   .social-summary-grid strong{
     font-size:1.28rem;
+  }
+}
+
+/* Study Hub layer fix: keep the opened hub above the setup surface. */
+.topbar,
+body:not(.dark-mode) .topbar,
+body.dark-mode .topbar{
+  position:relative !important;
+  z-index:1800 !important;
+}
+
+.top-status,
+.menu-shell{
+  z-index:1810 !important;
+}
+
+.nav-menu{
+  position:fixed !important;
+  top:92px !important;
+  left:32px !important;
+  right:auto !important;
+  z-index:1900 !important;
+  width:min(420px, calc(100vw - 40px)) !important;
+  max-width:calc(100vw - 40px) !important;
+  max-height:calc(100dvh - 112px) !important;
+  transform:translateY(-8px) scale(.98) !important;
+  transform-origin:top left !important;
+}
+
+.menu-shell.is-open .nav-menu{
+  transform:translateY(0) scale(1) !important;
+}
+
+@media (max-width: 768px){
+  .nav-menu{
+    top:94px !important;
+    left:16px !important;
+    right:16px !important;
+    width:calc(100vw - 32px) !important;
+    max-width:calc(100vw - 32px) !important;
+    max-height:calc(100dvh - 112px) !important;
   }
 }
