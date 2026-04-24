@@ -78,10 +78,18 @@ const state = {
     fire_next: 1,
     hard_words: 0,
   },
+  profile: null,
   recentWords: [],
   readingHistory: [],
   progressHistory: [],
-  social: { friends: [], incoming: [], outgoing: [], suggestions: [], cheers_received: 0 },
+  social: {
+    friends: [],
+    incoming: [],
+    outgoing: [],
+    suggestions: [],
+    cheers_received: 0,
+    summary: { friend_count: 0, incoming_count: 0, outgoing_count: 0, cheers_received: 0, cheers_sent: 0 },
+  },
   socialSearch: { query: "", results: [], loading: false },
   deferredInstallPrompt: null,
   quiz: null,
@@ -115,6 +123,21 @@ function emptyStats() {
     fire_next: 1,
     hard_words: 0,
   };
+}
+
+function emptySocial() {
+  return {
+    friends: [],
+    incoming: [],
+    outgoing: [],
+    suggestions: [],
+    cheers_received: 0,
+    summary: { friend_count: 0, incoming_count: 0, outgoing_count: 0, cheers_received: 0, cheers_sent: 0 },
+  };
+}
+
+function emptyProfile() {
+  return null;
 }
 
 const $ = (selector) => document.querySelector(selector);
@@ -199,6 +222,14 @@ const showLoginBtn = $("#showLoginBtn");
 const showRegisterBtn = $("#showRegisterBtn");
 const logoutBtn = $("#logoutBtn");
 const accountNameEl = $("#accountName");
+const accountAvatarLargeEl = $("#accountAvatarLarge");
+const accountMetaTextEl = $("#accountMetaText");
+const profileRankLabelEl = $("#profileRankLabel");
+const profileActivityScoreEl = $("#profileActivityScore");
+const profileLevelProgressEl = $("#profileLevelProgress");
+const profileTodayWordsTextEl = $("#profileTodayWordsText");
+const profileFriendTextEl = $("#profileFriendText");
+const profileNextStepTextEl = $("#profileNextStepText");
 const savedWordsCountEl = $("#savedWordsCount");
 const masteredWordsCountEl = $("#masteredWordsCount");
 const dailyGoalTextEl = $("#dailyGoalText");
@@ -215,6 +246,9 @@ const socialUsernameInputEl = $("#socialUsernameInput");
 const socialAddBtn = $("#socialAddBtn");
 const socialGuestNoteEl = $("#socialGuestNote");
 const socialFriendCountEl = $("#socialFriendCount");
+const socialRequestCountEl = $("#socialRequestCount");
+const socialCheerCountEl = $("#socialCheerCount");
+const socialPendingCountEl = $("#socialPendingCount");
 const socialIncomingListEl = $("#socialIncomingList");
 const socialFriendsListEl = $("#socialFriendsList");
 const socialSuggestionsListEl = $("#socialSuggestionsList");
@@ -455,6 +489,14 @@ const UI_COPY = {
     dailyHistoryBody: "Text and word counts grouped by day, so progress feels concrete.",
     profileTipActive: "Keep the loop simple: read, save useful phrases, then return through quiz.",
     profileTipEmpty: "Open your first reading and this desk will start tracking your rhythm.",
+    memberSince: "Member since {date}",
+    profilePoints: "{count} pts",
+    profileToNext: "{percent}% to {label}",
+    profileMaxLevel: "Top level rhythm",
+    profileNextRead: "Open a reading and save {count} more word{plural} to hit today's goal.",
+    profileNextQuiz: "Start a quiz round to turn saved words into memory.",
+    profileNextSocial: "Add a friend to make practice feel less solitary.",
+    profileNextSteady: "Nice rhythm. Keep the loop alive with one more reading today.",
     dailyTotalsEmpty: "Daily totals will appear after your first signed-in reading.",
     recentReadingsEmpty: "Your recent readings will appear here.",
     signInTrail: "Sign in to keep your reading trail.",
@@ -474,6 +516,9 @@ const UI_COPY = {
     socialGuest: "Sign in to add friends and unlock your social circle.",
     suggestions: "Suggestions",
     suggestionsBody: "Recent learners you can invite into your circle.",
+    requests: "Requests",
+    cheers: "Cheers",
+    pending: "Pending",
     manualBody: "Ask for a quick explanation when a word needs a second look.",
     typeWord: "Type a word",
     explainWord: "Explain Word",
@@ -630,6 +675,14 @@ const UI_COPY = {
     dailyHistoryBody: "Metin ve kelime sayıları güne göre gruplanır; ilerleme somutlaşır.",
     profileTipActive: "Döngüyü sade tut: oku, işe yarayan kalıpları kaydet, sonra quizle geri dön.",
     profileTipEmpty: "İlk okumayı aç; bu panel ritmini takip etmeye başlayacak.",
+    memberSince: "{date} tarihinden beri üye",
+    profilePoints: "{count} puan",
+    profileToNext: "{label} için %{percent}",
+    profileMaxLevel: "En üst ritim seviyesi",
+    profileNextRead: "Bugünkü hedef için bir okuma aç ve {count} kelime daha kaydet.",
+    profileNextQuiz: "Kayıtlı kelimeleri hafızaya çevirmek için bir quiz turu başlat.",
+    profileNextSocial: "Pratiği daha az yalnız hissettirmek için bir arkadaş ekle.",
+    profileNextSteady: "Ritim iyi. Bugün bir okuma daha açıp döngüyü canlı tut.",
     dailyTotalsEmpty: "Günlük toplamlar ilk giriş yapılmış okumadan sonra görünür.",
     recentReadingsEmpty: "Son okumaların burada görünecek.",
     signInTrail: "Okuma izini saklamak için giriş yap.",
@@ -649,6 +702,9 @@ const UI_COPY = {
     socialGuest: "Arkadaş eklemek ve sosyal çevreni açmak için giriş yap.",
     suggestions: "Öneriler",
     suggestionsBody: "Çevrene davet edebileceğin son öğrenenler.",
+    requests: "İstekler",
+    cheers: "Destekler",
+    pending: "Bekleyen",
     manualBody: "Bir kelimeye ikinci bakış gerektiğinde hızlı açıklama al.",
     typeWord: "Kelime yaz",
     explainWord: "Kelimeyi Açıkla",
@@ -875,6 +931,9 @@ function applyLanguage(language) {
   setText("#socialAddForm .field-note", "socialFieldNote");
   setText(socialAddBtn, "sendRequest");
   setText(socialGuestNoteEl, "socialGuest");
+  setText(".social-summary-grid article:nth-child(1) span", "requests");
+  setText(".social-summary-grid article:nth-child(2) span", "cheers");
+  setText(".social-summary-grid article:nth-child(3) span", "pending");
   setText(".social-panel-block:nth-of-type(1) .section-head h3", "friends");
   setText(".social-panel-block:nth-of-type(1) .section-head p", "socialBody");
   setText(".social-panel-block:nth-of-type(2) .section-head h3", "suggestions");
@@ -2028,6 +2087,7 @@ function bindSocialActions(root = document) {
       }
       state.social = parsed.data;
       renderSocialPanel();
+      syncProfileSocialMini();
       showToast("Cheer sent. Tiny win, good energy.", { variant: "info", scope: "social" });
     });
   });
@@ -2037,6 +2097,7 @@ function bindSocialActions(root = document) {
       if (!parsed.ok) return;
       state.social = parsed.data;
       renderSocialPanel();
+      syncProfileSocialMini();
     });
   });
 }
@@ -2045,7 +2106,11 @@ function renderSocialPanel() {
   const loggedIn = Boolean(state.user);
   socialAddFormEl?.classList.toggle("hidden", !loggedIn);
   socialGuestNoteEl?.classList.toggle("hidden", loggedIn);
-  if (socialFriendCountEl) socialFriendCountEl.textContent = String(state.social.friends?.length || 0);
+  const summary = getSocialSummary();
+  if (socialFriendCountEl) socialFriendCountEl.textContent = String(summary.friend_count ?? state.social.friends?.length ?? 0);
+  if (socialRequestCountEl) socialRequestCountEl.textContent = String(summary.incoming_count || 0);
+  if (socialCheerCountEl) socialCheerCountEl.textContent = String(summary.cheers_received || state.social.cheers_received || 0);
+  if (socialPendingCountEl) socialPendingCountEl.textContent = String(summary.outgoing_count || 0);
   if (!loggedIn) {
     if (socialIncomingListEl) socialIncomingListEl.innerHTML = "";
     if (socialFriendsListEl) socialFriendsListEl.innerHTML = `<p class="history-empty">Sign in to compare streaks with friends.</p>`;
@@ -2088,9 +2153,10 @@ async function loadSocial() {
     showToast(parsed.data.detail || "Social panel could not load.", { variant: "error", scope: "social" });
     return;
   }
-    state.social = parsed.data;
-    renderSocialSearchResults();
-    renderSocialPanel();
+  state.social = parsed.data;
+  renderSocialSearchResults();
+  renderSocialPanel();
+  syncProfileSocialMini();
 }
 
 async function sendFriendRequest(username) {
@@ -2107,6 +2173,7 @@ async function sendFriendRequest(username) {
     state.socialSearch = { query: "", results: [], loading: false };
     if (socialUsernameInputEl) socialUsernameInputEl.value = "";
     renderSocialPanel();
+    syncProfileSocialMini();
     showToast("Friend request sent.", { variant: "info", scope: "social" });
   } catch (error) {
     showToast(error.message || "Friend request failed.", { variant: "error", scope: "social" });
@@ -2124,6 +2191,7 @@ async function respondSocialRequest(requestId, action) {
   state.social = parsed.data;
   state.socialSearch = { query: "", results: [], loading: false };
   renderSocialPanel();
+  syncProfileSocialMini();
 }
 
 let socialSearchTimer = null;
@@ -2156,6 +2224,50 @@ function formatProgressDate(isoDate) {
   const [year, month, day] = String(isoDate || "").split("-");
   if (!year || !month || !day) return String(isoDate || "Today");
   return `${day}.${month}.${year}`;
+}
+
+function getSocialSummary() {
+  return state.social?.summary || state.profile?.social_summary || {
+    friend_count: state.social?.friends?.length || 0,
+    incoming_count: state.social?.incoming?.length || 0,
+    outgoing_count: state.social?.outgoing?.length || 0,
+    cheers_received: state.social?.cheers_received || 0,
+    cheers_sent: 0,
+  };
+}
+
+function getProfileNextStep() {
+  const remaining = Number(state.profile?.goal_remaining || 0);
+  if (remaining > 0) {
+    return uiText("profileNextRead", {
+      count: remaining,
+      plural: remaining === 1 ? "" : "s",
+    });
+  }
+  if ((state.stats.saved_words || 0) >= 4 && (state.quizStats.answered || 0) === 0) {
+    return uiText("profileNextQuiz");
+  }
+  if ((getSocialSummary().friend_count || 0) === 0) {
+    return uiText("profileNextSocial");
+  }
+  return uiText("profileNextSteady");
+}
+
+function syncProfileSocialMini() {
+  if (profileFriendTextEl) profileFriendTextEl.textContent = String(getSocialSummary().friend_count || 0);
+  if (profileNextStepTextEl) profileNextStepTextEl.textContent = getProfileNextStep();
+}
+
+function localizeProfileLevel(label) {
+  const value = String(label || "Starter reader");
+  if (state.uiLanguage !== "tr") return value;
+  return {
+    "Starter reader": "Başlangıç okuyucusu",
+    "Word collector": "Kelime toplayıcı",
+    "Review builder": "Tekrar kurucusu",
+    "Reading regular": "Düzenli okuyucu",
+    "Recall captain": "Hatırlama kaptanı",
+  }[value] || value;
 }
 
 function renderUserPanel() {
@@ -2199,8 +2311,26 @@ function renderUserPanel() {
     });
 
     accountNameEl.textContent = state.user.username;
+    const initials = String(state.user?.username || "U").trim().charAt(0).toUpperCase() || "U";
+    const profile = state.profile || {};
+    const socialSummary = getSocialSummary();
+    if (accountAvatarLargeEl) accountAvatarLargeEl.textContent = initials;
+    if (accountMetaTextEl) {
+      const memberDate = profile.member_since ? formatProgressDate(profile.member_since) : (state.uiLanguage === "tr" ? "bugün" : "today");
+      accountMetaTextEl.textContent = uiText("memberSince", { date: memberDate });
+    }
+    if (profileRankLabelEl) profileRankLabelEl.textContent = localizeProfileLevel(profile.level_label);
+    if (profileActivityScoreEl) profileActivityScoreEl.textContent = uiText("profilePoints", { count: Number(profile.activity_score || 0) });
+    if (profileLevelProgressEl) {
+      profileLevelProgressEl.textContent = profile.next_label
+        ? uiText("profileToNext", { percent: Number(profile.level_progress || 0), label: localizeProfileLevel(profile.next_label) })
+        : uiText("profileMaxLevel");
+    }
     savedWordsCountEl.textContent = state.stats.saved_words || 0;
     masteredWordsCountEl.textContent = state.stats.mastered_words || 0;
+    if (profileTodayWordsTextEl) profileTodayWordsTextEl.textContent = `${state.stats.saved_today || 0} / ${state.stats.daily_goal || 5}`;
+    if (profileFriendTextEl) profileFriendTextEl.textContent = String(socialSummary.friend_count || 0);
+    if (profileNextStepTextEl) profileNextStepTextEl.textContent = getProfileNextStep();
     if (totalReadingsTextEl) totalReadingsTextEl.textContent = state.stats.total_readings || 0;
     if (todayReadingsTextEl) todayReadingsTextEl.textContent = state.stats.readings_today || 0;
     if (todayWordsTextEl) todayWordsTextEl.textContent = state.stats.saved_today || 0;
@@ -2284,6 +2414,14 @@ function renderUserPanel() {
       }
     }
   } else {
+    if (accountAvatarLargeEl) accountAvatarLargeEl.textContent = "G";
+    if (accountMetaTextEl) accountMetaTextEl.textContent = "";
+    if (profileRankLabelEl) profileRankLabelEl.textContent = localizeProfileLevel("Starter reader");
+    if (profileActivityScoreEl) profileActivityScoreEl.textContent = uiText("profilePoints", { count: 0 });
+    if (profileLevelProgressEl) profileLevelProgressEl.textContent = uiText("profileToNext", { percent: 0, label: localizeProfileLevel("Word collector") });
+    if (profileTodayWordsTextEl) profileTodayWordsTextEl.textContent = "0 / 5";
+    if (profileFriendTextEl) profileFriendTextEl.textContent = "0";
+    if (profileNextStepTextEl) profileNextStepTextEl.textContent = uiText("profileTipEmpty");
     if (readingHistoryListEl) readingHistoryListEl.innerHTML = `<p class="history-empty">${escapeHtml(uiText("signInTrail"))}</p>`;
     if (progressHistoryListEl) progressHistoryListEl.innerHTML = `<p class="history-empty">${escapeHtml(uiText("signInProgress"))}</p>`;
     if (totalReadingsTextEl) totalReadingsTextEl.textContent = "0";
@@ -2462,6 +2600,8 @@ async function submitAuthForm({
     });
     state.user = parsed.data.user;
     state.stats = parsed.data.stats || emptyStats();
+    state.profile = parsed.data.profile || emptyProfile();
+    state.social = { ...emptySocial(), summary: parsed.data.social_summary || emptySocial().summary };
     completeAppEntry(false);
     try {
       await refreshSession();
@@ -2469,10 +2609,12 @@ async function submitAuthForm({
       console.warn("Session refresh failed after auth success.", sessionError);
       state.user = parsed.data.user;
       state.stats = parsed.data.stats || state.stats;
+      state.profile = parsed.data.profile || state.profile;
     }
     if (!state.user) {
       state.user = parsed.data.user;
       state.stats = parsed.data.stats || state.stats;
+      state.profile = parsed.data.profile || state.profile;
     }
     try {
       await loadQuiz();
@@ -2594,19 +2736,24 @@ async function refreshSession() {
   if (parsed.ok) {
     state.user = parsed.data.user;
     state.stats = parsed.data.stats || emptyStats();
+    state.profile = parsed.data.profile || emptyProfile();
     state.recentWords = parsed.data.recent_words || [];
     state.readingHistory = parsed.data.history || [];
     state.progressHistory = parsed.data.progress_history || [];
+    state.social = state.user
+      ? { ...state.social, summary: parsed.data.social_summary || state.social.summary }
+      : emptySocial();
     if (state.libraryView === "social") {
       await loadSocial();
     }
   } else {
     state.user = null;
     state.stats = emptyStats();
+    state.profile = emptyProfile();
     state.recentWords = [];
     state.readingHistory = [];
     state.progressHistory = [];
-    state.social = { friends: [], incoming: [], outgoing: [], suggestions: [], cheers_received: 0 };
+    state.social = emptySocial();
     state.socialSearch = { query: "", results: [], loading: false };
   }
   renderUserPanel();
@@ -3069,10 +3216,11 @@ async function handleLogout(event) {
     await apiFetch("/api/auth/logout", { method: "POST" });
     state.user = null;
     state.stats = emptyStats();
+    state.profile = emptyProfile();
     state.recentWords = [];
     state.readingHistory = [];
     state.progressHistory = [];
-    state.social = { friends: [], incoming: [], outgoing: [], suggestions: [], cheers_received: 0 };
+    state.social = emptySocial();
     state.socialSearch = { query: "", results: [], loading: false };
     state.quiz = null;
     state.hasEnteredApp = false;

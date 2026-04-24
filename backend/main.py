@@ -2091,6 +2091,136 @@ def build_user_stats(user_id: int) -> dict[str, int]:
     return stats
 
 
+def iso_date_label(value: Any) -> str:
+    raw = str(value or "").strip()
+    if not raw:
+        return ""
+    return raw.split("T", 1)[0][:10]
+
+
+def days_since_iso(value: Any) -> int:
+    raw = str(value or "").strip()
+    if not raw:
+        return 0
+    try:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError:
+        return 0
+    return max(0, (datetime.now().astimezone().date() - parsed.astimezone().date()).days)
+
+
+def build_social_summary(user_id: int) -> dict[str, int]:
+    friend_row = db_fetchone(
+        """
+        SELECT COUNT(*) AS total
+        FROM friendships
+        WHERE status = 'accepted' AND (requester_id = ? OR addressee_id = ?)
+        """,
+        (user_id, user_id),
+    ) or {"total": 0}
+    incoming_row = db_fetchone(
+        """
+        SELECT COUNT(*) AS total
+        FROM friendships
+        WHERE status = 'pending' AND addressee_id = ?
+        """,
+        (user_id,),
+    ) or {"total": 0}
+    outgoing_row = db_fetchone(
+        """
+        SELECT COUNT(*) AS total
+        FROM friendships
+        WHERE status = 'pending' AND requester_id = ?
+        """,
+        (user_id,),
+    ) or {"total": 0}
+    cheers_received_row = db_fetchone(
+        """
+        SELECT COUNT(*) AS total
+        FROM social_events
+        WHERE receiver_id = ? AND event_type = 'cheer'
+        """,
+        (user_id,),
+    ) or {"total": 0}
+    cheers_sent_row = db_fetchone(
+        """
+        SELECT COUNT(*) AS total
+        FROM social_events
+        WHERE sender_id = ? AND event_type = 'cheer'
+        """,
+        (user_id,),
+    ) or {"total": 0}
+    return {
+        "friend_count": int(friend_row["total"] or 0),
+        "incoming_count": int(incoming_row["total"] or 0),
+        "outgoing_count": int(outgoing_row["total"] or 0),
+        "cheers_received": int(cheers_received_row["total"] or 0),
+        "cheers_sent": int(cheers_sent_row["total"] or 0),
+    }
+
+
+def profile_level(activity_score: int) -> dict[str, Any]:
+    tiers = [
+        (0, "Starter reader"),
+        (20, "Word collector"),
+        (55, "Review builder"),
+        (110, "Reading regular"),
+        (190, "Recall captain"),
+    ]
+    current_index = 0
+    for index, (threshold, _label) in enumerate(tiers):
+        if activity_score >= threshold:
+            current_index = index
+    current_threshold, current_label = tiers[current_index]
+    next_tier = tiers[current_index + 1] if current_index + 1 < len(tiers) else None
+    if not next_tier:
+        return {
+            "level_label": current_label,
+            "next_label": "",
+            "next_points": 0,
+            "progress_percent": 100,
+        }
+    next_threshold, next_label = next_tier
+    span = max(1, next_threshold - current_threshold)
+    progress = min(100, max(0, int(((activity_score - current_threshold) / span) * 100)))
+    return {
+        "level_label": current_label,
+        "next_label": next_label,
+        "next_points": max(0, next_threshold - activity_score),
+        "progress_percent": progress,
+    }
+
+
+def build_profile_snapshot(user: dict[str, Any], stats: dict[str, int] | None = None) -> dict[str, Any]:
+    user_id = int(user["id"])
+    resolved_stats = stats or build_user_stats(user_id)
+    progress_rows = get_progress_history(user_id, limit=14)
+    active_days = sum(1 for row in progress_rows if int(row.get("texts") or 0) or int(row.get("words") or 0))
+    activity_score = (
+        int(resolved_stats.get("saved_words") or 0)
+        + int(resolved_stats.get("mastered_words") or 0) * 2
+        + int(resolved_stats.get("total_readings") or 0) * 3
+        + int(resolved_stats.get("login_streak") or resolved_stats.get("streak") or 0) * 2
+    )
+    level = profile_level(activity_score)
+    daily_goal = max(1, int(resolved_stats.get("daily_goal") or 5))
+    saved_today = int(resolved_stats.get("saved_today") or 0)
+    goal_remaining = max(0, daily_goal - saved_today)
+    return {
+        "member_since": iso_date_label(user.get("created_at")),
+        "account_age_days": days_since_iso(user.get("created_at")),
+        "activity_score": activity_score,
+        "level_label": level["level_label"],
+        "next_label": level["next_label"],
+        "next_points": int(level["next_points"]),
+        "level_progress": int(level["progress_percent"]),
+        "active_days_14": active_days,
+        "goal_remaining": goal_remaining,
+        "goal_percent": min(100, int((saved_today / daily_goal) * 100)),
+        "social_summary": build_social_summary(user_id),
+    }
+
+
 def social_user_payload(
     row: dict[str, Any],
     friendship_id: int | None = None,
@@ -4239,7 +4369,14 @@ def register(payload: AuthRequest, response: Response) -> dict[str, Any]:
         raise HTTPException(status_code=409, detail="This username is already in use.")
     create_session(response, user_id)
     record_daily_login_streak(user_id)
-    return {"user": {"id": user_id, "username": username, "created_at": timestamp, "email_verified": True}, "stats": build_user_stats(user_id)}
+    user = {"id": user_id, "username": username, "created_at": timestamp, "email_verified": True}
+    stats = build_user_stats(user_id)
+    return {
+        "user": user,
+        "stats": stats,
+        "profile": build_profile_snapshot(user, stats),
+        "social_summary": build_social_summary(user_id),
+    }
 
 
 @app.post("/api/auth/login")
@@ -4258,7 +4395,14 @@ def login(payload: AuthRequest, response: Response) -> dict[str, Any]:
         )
     create_session(response, int(row["id"]))
     record_daily_login_streak(int(row["id"]))
-    return {"user": user_payload(row), "stats": build_user_stats(int(row["id"]))}
+    user = user_payload(row) or {}
+    stats = build_user_stats(int(row["id"]))
+    return {
+        "user": user,
+        "stats": stats,
+        "profile": build_profile_snapshot(user, stats),
+        "social_summary": build_social_summary(int(row["id"])),
+    }
 
 
 @app.post("/api/auth/resend-verification")
@@ -4350,14 +4494,25 @@ def me(session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE)) -
                 "fire_next": 1,
                 "hard_words": 0,
             },
+            "profile": None,
+            "social_summary": {
+                "friend_count": 0,
+                "incoming_count": 0,
+                "outgoing_count": 0,
+                "cheers_received": 0,
+                "cheers_sent": 0,
+            },
             "recent_words": [],
             "history": [],
             "progress_history": [],
         }
     record_daily_login_streak(int(user["id"]))
+    stats = build_user_stats(int(user["id"]))
     return {
         "user": user,
-        "stats": build_user_stats(int(user["id"])),
+        "stats": stats,
+        "profile": build_profile_snapshot(user, stats),
+        "social_summary": build_social_summary(int(user["id"])),
         "recent_words": get_recent_words(int(user["id"])),
         "history": get_reading_history(int(user["id"])),
         "progress_history": get_progress_history(int(user["id"])),
@@ -4368,20 +4523,14 @@ def me(session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE)) -
 def social_overview(session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE)) -> dict[str, Any]:
     user = require_user(session_token)
     user_id = int(user["id"])
-    cheer_row = db_fetchone(
-        """
-        SELECT COUNT(*) AS total
-        FROM social_events
-        WHERE receiver_id = ? AND event_type = 'cheer'
-        """,
-        (user_id,),
-    ) or {"total": 0}
+    summary = build_social_summary(user_id)
     return {
         "friends": list_social_friends(user_id),
         "incoming": list_social_requests(user_id, "incoming"),
         "outgoing": list_social_requests(user_id, "outgoing"),
         "suggestions": list_social_suggestions(user_id),
-        "cheers_received": int(cheer_row["total"] or 0),
+        "summary": summary,
+        "cheers_received": int(summary["cheers_received"] or 0),
     }
 
 

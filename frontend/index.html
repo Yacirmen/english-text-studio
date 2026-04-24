@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260424mobilecontrols" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260424profilesocial" />
 </head>
 <body>
   <div id="welcomeGate" class="welcome-gate">
@@ -552,10 +552,23 @@
         </div>
 
         <div id="authUser" class="stack-md hidden">
-          <div class="account-card">
-            <span class="mini-label on-dark">Active account</span>
-            <h4 id="accountName">username</h4>
-            <div class="account-stats">
+          <div class="account-card account-card-hero">
+            <div class="account-identity-row">
+              <div id="accountAvatarLarge" class="account-avatar-large" aria-hidden="true">U</div>
+              <div>
+                <span class="mini-label on-dark">Active account</span>
+                <h4 id="accountName">username</h4>
+                <p id="accountMetaText" class="account-meta-text">Member since today</p>
+              </div>
+            </div>
+            <div class="account-rank-strip">
+              <div>
+                <span id="profileRankLabel">Starter reader</span>
+                <strong id="profileActivityScore">0 pts</strong>
+              </div>
+              <small id="profileLevelProgress">0% to next level</small>
+            </div>
+            <div class="account-stats account-stats-expanded">
               <div>
                 <span>Saved words</span>
                 <strong id="savedWordsCount">0</strong>
@@ -564,7 +577,16 @@
                 <span>Mastered</span>
                 <strong id="masteredWordsCount">0</strong>
               </div>
+              <div>
+                <span>Today</span>
+                <strong id="profileTodayWordsText">0 / 5</strong>
+              </div>
+              <div>
+                <span>Circle</span>
+                <strong id="profileFriendText">0</strong>
+              </div>
             </div>
+            <p id="profileNextStepText" class="profile-next-step">Open a reading and save your first useful word.</p>
           </div>
           <button id="logoutBtn" class="outline-btn light-outline" type="button">Log Out</button>
         </div>
@@ -650,6 +672,20 @@
           <span id="socialFriendCount">0</span>
           <small>friends</small>
         </div>
+      </div>
+      <div class="social-summary-grid" aria-label="Social summary">
+        <article>
+          <span>Requests</span>
+          <strong id="socialRequestCount">0</strong>
+        </article>
+        <article>
+          <span>Cheers</span>
+          <strong id="socialCheerCount">0</strong>
+        </article>
+        <article>
+          <span>Pending</span>
+          <strong id="socialPendingCount">0</strong>
+        </article>
       </div>
       <form id="socialAddForm" class="social-add-form">
         <label class="field">
@@ -803,7 +839,7 @@
     </section>
   </aside>
 
-<script src="/assets/app.js?v=20260424mobilecontrols"></script>
+<script src="/assets/app.js?v=20260424profilesocial"></script>
   <script>
     if ("serviceWorker" in navigator && window.location.protocol !== "capacitor:") {
       window.addEventListener("load", () => {

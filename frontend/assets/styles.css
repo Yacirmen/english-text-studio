@@ -10680,3 +10680,185 @@ body[data-language="tr"] .welcome-auth .gate-language-control span:nth-child(2){
     margin-bottom:0 !important;
   }
 }
+
+/* Profile and social upgrade: richer account identity with compact momentum stats. */
+.account-card-hero{
+  display:grid !important;
+  gap:14px !important;
+  padding:16px !important;
+}
+
+.account-identity-row{
+  display:flex;
+  align-items:center;
+  gap:13px;
+  min-width:0;
+}
+
+.account-avatar-large{
+  width:58px;
+  height:58px;
+  flex:0 0 58px;
+  border-radius:20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(180deg,#efffc9 0%,#bdf36a 100%);
+  color:#17304f;
+  font-size:1.25rem;
+  font-weight:900;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.74), 0 12px 24px rgba(31,67,98,.14);
+}
+
+.account-meta-text{
+  margin:4px 0 0;
+  color:#b9cde4;
+  font-size:.82rem;
+  font-weight:800;
+}
+
+.account-rank-strip{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px;
+  border-radius:18px;
+  background:rgba(10,27,47,.28);
+  border:1px solid rgba(203,222,247,.12);
+}
+
+.account-rank-strip span,
+.account-rank-strip small{
+  display:block;
+  color:#a9bfd7;
+  font-size:.68rem;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+
+.account-rank-strip strong{
+  display:block;
+  margin-top:4px;
+  color:#f8fbff;
+  font-size:1.25rem;
+  line-height:1;
+}
+
+.account-stats-expanded{
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:8px !important;
+  margin-top:0 !important;
+}
+
+.account-stats-expanded div{
+  min-width:0;
+  padding:10px;
+  border-radius:16px;
+  background:rgba(255,255,255,.075);
+  border:1px solid rgba(203,222,247,.10);
+}
+
+.profile-next-step{
+  margin:0;
+  padding:12px 13px;
+  border-radius:16px;
+  background:rgba(220,247,174,.10);
+  border:1px solid rgba(189,243,106,.16);
+  color:#d7e8f8;
+  font-size:.86rem;
+  font-weight:800;
+  line-height:1.45;
+}
+
+.social-summary-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin:12px 0;
+}
+
+.social-summary-grid article{
+  min-width:0;
+  min-height:76px;
+  padding:12px;
+  border-radius:19px;
+  background:rgba(255,255,255,.075);
+  border:1px solid rgba(203,222,247,.10);
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+
+.social-summary-grid span{
+  color:#a9bfd7;
+  font-size:.64rem;
+  font-weight:900;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+
+.social-summary-grid strong{
+  color:#f8fbff;
+  font-size:1.55rem;
+  line-height:1;
+}
+
+body:not(.dark-mode) .account-meta-text{
+  color:#61758f;
+}
+
+body:not(.dark-mode) .account-rank-strip,
+body:not(.dark-mode) .account-stats-expanded div,
+body:not(.dark-mode) .social-summary-grid article{
+  background:rgba(255,255,255,.64);
+  border-color:rgba(157,184,213,.24);
+}
+
+body:not(.dark-mode) .account-rank-strip span,
+body:not(.dark-mode) .account-rank-strip small,
+body:not(.dark-mode) .social-summary-grid span{
+  color:#61758f;
+}
+
+body:not(.dark-mode) .account-rank-strip strong,
+body:not(.dark-mode) .social-summary-grid strong{
+  color:#17304f;
+}
+
+body:not(.dark-mode) .profile-next-step{
+  background:rgba(237,252,210,.72);
+  border-color:rgba(171,216,102,.34);
+  color:#2c4a1d;
+}
+
+@media (max-width: 680px){
+  .account-stats-expanded{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  }
+
+  .account-rank-strip{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .social-summary-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:7px;
+  }
+
+  .social-summary-grid article{
+    min-height:66px;
+    padding:10px 8px;
+  }
+
+  .social-summary-grid span{
+    font-size:.56rem;
+    letter-spacing:.08em;
+  }
+
+  .social-summary-grid strong{
+    font-size:1.28rem;
+  }
+}

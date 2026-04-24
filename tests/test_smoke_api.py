@@ -43,12 +43,18 @@ def test_register_me_and_logout_flow(client):
     assert body["user"]["email_verified"] is True
     assert body["stats"]["login_streak"] == 1
     assert body["stats"]["fire_level"] == 1
+    assert body["profile"]["level_label"] == "Starter reader"
+    assert body["profile"]["activity_score"] >= 2
+    assert body["social_summary"]["friend_count"] == 0
     assert "readlex_session" in client.cookies
 
     me_response = client.get("/api/auth/me")
     assert me_response.status_code == 200
-    assert me_response.json()["user"]["username"] == "flowuser"
-    assert me_response.json()["stats"]["login_streak"] == 1
+    me_body = me_response.json()
+    assert me_body["user"]["username"] == "flowuser"
+    assert me_body["stats"]["login_streak"] == 1
+    assert me_body["profile"]["member_since"]
+    assert me_body["social_summary"]["incoming_count"] == 0
 
     logout_response = client.post("/api/auth/logout")
     assert logout_response.status_code == 200
@@ -392,20 +398,27 @@ def test_social_friend_request_accept_and_cheer(client):
     login_user(client, username="socialtwo")
     overview_response = client.get("/api/social")
     assert overview_response.status_code == 200, overview_response.text
-    incoming = overview_response.json()["incoming"]
+    overview_body = overview_response.json()
+    incoming = overview_body["incoming"]
     assert len(incoming) == 1
+    assert overview_body["summary"]["incoming_count"] == 1
+    assert overview_body["summary"]["friend_count"] == 0
 
     accept_response = client.post(
         f"/api/social/requests/{incoming[0]['request_id']}",
         json={"action": "accept"},
     )
     assert accept_response.status_code == 200, accept_response.text
-    friends = accept_response.json()["friends"]
+    accept_body = accept_response.json()
+    friends = accept_body["friends"]
     assert len(friends) == 1
     assert friends[0]["username"] == "socialone"
+    assert accept_body["summary"]["friend_count"] == 1
+    assert accept_body["summary"]["incoming_count"] == 0
 
     cheer_response = client.post(f"/api/social/friends/{friends[0]['friendship_id']}/cheer")
     assert cheer_response.status_code == 200, cheer_response.text
+    assert cheer_response.json()["summary"]["cheers_sent"] == 1
 
 
 def test_social_search_and_suggestions_are_actionable(client):
