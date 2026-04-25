@@ -12076,3 +12076,216 @@ body.dark-mode #socialPanel .social-presence-dot{
     max-width:100%;
   }
 }
+
+/* Long copy containment: meanings, empty states, and social cards must never spill out. */
+.flip-face,
+.insight-card,
+.insight-block,
+.insight-content,
+.mobile-word-panel,
+.mobile-word-card,
+.saved-word-item,
+.history-empty,
+.helper-note,
+.quiz-card,
+.manual-result,
+#socialPanel,
+#socialPanel *{
+  min-width:0;
+  max-width:100%;
+}
+
+#selectedWord,
+#selectedMeaning,
+#mobileWordTitle,
+#mobileWordMeaning,
+.insight-content,
+.insight-content *,
+.mobile-word-card h3,
+.mobile-word-body p,
+.saved-word-item strong,
+.saved-word-item span,
+.history-empty,
+.helper-note,
+.manual-result,
+.manual-result *,
+#socialPanel .social-card-head strong,
+#socialPanel .social-card-badge,
+#socialPanel .social-card-line,
+#socialPanel .social-metrics span,
+#socialPanel .social-empty-state,
+#socialPanel .social-add-form .field-note,
+#socialPanel .social-panel-block .section-head p,
+#socialPanel .social-hero-card p{
+  overflow-wrap:anywhere;
+  word-break:normal;
+  hyphens:auto;
+}
+
+.flip-face{
+  overflow:auto;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(24,49,83,.28) transparent;
+}
+
+#selectedWord,
+#selectedMeaning{
+  font-size:clamp(1.45rem, 2.25vw, 2.55rem);
+  line-height:1.08;
+  letter-spacing:-.035em;
+}
+
+#mobileWordMeaning{
+  font-size:clamp(1.45rem, 8vw, 2.15rem);
+  line-height:1.08;
+}
+
+#socialPanel .social-card{
+  overflow:visible;
+}
+
+#socialPanel .social-card::before{
+  border-radius:inherit;
+}
+
+#socialPanel .social-card-head{
+  flex-wrap:wrap;
+}
+
+#socialPanel .social-card-head strong{
+  white-space:normal;
+}
+
+#socialPanel .social-card-badge{
+  white-space:normal;
+  text-overflow:clip;
+}
+
+#socialPanel .social-metrics span{
+  min-height:28px;
+  white-space:normal;
+  line-height:1.2 !important;
+}
+
+#socialPanel .social-action-cell{
+  min-width:0;
+}
+
+#socialPanel .social-action-cell .ghost-btn,
+#socialPanel .social-pending,
+#socialPanel .social-add-form .primary-btn{
+  white-space:normal;
+  text-align:center;
+  line-height:1.15;
+}
+
+@media (max-width: 920px){
+  #socialPanel .social-card{
+    grid-template-columns:48px minmax(0,1fr) !important;
+    grid-template-areas:
+      "avatar copy"
+      "actions actions";
+    align-items:start !important;
+  }
+
+  #socialPanel .social-action-cell{
+    justify-self:stretch;
+    justify-content:flex-start;
+  }
+}
+
+@media (max-width: 520px){
+  #selectedWord,
+  #selectedMeaning,
+  #mobileWordMeaning{
+    letter-spacing:-.02em;
+  }
+
+  #socialPanel .social-metrics{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+  }
+
+  #socialPanel .social-metrics span{
+    justify-content:center;
+    padding-inline:6px;
+  }
+}
+
+/* Meaning panel no-clip pass: long context and example text must remain reachable. */
+#insightCoach.insight-card,
+.mobile-insight-card{
+  overflow:visible !important;
+  align-content:start;
+}
+
+#insightCoach .insight-block,
+.mobile-insight-card .insight-block{
+  min-height:0;
+  overflow:visible !important;
+}
+
+#insightCoach .insight-content,
+.mobile-insight-card .insight-content{
+  display:block !important;
+  max-height:min(32dvh, 340px) !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  padding-right:12px !important;
+  scrollbar-gutter:stable;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(221,248,170,.74) rgba(255,255,255,.10);
+  overscroll-behavior:contain;
+}
+
+#insightCoach .insight-example-block .insight-content,
+.mobile-insight-card .insight-block:nth-child(2) .insight-content{
+  max-height:min(38dvh, 420px) !important;
+}
+
+#insightCoach .insight-content::-webkit-scrollbar,
+.mobile-insight-card .insight-content::-webkit-scrollbar{
+  width:10px;
+}
+
+#insightCoach .insight-content::-webkit-scrollbar-track,
+.mobile-insight-card .insight-content::-webkit-scrollbar-track{
+  border-radius:999px;
+  background:rgba(255,255,255,.10);
+}
+
+#insightCoach .insight-content::-webkit-scrollbar-thumb,
+.mobile-insight-card .insight-content::-webkit-scrollbar-thumb{
+  border:2px solid rgba(25,44,67,.78);
+  border-radius:999px;
+  background:linear-gradient(180deg,#ddf8aa 0%,#b58cff 100%);
+}
+
+body:not(.dark-mode) #insightCoach .insight-content,
+body:not(.dark-mode) .mobile-insight-card .insight-content{
+  scrollbar-color:rgba(88,124,37,.58) rgba(24,49,83,.08);
+}
+
+body:not(.dark-mode) #insightCoach .insight-content::-webkit-scrollbar-track,
+body:not(.dark-mode) .mobile-insight-card .insight-content::-webkit-scrollbar-track{
+  background:rgba(24,49,83,.08);
+}
+
+body:not(.dark-mode) #insightCoach .insight-content::-webkit-scrollbar-thumb,
+body:not(.dark-mode) .mobile-insight-card .insight-content::-webkit-scrollbar-thumb{
+  border-color:rgba(255,255,255,.76);
+}
+
+body.web-mode .detail-column{
+  scrollbar-gutter:stable;
+}
+
+@media (max-height: 780px) and (min-width: 861px){
+  #insightCoach .insight-content{
+    max-height:220px !important;
+  }
+
+  #insightCoach .insight-example-block .insight-content{
+    max-height:260px !important;
+  }
+}

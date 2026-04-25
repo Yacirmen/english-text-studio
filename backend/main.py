@@ -518,6 +518,8 @@ WORD_MEANING_OVERRIDES = {
     "other": "diğer",
     "such": "böyle / gibi",
     "internet": "internet",
+    "interruption": "kesinti / sözünü kesme",
+    "interruptions": "kesintiler / söz kesmeler",
     "should": "-meli / -malı",
     "off": "kapalı / kapatmak",
     "all": "hepsi / tüm",
@@ -872,6 +874,20 @@ def save_json_map(path: Path, data: dict[str, str]) -> None:
 
 EXTRA_WORD_MAP.update(load_json_map(EXTRA_WORD_MAP_PATH))
 LIBRARY_WORD_MAP.update(load_json_map(LIBRARY_WORD_MAP_PATH))
+try:
+    raw_cefr_index = json.loads(CEFR_VOCAB_INDEX_PATH.read_text(encoding="utf-8"))
+    if isinstance(raw_cefr_index, dict) and isinstance(raw_cefr_index.get("items"), dict):
+        raw_cefr_index = raw_cefr_index["items"]
+    if isinstance(raw_cefr_index, dict):
+        CEFR_VOCAB_INDEX.update(
+            {
+                str(key).strip().lower(): value
+                for key, value in raw_cefr_index.items()
+                if str(key).strip() and isinstance(value, dict)
+            }
+        )
+except Exception:
+    CEFR_VOCAB_INDEX = {}
 
 
 def _row_to_dict(row: Any) -> dict[str, Any] | None:
@@ -3525,6 +3541,10 @@ def build_local_word_detail(text: str, word: str) -> dict[str, str]:
     if has_library_mapping(word):
         return build_library_word_detail(text, word)
     meaning = infer_turkish_meaning(word)
+    profile = resolve_cefr_entry(word)
+    lemma = str(profile.get("lemma") or word.lower().strip()) if profile else word.lower().strip()
+    if should_use_local_meaning(word, meaning):
+        meaning = force_library_meaning(word, lemma, meaning)
     sentence = find_sentence_for_word(text, word)
     context = repair_mojibake(f'"{word}" burada büyük olasılıkla "{meaning}" anlamında kullanılıyor.')
     example = f"The word {word} appears in this reading text."
@@ -4049,6 +4069,8 @@ def build_library_glossary_index(text: str) -> dict[str, dict[str, Any]]:
             or infer_turkish_meaning(lemma)
             or "bağlama göre kullanılan ifade"
         ))
+        if should_use_local_meaning(word, meaning):
+            meaning = force_library_meaning(word, lemma, meaning)
         glossary[word] = {
             "turkish": meaning,
             "context": "",
@@ -4133,13 +4155,19 @@ def validate_text_quality(text: str, level: str, keywords: list[str]) -> tuple[b
 def ensure_provider_ready() -> None:
     if MODEL_PROVIDER == "gemini":
         if not GEMINI_API_KEY:
-            raise HTTPException(status_code=500, detail=repair_mojibake("GEMINI_API_KEY bulunamadı."))
+            raise HTTPException(
+                status_code=503,
+                detail=repair_mojibake("AI metin üretimi için GEMINI_API_KEY eksik. Anahtar eklenmeden AI Only gerçek AI kullanamaz."),
+            )
         return
     if MODEL_PROVIDER == "hf":
         if not HF_TOKEN:
-            raise HTTPException(status_code=500, detail=repair_mojibake("HF_TOKEN bulunamadı."))
+            raise HTTPException(
+                status_code=503,
+                detail=repair_mojibake("AI metin üretimi için HF_TOKEN eksik. Anahtar eklenmeden AI Only gerçek AI kullanamaz."),
+            )
         return
-    raise HTTPException(status_code=500, detail=f"Desteklenmeyen provider: {MODEL_PROVIDER}")
+    raise HTTPException(status_code=503, detail=f"Desteklenmeyen AI provider: {MODEL_PROVIDER}")
 
 
 def request_gemini(prompt: str, system_instruction: str, *, temperature: float, max_output_tokens: int, json_mode: bool = False) -> str:
@@ -4196,7 +4224,7 @@ def request_model(prompt: str, system_instruction: str, *, temperature: float, m
     )
 
 
-def request_text(prompt: str, level: str, topic: str, keywords: list[str]) -> str:
+def request_text(prompt: str, level: str, topic: str, keywords: list[str], *, allow_local_fallback: bool = True) -> str:
     cache_key = hashlib.sha1(
         json.dumps(
             {"level": level, "topic": topic, "keywords": keywords, "prompt": prompt, "provider": MODEL_PROVIDER},
@@ -4213,6 +4241,7 @@ def request_text(prompt: str, level: str, topic: str, keywords: list[str]) -> st
     )
     min_words = LEVEL_CONFIG[level]["min_words"]
     plan = choose_local_scenario(topic, keywords)
+    provider_error: Exception | None = None
     try:
         raw_plan = request_model(
             build_plan_prompt(level, topic, keywords, LEVEL_CONFIG[level]["max_words"]),
@@ -4228,8 +4257,8 @@ def request_text(prompt: str, level: str, topic: str, keywords: list[str]) -> st
                 "voice": parsed_plan.get("voice") or plan["voice"],
                 "beats": parsed_plan.get("beats") or plan["beats"],
             }
-    except Exception:
-        pass
+    except Exception as exc:
+        provider_error = exc
     try:
         text = request_model(
             build_text_from_plan_prompt(level, topic, keywords, LEVEL_CONFIG[level]["max_words"], plan),
@@ -4238,7 +4267,8 @@ def request_text(prompt: str, level: str, topic: str, keywords: list[str]) -> st
             max_output_tokens=min(620, LEVEL_CONFIG[level]["max_words"] * 3),
         )
         text = clean_generated_text(text)
-    except Exception:
+    except Exception as exc:
+        provider_error = exc
         text = ""
     is_valid, _ = validate_text_quality(text, level, keywords) if text else (False, {})
     if not is_valid and text:
@@ -4246,6 +4276,11 @@ def request_text(prompt: str, level: str, topic: str, keywords: list[str]) -> st
         repaired_ok, _ = validate_text_quality(repaired, level, keywords)
         text = repaired if repaired_ok else text
     if count_words(text) < max(60, min_words // 2):
+        if not allow_local_fallback:
+            message = "AI provider şu an metin üretemedi. Lütfen HF_TOKEN veya GEMINI_API_KEY ayarını kontrol et."
+            if provider_error:
+                message = f"{message} Teknik not: {str(provider_error)[:160]}"
+            raise HTTPException(status_code=502, detail=repair_mojibake(message))
         text = build_local_reading(level, topic, keywords, LEVEL_CONFIG[level]["max_words"])
     GENERATE_CACHE[cache_key] = text
     return text
@@ -4261,9 +4296,9 @@ def request_manual_explanation(text: str, word: str) -> str:
 
 
 def request_word_detail(text: str, word: str) -> dict[str, str]:
-    cache_key = f"{hashlib.sha1(text.encode('utf-8')).hexdigest()}::{word.lower()}::google-translate"
+    cache_key = f"{hashlib.sha1(text.encode('utf-8')).hexdigest()}::{word.lower()}::word-detail-v2"
     cached = WORD_DETAIL_CACHE.get(cache_key)
-    if cached:
+    if cached and not should_use_local_meaning(word, str(cached.get("turkish", ""))):
         return cached
     local_fallback = build_local_word_detail(text, word)
     sentence = find_sentence_for_word(text, word)
@@ -4278,12 +4313,23 @@ def request_word_detail(text: str, word: str) -> dict[str, str]:
             translated_context = translate_text_google(sentence, target_language="tr", source_language="en")
         except Exception:
             translated_context = ""
+    resolved_meaning = local_fallback["turkish"] if should_use_local_meaning(word, translated_meaning) else translated_meaning
+    if should_use_local_meaning(word, resolved_meaning):
+        profile = resolve_cefr_entry(word)
+        lemma = str(profile.get("lemma") or word.lower().strip()) if profile else word.lower().strip()
+        resolved_meaning = force_library_meaning(word, lemma, resolved_meaning)
     result = {
-        "turkish": local_fallback["turkish"] if should_use_local_meaning(word, translated_meaning) else translated_meaning,
+        "turkish": resolved_meaning,
         "context": translated_context or local_fallback["context"],
         "example": sentence or local_fallback["example"],
+        "collocations": local_fallback.get("collocations", []),
     }
-    result = {key: repair_mojibake(str(value)) for key, value in result.items()}
+    result = {
+        key: [repair_mojibake(str(item)) for item in value]
+        if key == "collocations" and isinstance(value, list)
+        else repair_mojibake(str(value))
+        for key, value in result.items()
+    }
     WORD_DETAIL_CACHE[cache_key] = result
     return result
 
@@ -4809,7 +4855,8 @@ def generate(payload: GenerateRequest, session_token: str | None = Cookie(defaul
         raise HTTPException(status_code=404, detail=repair_mojibake("Bu filtreler için library içinde uygun bir metin bulunamadı."))
     prompt = build_text_prompt(payload.level, payload.topic, keywords, payload.length_target)
     try:
-        text = request_text(prompt, payload.level, payload.topic, keywords)
+        ensure_provider_ready()
+        text = request_text(prompt, payload.level, payload.topic, keywords, allow_local_fallback=False)
         user = optional_user(session_token)
         if user:
             record_reading_history(

@@ -146,12 +146,13 @@ def test_library_generate_records_history_for_logged_in_user(client):
     assert reading["content_source"] == "library"
 
 
-def test_ai_generate_falls_back_to_local_text(client, app_module, monkeypatch):
+def test_ai_generate_reports_provider_failure_instead_of_fake_ai(client, app_module, monkeypatch):
     register_user(client, username="aiuser")
 
     def fail_model(*args, **kwargs):
         raise RuntimeError("provider unavailable")
 
+    monkeypatch.setattr(app_module, "HF_TOKEN", "test-token")
     monkeypatch.setattr(app_module, "request_model", fail_model)
     response = client.post(
         "/api/generate",
@@ -164,11 +165,8 @@ def test_ai_generate_falls_back_to_local_text(client, app_module, monkeypatch):
         },
     )
 
-    assert response.status_code == 200, response.text
-    payload = response.json()
-    assert payload["content_source"] == "ai"
-    assert "meeting" in payload["text"].lower()
-    assert "project" in payload["text"].lower()
+    assert response.status_code == 502, response.text
+    assert "AI provider" in response.json()["detail"]
 
 
 def test_postgres_insert_accepts_non_id_returning_column(app_module, monkeypatch):
@@ -322,6 +320,20 @@ def test_library_word_lookup_skips_suspicious_identity_values(app_module):
     assert app_module.build_library_word_detail(text, "interpreted")["turkish"] == "yorumlanmış / yorumlanan"
 
 
+def test_word_detail_never_uses_identity_as_turkish_meaning(app_module, monkeypatch):
+    app_module.WORD_DETAIL_CACHE.clear()
+    monkeypatch.setattr(app_module, "GOOGLE_TRANSLATE_API_KEY", "")
+    monkeypatch.setattr(app_module, "HF_TOKEN", "")
+    monkeypatch.setattr(app_module, "GEMINI_API_KEY", "")
+    text = "After changing a few settings, his phone became a tool again instead of a constant interruption."
+
+    detail = app_module.request_word_detail(text, "interruption")
+    unknown = app_module.request_word_detail(text, "madeupword")
+
+    assert detail["turkish"] == "kesinti / sözünü kesme"
+    assert unknown["turkish"] == "bağlama göre kullanılan ifade"
+
+
 def test_word_detail_resolves_inflected_phrase(client):
     text = "After two weeks, the routine turned out to work well."
     response = client.post(
@@ -381,6 +393,45 @@ def test_approved_lexical_entries_join_runtime_phrase_map(app_module):
 
     assert glossary["micro habit"]["turkish"] == "mikro alışkanlık"
     assert glossary["micro habit"]["kind"] == "phrase"
+
+
+def test_lexical_backfill_approves_known_terms_and_queues_unknowns(app_module):
+    from backend.lexical_backfill import REVIEW_REQUIRED_MEANING, backfill_lexical_entries
+
+    app_module.db_execute("DELETE FROM lexical_entries")
+    app_module.db_execute("DELETE FROM lexical_review_queue")
+    app_module.APPROVED_LEXICAL_MAP.clear()
+    app_module.APPROVED_LEXICAL_MAP_READY = False
+
+    report = backfill_lexical_entries(
+        [
+            {
+                "title": "Backfill fixture",
+                "text": (
+                    "His phone became a tool again instead of a constant interruption. "
+                    "A madeupword changed nothing in the routine."
+                ),
+            }
+        ]
+    )
+    approved = app_module.db_fetchone(
+        "SELECT meaning, source FROM lexical_entries WHERE term = ?",
+        ("interruption",),
+    )
+    queued = app_module.db_fetchone(
+        "SELECT canonical, meaning, source, status FROM lexical_review_queue WHERE term = ?",
+        ("madeupword",),
+    )
+
+    assert report.approved_inserted >= 1
+    assert approved is not None
+    assert approved["meaning"] == "kesinti / sözünü kesme"
+    assert str(approved["source"]).startswith("backfill_")
+    assert queued is not None
+    assert queued["canonical"] == "madeupword"
+    assert queued["meaning"] == REVIEW_REQUIRED_MEANING
+    assert queued["source"] == "backfill_missing"
+    assert queued["status"] == "pending"
 
 
 def test_social_friend_request_accept_and_cheer(client):
