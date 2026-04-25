@@ -9,8 +9,8 @@ Date: 2026-04-25
 - Previous stable main commit: `d813c85d368423288e72d3253cadaba35e39669c`
 - Backup branch: `backup/main-before-social-release-20260425`
 - Backup tag: `main-before-social-release-20260425`
-- Current asset query version: `20260425welcome4`
-- Current service worker cache: `readwave-shell-v80`
+- Current asset query version: `20260425palette13`
+- Current service worker cache: `readwave-shell-v93`
 
 ## What This Release Contains
 

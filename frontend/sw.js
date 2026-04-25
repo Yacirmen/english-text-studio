@@ -1,8 +1,8 @@
-const READWAVE_CACHE = "readwave-shell-v80";
+const READWAVE_CACHE = "readwave-shell-v93";
 const SHELL_ASSETS = [
   "/",
-  "/assets/styles.css?v=20260425welcome4",
-  "/assets/app.js?v=20260425welcome4",
+  "/assets/styles.css?v=20260425palette13",
+  "/assets/app.js?v=20260425palette13",
   "/assets/readwave-icon.svg",
   "/assets/readwave-favicon.png",
   "/assets/readwave-logo.png",

@@ -82,8 +82,8 @@ The 2026-04-25 social panel and recovery UI release is documented in [RELEASE_RO
 - Previous stable main is preserved at commit `d813c85d368423288e72d3253cadaba35e39669c`
 - Backup branch: `backup/main-before-social-release-20260425`
 - Backup tag: `main-before-social-release-20260425`
-- Current release asset version: `20260425welcome4`
-- Current service worker cache: `readwave-shell-v80`
+- Current release asset version: `20260425palette13`
+- Current service worker cache: `readwave-shell-v93`
 
 Do not delete the backup branch or tag until this release has been stable in production. If a rollback is needed, follow the notes in `RELEASE_ROLLBACK_NOTES.md` and avoid force-pushing unless it is explicitly approved.
 

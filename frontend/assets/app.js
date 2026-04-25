@@ -184,6 +184,7 @@ const readingExperienceEl = $("#readingExperience");
 const metaTagsEl = $("#metaTags");
 const readingTitleEl = $("#readingTitle");
 const readingBodyEl = $("#readingBody");
+const detailColumnEl = $(".detail-column");
 const flipCardEl = $("#flipCard");
 const selectedWordEl = $("#selectedWord");
 const selectedMeaningEl = $("#selectedMeaning");
@@ -1551,16 +1552,31 @@ function closeMobileWordSheet() {
   setMobileWordSheetOpen(false);
 }
 
+function setFlipCardFlipped(isFlipped) {
+  if (!flipCardEl) return;
+  flipCardEl.classList.toggle("flipped", isFlipped);
+  flipCardEl.classList.toggle("is-flipped", isFlipped);
+}
+
+function resetFlipCardFlipped() {
+  setFlipCardFlipped(false);
+}
+
 function playDesktopFlip(word) {
   if (!flipCardEl || isMobilePreview() || state.selectedWord !== word) return;
-  flipCardEl.classList.remove("flipped");
+  resetFlipCardFlipped();
   window.requestAnimationFrame(() => {
     window.requestAnimationFrame(() => {
       if (state.selectedWord === word && !isMobilePreview()) {
-        flipCardEl.classList.add("flipped");
+        setFlipCardFlipped(true);
       }
     });
   });
+}
+
+function resetDetailColumnScroll() {
+  if (!detailColumnEl || isMobilePreview()) return;
+  detailColumnEl.scrollTop = 0;
 }
 
 function updateViewModeUi() {
@@ -1704,12 +1720,11 @@ function renderSelection() {
   }
   renderCollocations(selectedCollocationsEl, item.collocations || []);
   flipCardEl.classList.toggle("clickable", !state.loadingWord && hasSelection);
-  if (hasSelection && !isMobilePreview()) {
-    flipCardEl.classList.add("instant-flip");
-    flipCardEl.classList.add("flipped");
-    window.requestAnimationFrame(() => flipCardEl.classList.remove("instant-flip"));
-  } else if (!hasSelection) {
-    flipCardEl.classList.remove("instant-flip", "flipped");
+  if (!hasSelection) {
+    flipCardEl.classList.remove("instant-flip");
+    resetFlipCardFlipped();
+  } else if (state.pendingFlip && !isMobilePreview()) {
+    setFlipCardFlipped(true);
   }
   pronounceWordBtn?.classList.toggle("hidden", !state.selectedWord);
 
@@ -2989,10 +3004,13 @@ function renderReadingText() {
         selectedMeaningEl.textContent = state.uiLanguage === "tr" ? "Yükleniyor..." : "Loading...";
         selectedContextEl.textContent = uiText("preparingContext");
         selectedExampleEl.textContent = uiText("preparingExample");
+        flipCardEl?.classList.remove("instant-flip");
+        resetFlipCardFlipped();
       }
       state.selectedWord = nextWord;
       state.dismissedMobileWord = "";
-      state.pendingFlip = false;
+      state.pendingFlip = true;
+      resetDetailColumnScroll();
       renderSelection();
       renderReadingText();
       await loadWordDetail(nextWord);
@@ -3482,14 +3500,14 @@ gateLanguageToggleBtn?.addEventListener("click", toggleLanguage);
 
 flipCardEl.addEventListener("click", () => {
   if (state.loadingWord || !state.selectedWord) return;
-  flipCardEl.classList.toggle("flipped");
+  setFlipCardFlipped(!flipCardEl.classList.contains("flipped"));
 });
 
 flipCardEl.addEventListener("keydown", (event) => {
   if (state.loadingWord || !state.selectedWord) return;
   if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
-    flipCardEl.classList.toggle("flipped");
+    setFlipCardFlipped(!flipCardEl.classList.contains("flipped"));
   }
 });
 

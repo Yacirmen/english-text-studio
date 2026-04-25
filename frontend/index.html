@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260425welcome4" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260425palette13" />
 </head>
 <body>
   <div id="welcomeGate" class="welcome-gate">
@@ -59,18 +59,6 @@
       </div>
 
       <div class="welcome-auth">
-        <div class="gate-control-row" aria-label="Welcome screen controls">
-          <button id="gateThemeToggleBtn" class="gate-mini-control gate-theme-control" type="button" aria-label="Toggle dark mode" aria-pressed="false" title="Toggle theme">
-            <span class="theme-icon theme-sun" aria-hidden="true">&#9728;</span>
-            <span class="theme-icon theme-moon" aria-hidden="true">&#9790;</span>
-            <span class="theme-toggle-thumb" aria-hidden="true"></span>
-          </button>
-          <button id="gateLanguageToggleBtn" class="gate-mini-control gate-language-control" type="button" aria-label="Switch language" aria-pressed="false" title="Switch language">
-            <span>EN</span>
-            <span>TR</span>
-            <span class="language-toggle-thumb" aria-hidden="true"></span>
-          </button>
-        </div>
         <div class="auth-toggle welcome-toggle" data-auth-toggle>
           <button id="gateShowLoginBtn" class="auth-tab active" type="button">Log In</button>
           <button id="gateShowRegisterBtn" class="auth-tab" type="button">Sign Up</button>
@@ -409,18 +397,18 @@
           </div>
 
           <aside class="detail-column">
-            <div class="flip-scene">
-              <div id="flipCard" class="flip-card" role="button" tabindex="0" aria-label="Flip word card">
-                <div class="flip-face flip-front">
+            <div class="flip-scene selected-word-flip-shell">
+              <div id="flipCard" class="flip-card selected-word-flip-inner" role="button" tabindex="0" aria-label="Flip word card">
+                <section class="flip-face flip-front selected-word-face selected-word-front">
                   <span class="mini-label">Selected Word</span>
                   <h3 id="selectedWord">Word</h3>
                   <p>Tap the card to see the Turkish meaning.</p>
-                </div>
-                <div class="flip-face flip-back">
+                </section>
+                <section class="flip-face flip-back selected-word-face selected-word-back">
                   <span class="mini-label">Turkish Meaning</span>
                   <h3 id="selectedMeaning">Anlam</h3>
                   <p>Tap again to return to the English word.</p>
-                </div>
+                </section>
               </div>
             </div>
 
@@ -844,7 +832,7 @@
     </section>
   </aside>
 
-<script src="/assets/app.js?v=20260425welcome4"></script>
+<script src="/assets/app.js?v=20260425palette13"></script>
   <script>
     if ("serviceWorker" in navigator && window.location.protocol !== "capacitor:") {
       window.addEventListener("load", () => {
