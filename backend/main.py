@@ -7,6 +7,7 @@ import secrets
 import smtplib
 import sqlite3
 from collections import Counter
+from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
 from pathlib import Path
@@ -4358,7 +4359,31 @@ def normalize_api_error(exc: Exception) -> HTTPException:
     return HTTPException(status_code=500, detail=raw)
 
 
-app = FastAPI(title="ReadLex")
+def startup_lexical_backfill() -> None:
+    if os.getenv("READLEX_SKIP_LEXICAL_BACKFILL", "").strip().lower() in {"1", "true", "yes"}:
+        return
+    try:
+        from backend.lexical_backfill import backfill_lexical_entries
+
+        report = backfill_lexical_entries()
+        print(
+            "Lexical backfill complete: "
+            f"inserted={report.approved_inserted}, "
+            f"updated={report.approved_updated}, "
+            f"existing={report.approved_existing}, "
+            f"queued={report.queued_inserted + report.queued_updated}"
+        )
+    except Exception as exc:
+        print(f"Lexical backfill skipped: {exc}")
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    startup_lexical_backfill()
+    yield
+
+
+app = FastAPI(title="ReadLex", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,

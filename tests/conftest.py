@@ -14,6 +14,7 @@ def app_module(tmp_path_factory: pytest.TempPathFactory):
     test_db_path = tmp_path_factory.mktemp("db") / "test_app.db"
     os.environ["READLEX_DB_PATH"] = str(test_db_path)
     os.environ["APP_BASE_URL"] = "http://127.0.0.1:8046"
+    os.environ["READLEX_SKIP_LEXICAL_BACKFILL"] = "1"
     os.environ.pop("DATABASE_URL", None)
     os.environ.pop("POSTGRES_URL", None)
     sys.modules.pop("backend.main", None)
