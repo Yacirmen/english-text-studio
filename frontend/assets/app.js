@@ -47,10 +47,10 @@ const TOPIC_ORDER = [
   "Culture",
 ];
 
-const GUEST_FLAG_KEY = "readlex_guest";
-const THEME_STORAGE_KEY = "readlex_theme";
-const LANGUAGE_STORAGE_KEY = "readlex_ui_language";
-const INSTALL_DISMISSED_KEY = "readlex_install_tip_dismissed";
+const GUEST_FLAG_KEY = "readwave_guest";
+const THEME_STORAGE_KEY = "readwave_theme";
+const LANGUAGE_STORAGE_KEY = "readwave_ui_language";
+const INSTALL_DISMISSED_KEY = "readwave_install_tip_dismissed";
 
 const state = {
   text: "",
@@ -344,22 +344,22 @@ const UI_COPY = {
   en: {
     themeLabel: "Toggle dark mode",
     languageLabel: "Switch language",
-    welcomeRead: "Read.",
-    welcomeSave: "Save.",
-    welcomeRemember: "Remember.",
-    welcomeNote: "Read short English. Save what matters.",
-    welcomeSubnote: "Tap useful words, keep their context, and review them later.",
-    saveOneTap: "Save in one tap",
-    saveOneTapBody: "Capture useful words without breaking your focus.",
-    reviewContext: "Review with context",
-    reviewContextBody: "Keep meanings, sentence context, and examples together.",
-    lessClutter: "Less clutter. Better recall.",
-    lessClutterBody: "A focused reading loop that stays quiet until it can help.",
+    welcomeRead: "Read English",
+    welcomeSave: "in flow.",
+    welcomeRemember: "",
+    welcomeNote: "Tap words. Save context. Remember naturally.",
+    welcomeSubnote: "Built for focused reading, not memorization pressure.",
+    saveOneTap: "Read",
+    saveOneTapBody: "Level-based texts",
+    reviewContext: "Tap",
+    reviewContextBody: "Instant context",
+    lessClutter: "Review",
+    lessClutterBody: "Words that stick",
     login: "Log In",
     signup: "Sign Up",
     continueGuest: "Continue as Guest",
     welcomeBack: "Welcome back",
-    welcomeBackBody: "Return to your saved words, reading trail, and review rhythm.",
+    welcomeBackBody: "Continue your reading flow.",
     newAccount: "New account",
     newAccountBody: "Create a private space for the words and phrases you notice.",
     memberLogin: "Member login",
@@ -437,7 +437,7 @@ const UI_COPY = {
     usageCoachLoading: "Building",
     usageCoachActive: "Active",
     usageCoachEmptyTitle: "Pick a word to start.",
-    usageCoachEmptyBody: "Tap a highlighted word. ReadLex will turn it into meaning, context, and a usable example.",
+    usageCoachEmptyBody: "Tap a highlighted word. ReadWave will turn it into meaning, context, and a usable example.",
     usageCoachLoadingBody: "Reading the sentence, finding the sense, and preparing a clean example.",
     usageCoachActiveBody: "Use the meaning card first, then read the context and example together.",
     chooseWord: "Choose a word",
@@ -547,29 +547,29 @@ const UI_COPY = {
     typeWord: "Type a word",
     explainWord: "Explain Word",
     infoBody: "A cleaner company-facing space for understanding the product, its current release posture, and where users can reach the team.",
-    infoHeroLabel: "ReadLex Office",
+    infoHeroLabel: "ReadWave Office",
     infoHeroTitle: "A calmer reading product with a clearer professional face.",
-    infoHeroBody: "This panel explains what ReadLex does, how the current build should be understood, and where business or support communication should go during launch.",
+    infoHeroBody: "This panel explains what ReadWave does, how the current build should be understood, and where business or support communication should go during launch.",
   },
   tr: {
     themeLabel: "Koyu modu aç/kapat",
     languageLabel: "Dili değiştir",
-    welcomeRead: "Oku.",
-    welcomeSave: "Kaydet.",
-    welcomeRemember: "Hatırla.",
-    welcomeNote: "Kısa İngilizce oku. İşine yarayanı yanında tut.",
-    welcomeSubnote: "Dokunduğun kelime bağlamıyla kalsın, sonra geri dön.",
-    saveOneTap: "Tek dokunuşla kaydet",
-    saveOneTapBody: "Okurken dikkatini dağıtmadan iyi kelimeleri yakala.",
-    reviewContext: "Cümlesiyle tekrar et",
-    reviewContextBody: "Anlam, bağlam ve örnek aynı yerde kalsın.",
-    lessClutter: "Az kalabalık. Daha çok akılda kalma.",
-    lessClutterBody: "Okurken sessiz, tekrar ederken yanında olan bir alan.",
+    welcomeRead: "Akışta",
+    welcomeSave: "İngilizce oku.",
+    welcomeRemember: "",
+    welcomeNote: "Kelimeye dokun. Bağlamı sakla. Doğal şekilde hatırla.",
+    welcomeSubnote: "Ezber baskısı için değil, odaklı okuma için tasarlandı.",
+    saveOneTap: "Oku",
+    saveOneTapBody: "Seviyene uygun metinler",
+    reviewContext: "Dokun",
+    reviewContextBody: "Anında bağlam",
+    lessClutter: "Tekrar et",
+    lessClutterBody: "Akılda kalan kelimeler",
     login: "Giriş Yap",
     signup: "Kayıt Ol",
     continueGuest: "Misafir olarak dene",
     welcomeBack: "Hoş geldin",
-    welcomeBackBody: "Kaldığın yerden devam et; kelimelerin ve okuma izin burada.",
+    welcomeBackBody: "Okuma akışına devam et.",
     newAccount: "Yeni alanını aç",
     newAccountBody: "Fark ettiğin kelime ve kalıplar için kendine küçük bir yer kur.",
     memberLogin: "Üye girişi",
@@ -604,7 +604,7 @@ const UI_COPY = {
     translate: "Çeviri",
     translateBody: "Takıldığın kelimeye hızlıca ikinci bir göz at.",
     help: "Yardım",
-    office: "ReadLex",
+    office: "ReadWave",
     setup: "Başlangıç",
     setupTitle: "Önce oku, sonra akıllıca geri dön.",
     setupBody: "Seviyeni seç, kısa bir metin aç; dokunduğun kelimeler tekrarına dönüşsün.",
@@ -756,16 +756,18 @@ const UI_COPY = {
     manualBody: "Bir kelime aklına takıldıysa burada hızlıca açıklayalım.",
     typeWord: "Kelime yaz",
     explainWord: "Kelimeyi açıkla",
-    infoBody: "ReadLex'i, şu anki sürümü ve bize nereden ulaşacağını anlatan sade bir alan.",
-    infoHeroLabel: "ReadLex",
+    infoBody: "ReadWave'i, şu anki sürümü ve bize nereden ulaşacağını anlatan sade bir alan.",
+    infoHeroLabel: "ReadWave",
     infoHeroTitle: "Okumayı merkeze alan, sakin bir İngilizce çalışma alanı.",
-    infoHeroBody: "ReadLex; kısa okumaları, kelime kaydetmeyi ve bağlamla tekrar etmeyi tek akışta toplar. Geri bildirim, destek veya iş iletişimi için bize buradan ulaşabilirsin.",
+    infoHeroBody: "ReadWave; kısa okumaları, kelime kaydetmeyi ve bağlamla tekrar etmeyi tek akışta toplar. Geri bildirim, destek veya iş iletişimi için bize buradan ulaşabilirsin.",
   },
 };
 
 const uiText = (key, values = {}) => {
   const copy = UI_COPY[state.uiLanguage] || UI_COPY.en;
-  let text = copy[key] || UI_COPY.en[key] || key;
+  const hasCopy = Object.prototype.hasOwnProperty.call(copy, key);
+  const hasEnglishCopy = Object.prototype.hasOwnProperty.call(UI_COPY.en, key);
+  let text = hasCopy ? copy[key] : hasEnglishCopy ? UI_COPY.en[key] : key;
   Object.entries(values).forEach(([name, value]) => {
     text = text.replaceAll(`{${name}}`, String(value));
   });
@@ -1060,7 +1062,7 @@ async function parseApiResponse(response) {
 
 async function apiFetch(url, options = {}) {
   const apiBaseUrl =
-    window.READLEX_CONFIG?.apiBaseUrl ||
+    window.READWAVE_CONFIG?.apiBaseUrl ||
     (window.location.protocol === "capacitor:" ? "https://english-text-studio-staging.onrender.com" : "");
   const requestUrl = apiBaseUrl && String(url).startsWith("/")
     ? `${apiBaseUrl.replace(/\/$/, "")}${url}`
@@ -1957,7 +1959,7 @@ function setLibraryView(view) {
     libraryTitleEl.textContent = state.uiLanguage === "tr" ? "Hızlı çeviri" : "Quick translation";
   } else if (view === "info") {
     libraryKickerEl.textContent = uiText("office");
-    libraryTitleEl.textContent = state.uiLanguage === "tr" ? "ReadLex şirket ve güven notları" : "ReadLex company and trust notes";
+    libraryTitleEl.textContent = state.uiLanguage === "tr" ? "ReadWave şirket ve güven notları" : "ReadWave company and trust notes";
   }
   setNavMenuOpen(false);
 }

@@ -1173,7 +1173,7 @@ def backfill_lexical_entries(
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Backfill ReadLex lexical_entries from published readings.")
+    parser = argparse.ArgumentParser(description="Backfill ReadWave lexical_entries from published readings.")
     parser.add_argument("--dry-run", action="store_true", help="Compute the report without writing to the database.")
     parser.add_argument("--limit", type=int, default=None, help="Limit the number of published readings to scan.")
     parser.add_argument("--json", action="store_true", help="Print a JSON report.")

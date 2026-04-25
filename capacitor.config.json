@@ -1,10 +1,10 @@
 {
-  "appId": "com.readlex.app",
-  "appName": "ReadLex",
+  "appId": "com.readwave.app",
+  "appName": "ReadWave",
   "webDir": "frontend",
   "ios": {
     "contentInset": "automatic",
-    "scheme": "ReadLex"
+    "scheme": "ReadWave"
   },
   "server": {
     "cleartext": false

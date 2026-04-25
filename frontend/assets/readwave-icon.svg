@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="ReadWave">
+  <defs>
+    <radialGradient id="glow" cx="48%" cy="42%" r="58%">
+      <stop offset="0" stop-color="#0ed5ef" stop-opacity=".42"/>
+      <stop offset=".52" stop-color="#0b5bbb" stop-opacity=".22"/>
+      <stop offset="1" stop-color="#06111d" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="#07111d"/>
+  <rect x="18" y="18" width="476" height="476" rx="100" fill="#0a1726"/>
+  <circle cx="248" cy="230" r="218" fill="url(#glow)"/>
+  <image href="readwave-mark.png" x="50" y="76" width="412" height="360" preserveAspectRatio="xMidYMid meet"/>
+</svg>

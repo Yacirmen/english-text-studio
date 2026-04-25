@@ -6,51 +6,53 @@
   <meta name="theme-color" content="#132d49" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="ReadLex" />
+  <meta name="apple-mobile-web-app-title" content="ReadWave" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="description" content="ReadLex helps you read English, save useful words, and review them with context." />
-  <title>ReadLex</title>
+  <meta name="description" content="ReadWave helps you read English, save useful words, and review them with context." />
+  <title>ReadWave</title>
   <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="icon" href="/assets/readlex-icon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/readlex-icon-180.png" />
+  <link rel="icon" href="/assets/readwave-favicon.png" type="image/png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/readwave-icon-180.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/styles.css?v=20260425lexical1" />
+  <link rel="stylesheet" href="/assets/styles.css?v=20260425welcome4" />
 </head>
 <body>
   <div id="welcomeGate" class="welcome-gate">
     <div class="welcome-card">
       <div class="welcome-copy">
-        <span class="hero-kicker">ReadLex</span>
+        <span class="hero-kicker hero-brand">
+          <img class="hero-brand-logo" src="/assets/readwave-logo.png" alt="ReadWave" />
+        </span>
         <h1 class="welcome-headline">
-          <span class="welcome-headline-line welcome-headline-line-read">Read.</span>
-          <span class="welcome-headline-line welcome-headline-line-save welcome-headline-accent">Save.</span>
-          <span class="welcome-headline-line welcome-headline-line-remember">Remember.</span>
+          <span class="welcome-headline-line welcome-headline-line-read">Read English</span>
+          <span class="welcome-headline-line welcome-headline-line-save welcome-headline-accent">in flow.</span>
+          <span class="welcome-headline-line welcome-headline-line-remember"></span>
         </h1>
         <div class="welcome-side-note welcome-side-note-compact">
-          <span>Read short English. Save what matters.</span>
-          <p>Tap useful words, keep their context, and review them later.</p>
+          <span>Tap words. Save context. Remember naturally.</span>
+          <p>Built for focused reading, not memorization pressure.</p>
         </div>
-        <div class="welcome-feature-list" aria-label="ReadLex benefits">
+        <div class="welcome-feature-list" aria-label="ReadWave benefits">
           <article class="welcome-feature-card">
             <span class="welcome-feature-icon welcome-feature-icon-green" aria-hidden="true"></span>
             <div class="welcome-feature-copy">
-              <strong>Save in one tap</strong>
-              <p>Capture useful words without breaking your focus.</p>
+              <strong>Read</strong>
+              <p>Level-based texts</p>
             </div>
           </article>
           <article class="welcome-feature-card">
             <span class="welcome-feature-icon welcome-feature-icon-blue" aria-hidden="true"></span>
             <div class="welcome-feature-copy">
-              <strong>Review with context</strong>
-              <p>Keep meanings, sentence context, and examples together.</p>
+              <strong>Tap</strong>
+              <p>Instant context</p>
             </div>
           </article>
           <article class="welcome-feature-card welcome-feature-card-wide">
             <div class="welcome-feature-copy">
-              <strong>Less clutter. Better recall.</strong>
-              <p>A focused reading loop that stays quiet until it can help.</p>
+              <strong>Review</strong>
+              <p>Words that stick</p>
             </div>
           </article>
         </div>
@@ -78,7 +80,7 @@
           <div id="gateAuthCard" class="auth-flip-card" aria-live="polite">
             <section class="auth-face auth-face-login">
               <span class="auth-face-kicker">Welcome back</span>
-              <strong class="auth-face-title">Return to your saved words, reading trail, and review rhythm.</strong>
+              <strong class="auth-face-title">Continue your reading flow.</strong>
               <form id="gateLoginForm" class="stack-md auth-form">
                 <label class="field">
                   <span>Username</span>
@@ -119,21 +121,22 @@
     <header class="topbar">
       <div class="topbar-left">
         <div class="brand-lockup session-control">
-          <div class="topbar-slogan session-dock" aria-label="ReadLex session dock">
+          <div class="topbar-slogan session-dock" aria-label="ReadWave session dock">
             <button
               id="navMenuMarkTrigger"
               class="topbar-slogan-mark session-dock-mark hub-mark-trigger"
               type="button"
-              aria-label="Open ReadLex study hub"
+              aria-label="Open ReadWave study hub"
               aria-expanded="false"
               aria-controls="navMenu"
               title="Open Study Hub"
             >
-              <span class="topbar-slogan-spark">RL</span>
+              <img class="topbar-slogan-logo" src="/assets/readwave-mark.png" alt="" aria-hidden="true" />
+              <span class="topbar-slogan-spark">RW</span>
               <span class="hub-mark-plus" aria-hidden="true">+</span>
             </button>
             <span class="topbar-slogan-copy">
-              <span class="topbar-slogan-kicker">READLEX</span>
+              <span class="topbar-slogan-kicker">READWAVE</span>
               <strong class="topbar-slogan-main">Session Dock</strong>
             </span>
             <span class="session-dock-metrics" aria-hidden="true">
@@ -160,15 +163,15 @@
             id="navMenuTrigger"
             class="menu-trigger"
             type="button"
-            aria-label="Open ReadLex study hub"
+            aria-label="Open ReadWave study hub"
             aria-expanded="false"
             aria-controls="navMenu"
           >
-            <span class="menu-trigger-kicker">ReadLex</span>
+            <span class="menu-trigger-kicker">ReadWave</span>
             <strong class="menu-trigger-title">Study Hub</strong>
             <span class="menu-trigger-icon" aria-hidden="true">+</span>
           </button>
-          <div id="navMenu" class="nav-menu" role="menu" aria-label="ReadLex study hub">
+          <div id="navMenu" class="nav-menu" role="menu" aria-label="ReadWave study hub">
             <div class="nav-menu-topline">
               <div class="nav-menu-overview">
                 <span class="nav-menu-overview-kicker">Workspace</span>
@@ -230,7 +233,7 @@
                     <span class="nav-menu-install-icon" aria-hidden="true"></span>
                     <span class="nav-menu-item-copy">
                       <strong id="installCoachTitle">Download</strong>
-                      <small id="installCoachText">Open ReadLex like a native app.</small>
+                      <small id="installCoachText">Open ReadWave like a native app.</small>
                     </span>
                     <span class="nav-menu-install-actions">
                       <button id="installCoachAction" class="ghost-btn install-coach-action" type="button">Install</button>
@@ -240,7 +243,7 @@
                 </section>
                 <button id="openInfoBtn" class="nav-menu-item nav-menu-item-indigo" type="button" role="menuitem">
                   <span class="nav-menu-item-copy">
-                    <strong>About ReadLex</strong>
+                    <strong>About ReadWave</strong>
                     <small>Product overview, contact, privacy posture, and launch notes.</small>
                   </span>
                   <span class="nav-menu-badge" aria-hidden="true">Office</span>
@@ -266,13 +269,13 @@
         <div class="rail-intro">
           <span class="rail-kicker">Setup</span>
           <h2>Read first. Review smarter.</h2>
-          <p>Choose a text, tap useful words, and let ReadLex keep the recall loop clean.</p>
+          <p>Choose a text, tap useful words, and let ReadWave keep the recall loop clean.</p>
         </div>
 
         <section class="rail-panel">
           <div class="section-head">
             <h3>Start a session</h3>
-            <p>Pick level and topic. ReadLex opens a curated text with tappable words and phrase-aware meanings.</p>
+            <p>Pick level and topic. ReadWave opens a curated text with tappable words and phrase-aware meanings.</p>
           </div>
 
           <div id="setupSummary" class="setup-summary">
@@ -366,7 +369,7 @@
               <p id="libraryModeHint" class="setup-footer-note hidden">Open a curated text instantly. Useful taps become saved words, quiz material, and progress.</p>
             </div>
           </form>
-          <div class="session-flow" aria-label="ReadLex learning flow">
+          <div class="session-flow" aria-label="ReadWave learning flow">
             <div>
               <span>01</span>
               <strong>Read</strong>
@@ -426,7 +429,7 @@
                 <div>
                   <span class="mini-label insight-lab-kicker">Usage Coach</span>
                   <strong id="insightCoachTitle">Pick a word to start.</strong>
-                  <p id="insightCoachBody">Tap a highlighted word. ReadLex will turn it into meaning, context, and a usable example.</p>
+                  <p id="insightCoachBody">Tap a highlighted word. ReadWave will turn it into meaning, context, and a usable example.</p>
                 </div>
                 <span id="insightCoachState" class="insight-status">Ready</span>
               </div>
@@ -749,9 +752,9 @@
       <p class="library-copy">A cleaner company-facing space for understanding the product, its current release posture, and where users can reach the team.</p>
       <div class="info-panel-shell">
         <div class="info-panel-hero">
-          <span class="mini-label on-dark">ReadLex Office</span>
+          <span class="mini-label on-dark">ReadWave Office</span>
           <h4>A calmer reading product with a clearer professional face.</h4>
-          <p>This panel explains what ReadLex does, how the current build should be understood, and where business or support communication should go during launch.</p>
+          <p>This panel explains what ReadWave does, how the current build should be understood, and where business or support communication should go during launch.</p>
           <div class="info-chip-row">
             <span class="info-chip">Reading-first</span>
             <span class="info-chip">Phrase-aware</span>
@@ -763,12 +766,12 @@
           <details class="info-accordion" open>
             <summary>
               <span class="info-accordion-copy">
-                <strong>About ReadLex</strong>
+                <strong>About ReadWave</strong>
                 <small>What the product is designed to help with.</small>
               </span>
             </summary>
             <div class="info-accordion-body">
-              <p>ReadLex is a focused reading studio for learners who want more than quick translation. It turns a reading session into a loop: choose a text, tap useful words or phrases, save them, and come back through quiz and review.</p>
+              <p>ReadWave is a focused reading studio for learners who want more than quick translation. It turns a reading session into a loop: choose a text, tap useful words or phrases, save them, and come back through quiz and review.</p>
               <ul class="info-list">
                 <li>Built around short reading sessions instead of heavy lesson screens.</li>
                 <li>Designed to keep meaning, context, and example usage tied together.</li>
@@ -785,13 +788,13 @@
               </span>
             </summary>
             <div class="info-accordion-body">
-              <p>ReadLex is still being refined, so contact is intentionally direct. Use the address below for bug reports, launch questions, collaboration notes, content requests, or early business communication.</p>
+              <p>ReadWave is still being refined, so contact is intentionally direct. Use the address below for bug reports, launch questions, collaboration notes, content requests, or early business communication.</p>
               <div class="info-contact-grid">
                 <article class="info-contact-card info-contact-card-primary">
                   <span class="mini-label on-dark">Best for</span>
                   <strong>Direct email</strong>
                   <p class="info-contact-note">Primary contact for support, feedback, and early business communication.</p>
-                  <a class="info-contact-link" href="mailto:readlexofficial@gmail.com">readlexofficial@gmail.com</a>
+                  <a class="info-contact-link" href="mailto:readwaveofficial@gmail.com">readwaveofficial@gmail.com</a>
                 </article>
                 <article class="info-contact-card">
                   <span class="mini-label on-dark">Best for</span>
@@ -810,7 +813,7 @@
               </span>
             </summary>
             <div class="info-accordion-body">
-              <p>ReadLex stores only the information needed to support account access and review features in this version.</p>
+              <p>ReadWave stores only the information needed to support account access and review features in this version.</p>
               <ul class="info-list">
                 <li>Username and password hash are stored to support account access.</li>
                 <li>Saved words, review results, and reading history are stored to power recall features.</li>
@@ -829,7 +832,7 @@
             </summary>
             <div class="info-accordion-body">
               <ul class="info-list">
-                <li>ReadLex is offered as a learning tool and may continue to change as the product evolves.</li>
+                <li>ReadWave is offered as a learning tool and may continue to change as the product evolves.</li>
                 <li>Users should not rely on a single word card as professional, legal, or medical advice.</li>
                 <li>Service quality, reading availability, and account features may be refined between releases.</li>
                 <li>Abuse, scraping, or attempts to disrupt the experience may lead to access being removed.</li>
@@ -841,7 +844,7 @@
     </section>
   </aside>
 
-<script src="/assets/app.js?v=20260425lexical1"></script>
+<script src="/assets/app.js?v=20260425welcome4"></script>
   <script>
     if ("serviceWorker" in navigator && window.location.protocol !== "capacitor:") {
       window.addEventListener("load", () => {

@@ -1,6 +1,6 @@
-# ReadLex iOS App Notes
+# ReadWave iOS App Notes
 
-ReadLex can ship to iPhone in two steps:
+ReadWave can ship to iPhone in two steps:
 
 1. PWA install for quick testing from Safari.
 2. Capacitor iOS shell for App Store packaging.

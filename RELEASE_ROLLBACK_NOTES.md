@@ -1,16 +1,16 @@
-# ReadLex Release and Rollback Notes
+# ReadWave Release and Rollback Notes
 
 Date: 2026-04-25
 
 ## Release Snapshot
 
-- Release branch before merge: `readlex-design-recovery`
+- Release branch before merge: `readwave-design-recovery`
 - Production branch after release: `master`
 - Previous stable main commit: `d813c85d368423288e72d3253cadaba35e39669c`
 - Backup branch: `backup/main-before-social-release-20260425`
 - Backup tag: `main-before-social-release-20260425`
-- Current asset query version: `20260425social3`
-- Current service worker cache: `readlex-shell-v65`
+- Current asset query version: `20260425welcome4`
+- Current service worker cache: `readwave-shell-v80`
 
 ## What This Release Contains
 

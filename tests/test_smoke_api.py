@@ -23,11 +23,11 @@ def test_pwa_assets_are_served(client):
     manifest_response = client.get("/manifest.webmanifest")
     assert manifest_response.status_code == 200
     assert manifest_response.headers["content-type"].startswith("application/manifest+json")
-    assert manifest_response.json()["short_name"] == "ReadLex"
+    assert manifest_response.json()["short_name"] == "ReadWave"
 
     service_worker_response = client.get("/sw.js")
     assert service_worker_response.status_code == 200
-    assert "READLEX_CACHE" in service_worker_response.text
+    assert "READWAVE_CACHE" in service_worker_response.text
 
 
 def test_mobile_origins_are_allowed(app_module):
@@ -46,7 +46,7 @@ def test_register_me_and_logout_flow(client):
     assert body["profile"]["level_label"] == "Starter reader"
     assert body["profile"]["activity_score"] >= 2
     assert body["social_summary"]["friend_count"] == 0
-    assert "readlex_session" in client.cookies
+    assert "readwave_session" in client.cookies
 
     me_response = client.get("/api/auth/me")
     assert me_response.status_code == 200

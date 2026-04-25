@@ -36,13 +36,13 @@ except ImportError:  # pragma: no cover
 ROOT_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = ROOT_DIR / "frontend"
 ENV_PATH = ROOT_DIR / ".env"
-DB_PATH = Path(os.getenv("READLEX_DB_PATH", str(ROOT_DIR / "backend" / "app.db"))).resolve()
+DB_PATH = Path(os.getenv("READWAVE_DB_PATH", str(ROOT_DIR / "backend" / "app.db"))).resolve()
 CURATED_LIBRARY_SOURCE = "desktop_curated"
 CURATED_READINGS_PATH = ROOT_DIR / "backend" / "curated_readings.txt"
 EXTRA_WORD_MAP_PATH = ROOT_DIR / "backend" / "extra_word_map.json"
 LIBRARY_WORD_MAP_PATH = ROOT_DIR / "backend" / "library_word_map.json"
 CEFR_VOCAB_INDEX_PATH = ROOT_DIR / "backend" / "cefr_vocab_index.json"
-SESSION_COOKIE = "readlex_session"
+SESSION_COOKIE = "readwave_session"
 WORD_DETAIL_CACHE: dict[str, dict[str, str]] = {}
 GENERATE_CACHE: dict[str, str] = {}
 EXTRA_WORD_MAP: dict[str, str] = {}
@@ -1800,16 +1800,16 @@ def create_verification_token(user_id: int, email: str) -> str:
 
 def send_verification_email(email: str, token: str) -> None:
     verify_url = f"{APP_BASE_URL}/api/auth/verify-email?token={token}"
-    subject = "Verify your ReadLex account"
+    subject = "Verify your ReadWave account"
     text_body = (
-        "Welcome to ReadLex.\n\n"
+        "Welcome to ReadWave.\n\n"
         f"Verify your email by opening this link:\n{verify_url}\n\n"
         "This link expires in 24 hours."
     )
     html_body = f"""
     <html>
       <body style="font-family: Arial, sans-serif; color: #183153;">
-        <h2>Verify your ReadLex account</h2>
+        <h2>Verify your ReadWave account</h2>
         <p>Thanks for signing up. Click the button below to activate your account.</p>
         <p><a href="{verify_url}" style="display:inline-block;padding:12px 18px;border-radius:999px;background:#58cc02;color:#0f2c49;text-decoration:none;font-weight:700;">Verify Email</a></p>
         <p style="color:#6f8098;">If the button does not work, use this link:</p>
@@ -4360,7 +4360,7 @@ def normalize_api_error(exc: Exception) -> HTTPException:
 
 
 def startup_lexical_backfill() -> None:
-    if os.getenv("READLEX_SKIP_LEXICAL_BACKFILL", "").strip().lower() in {"1", "true", "yes"}:
+    if os.getenv("READWAVE_SKIP_LEXICAL_BACKFILL", "").strip().lower() in {"1", "true", "yes"}:
         return
     try:
         from backend.lexical_backfill import backfill_lexical_entries
@@ -4383,7 +4383,7 @@ async def lifespan(_app: FastAPI):
     yield
 
 
-app = FastAPI(title="ReadLex", lifespan=lifespan)
+app = FastAPI(title="ReadWave", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -4533,7 +4533,7 @@ def verify_email(token: str) -> str:
     <html><body style="font-family:Arial,sans-serif;padding:40px;color:#183153;">
     <h2>Email verified successfully.</h2>
     <p>{row["email"]} is now active.</p>
-    <p><a href="{APP_BASE_URL}" style="display:inline-block;padding:12px 18px;border-radius:999px;background:#58cc02;color:#0f2c49;text-decoration:none;font-weight:700;">Open ReadLex</a></p>
+    <p><a href="{APP_BASE_URL}" style="display:inline-block;padding:12px 18px;border-radius:999px;background:#58cc02;color:#0f2c49;text-decoration:none;font-weight:700;">Open ReadWave</a></p>
     </body></html>
     """
 

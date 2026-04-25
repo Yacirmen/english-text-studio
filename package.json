@@ -1,8 +1,8 @@
 {
-  "name": "readlex-mobile-shell",
+  "name": "readwave-mobile-shell",
   "version": "0.1.0",
   "private": true,
-  "description": "ReadLex mobile shell for iOS packaging with Capacitor.",
+  "description": "ReadWave mobile shell for iOS packaging with Capacitor.",
   "scripts": {
     "cap": "capacitor",
     "ios:add": "capacitor add ios",

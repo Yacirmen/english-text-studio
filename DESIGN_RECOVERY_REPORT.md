@@ -1,8 +1,8 @@
-# ReadLex Design Recovery Report
+# ReadWave Design Recovery Report
 
 ## What was broken or worsened
 
-- The previous experimental redesign was too broad for the current product state and risked turning ReadLex into a generic landing-page style product instead of a focused reading tool.
+- The previous experimental redesign was too broad for the current product state and risked turning ReadWave into a generic landing-page style product instead of a focused reading tool.
 - Some light-mode auth surfaces had poor contrast, especially inside account access panels.
 - Library, saved words, and hub cards carried too much decorative gradient treatment and felt visually noisy for a reading-first product.
 - Primary buttons had a toy-like heavy shadow and oversized pill feeling in several places.
@@ -15,7 +15,7 @@
 - Kept the original stable header, profile, theme, language, auth, setup, reading, saved words, quiz, progress, and social structures.
 - Did not port the large experimental redesign layer into this branch.
 - Preserved existing DOM structure and JavaScript behavior for login, signup, guest mode, library readings, AI readings, word tapping, saved words, quiz, progress, theme, and language.
-- Kept ReadLex closer to the working main design while reducing visual roughness.
+- Kept ReadWave closer to the working main design while reducing visual roughness.
 
 ## What was improved
 
